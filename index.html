@@ -1529,11 +1529,15 @@
             reader.onload = function(e) {
                 elements.previewImage.src = e.target.result;
                 
+                // Reset edit state for new image
+                state.rotation = 0;
+                state.flipHorizontal = false;
+                state.crop = null;
+                
                 // Apply current transformations
                 applyImageTransformations();
                 
                 // Reset crop
-                state.crop = null;
                 elements.cropOverlay.innerHTML = '';
             };
             
@@ -1845,6 +1849,12 @@
                     break;
             }
             
+            // Гарантируем, что область обрезки не выйдет за пределы изображения
+            newLeft = Math.max(0, newLeft);
+            newTop = Math.max(0, newTop);
+            newWidth = Math.min(newWidth, elements.cropOverlay.offsetWidth - newLeft);
+            newHeight = Math.min(newHeight, elements.cropOverlay.offsetHeight - newTop);
+            
             // Применяем изменения
             state.cropBox.style.width = `${newWidth}px`;
             state.cropBox.style.height = `${newHeight}px`;
@@ -1865,8 +1875,24 @@
             document.removeEventListener('touchend', endResize);
         }
         
-        // Apply crop
+        // Apply crop - ИСПРАВЛЕННАЯ ФУНКЦИЯ
         function applyCrop() {
+            // Рассчитываем относительные координаты обрезки
+            const imgRect = elements.previewImage.getBoundingClientRect();
+            const cropRect = state.cropBox.getBoundingClientRect();
+            
+            // Масштабирование (отношение натурального размера к отображаемому)
+            const scaleX = elements.previewImage.naturalWidth / imgRect.width;
+            const scaleY = elements.previewImage.naturalHeight / imgRect.height;
+            
+            // Рассчитываем координаты относительно исходного изображения
+            state.crop = {
+                x: (cropRect.left - imgRect.left) * scaleX,
+                y: (cropRect.top - imgRect.top) * scaleY,
+                width: cropRect.width * scaleX,
+                height: cropRect.height * scaleY
+            };
+
             elements.cropControls.style.display = 'none';
             elements.cropOverlay.style.display = 'none';
             state.cropMode = false;
@@ -1944,7 +1970,7 @@
             showToast('Оптимізацію завершено!');
         }
 
-        // Optimize image
+        // Optimize image - ИСПРАВЛЕННЫЙ БЛОК ОБРЕЗКИ
         function optimizeImage(file, quality, format, maxWidth, applyEdits) {
             return new Promise((resolve, reject) => {
                 const canvas = document.createElement('canvas');
@@ -1994,32 +2020,26 @@
                         }
                     }
                     
-                    // Apply crop if needed
+                    // ПРИМЕНЕНИЕ ОБРЕЗКИ - ИСПРАВЛЕННЫЙ КОД
                     if (applyEdits && state.crop) {
-                        const { x, y, width: cropWidth, height: cropHeight } = state.crop;
+                        const {x, y, width: cropWidth, height: cropHeight} = state.crop;
                         
-                        // Calculate crop dimensions
-                        const cropX = x * canvas.width;
-                        const cropY = y * canvas.height;
-                        const cropW = cropWidth * canvas.width;
-                        const cropH = cropHeight * canvas.height;
-                        
-                        // Create new canvas for cropped image
+                        // Создаем временный canvas для обрезанного изображения
                         const croppedCanvas = document.createElement('canvas');
-                        croppedCanvas.width = cropW;
-                        croppedCanvas.height = cropH;
+                        croppedCanvas.width = cropWidth;
+                        croppedCanvas.height = cropHeight;
                         const croppedCtx = croppedCanvas.getContext('2d');
                         
-                        // Draw cropped portion
+                        // Вырезаем нужную область
                         croppedCtx.drawImage(
                             canvas, 
-                            cropX, cropY, cropW, cropH,
-                            0, 0, cropW, cropH
+                            x, y, cropWidth, cropHeight,
+                            0, 0, cropWidth, cropHeight
                         );
                         
-                        // Replace canvas with cropped version
-                        canvas.width = cropW;
-                        canvas.height = cropH;
+                        // Заменяем основной canvas
+                        canvas.width = cropWidth;
+                        canvas.height = cropHeight;
                         ctx.drawImage(croppedCanvas, 0, 0);
                     }
                     
