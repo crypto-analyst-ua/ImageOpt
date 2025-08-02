@@ -116,6 +116,23 @@
       font-size: 0.9rem;
       color: #666;
     }
+    
+    .user-info {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .logout-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -123,6 +140,12 @@
     <div class="header">
       <h1>ImageOpt Pro Premium</h1>
       <p>Розблокуйте всі можливості без обмежень</p>
+      <div class="user-info">
+        <span id="userEmail"></span>
+        <button class="logout-btn" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i> Вийти
+        </button>
+      </div>
     </div>
     
     <div class="plans">
@@ -171,13 +194,23 @@
 
     // DOM элементы
     const elements = {
-      paypalContainer: document.getElementById('paypalContainer')
+      paypalContainer: document.getElementById('paypalContainer'),
+      userEmail: document.getElementById('userEmail'),
+      logoutBtn: document.getElementById('logoutBtn')
     };
 
     // Инициализация
     async function init() {
       await checkAuthState();
       initPayPal();
+      
+      // Выход
+      elements.logoutBtn.addEventListener('click', () => {
+        firebase.auth().signOut().then(() => {
+          localStorage.removeItem('premiumUser');
+          window.location.href = 'auth.html';
+        });
+      });
     }
 
     // Проверка состояния аутентификации
@@ -186,6 +219,7 @@
         window.auth.onAuthStateChanged(async (user) => {
           if (user) {
             state.user = user;
+            elements.userEmail.textContent = user.email;
             await checkPremiumStatus();
             resolve();
           } else {
