@@ -27,6 +27,7 @@ function signIn() {
       
       // Сохраняем статус в localStorage
       localStorage.setItem('premiumUser', isPremium);
+      localStorage.setItem('userId', userCredential.user.uid);
       
       document.getElementById("message").innerText = "Вхід виконано!";
       window.location.href = "index.html";

@@ -234,6 +234,9 @@
               paymentId: details.id
             });
             
+            // Обновляем localStorage
+            localStorage.setItem('premiumUser', 'true');
+            
             alert('Оплата успішна! Ваш акаунт оновлено до Premium');
             window.location.href = 'index.html';
           });
