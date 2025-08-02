@@ -1,5 +1,3 @@
-[file name]: firebase.js
-[file content begin]
 // Конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
@@ -11,19 +9,10 @@ const firebaseConfig = {
 };
 
 // Инициализация Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Конфигурация PayPal
-const paypalConfig = {
-  clientId: "ATnZIAG3susq8624ujWJL8C5iu3D_1C6lQeYkuESE8VE_v7qonBxxeSFICHlY3dOq9XQD8GwAHne2Uwf",
-  currency: "USD"
-};
+const app = firebase.initializeApp(firebaseConfig);
+const auth = app.auth();
+const db = app.firestore();
 
 // Экспорт для использования в других файлах
-window.firebaseConfig = firebaseConfig;
-window.paypalConfig = paypalConfig;
 window.auth = auth;
 window.db = db;
-[file content end]

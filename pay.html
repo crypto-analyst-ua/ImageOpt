@@ -163,11 +163,6 @@
   </div>
 
   <script>
-    // Инициализация Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
     // Состояние приложения
     const state = {
       user: null,
@@ -188,7 +183,7 @@
     // Проверка состояния аутентификации
     async function checkAuthState() {
       return new Promise((resolve) => {
-        auth.onAuthStateChanged(async (user) => {
+        window.auth.onAuthStateChanged(async (user) => {
           if (user) {
             state.user = user;
             await checkPremiumStatus();
@@ -203,7 +198,7 @@
 
     // Проверка премиум статуса
     async function checkPremiumStatus() {
-      const userDoc = await db.collection('users').doc(state.user.uid).get();
+      const userDoc = await window.db.collection('users').doc(state.user.uid).get();
       if (userDoc.exists) {
         state.premium = userDoc.data().premium || false;
         if (state.premium) {
@@ -228,7 +223,7 @@
         onApprove: function(data, actions) {
           return actions.order.capture().then(async function(details) {
             // Обновляем статус пользователя в Firestore
-            await db.collection('users').doc(state.user.uid).update({
+            await window.db.collection('users').doc(state.user.uid).update({
               premium: true,
               premiumSince: new Date(),
               paymentId: details.id

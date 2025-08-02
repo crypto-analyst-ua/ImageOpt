@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
     <style>
         * {
             margin: 0;
@@ -842,7 +842,6 @@
                 </div>
                 <div class="header-text">
                     <h1>ImageOpt Pro</h1>
-                    <p class="subtitle">Покращений оптимізатор зображень</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -854,7 +853,6 @@
                 </button>
             </div>
             <div class="user-info">
-                <span id="userEmail">test@example.com</span>
                 <div id="premiumStatus" class="premium-badge">Базовий</div>
                 <button id="upgradeBtn" class="btn-premium">
                     <i class="fas fa-crown"></i> Premium
@@ -1028,15 +1026,9 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Конфигурация Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
-            authDomain: "imageopt-pro.firebaseapp.com",
-            projectId: "imageopt-pro",
-            storageBucket: "imageopt-pro.appspot.com",
-            messagingSenderId: "135619164867",
-            appId: "1:135619164867:web:20abe6f99ab9d468eac076"
-        };
+        // Используем общую конфигурацию Firebase
+        const auth = window.auth;
+        const db = window.db;
 
         // State management
         const state = {
@@ -1053,15 +1045,14 @@
             cropBox: null,
             avifSupported: true,
             isPremium: localStorage.getItem('premiumUser') === 'true',
-            user: { email: 'test@example.com', uid: null, isAnonymous: true },
+            user: null,
             cropMode: false,
             cropping: false,
             cropStartX: 0,
             cropStartY: 0,
             cropCurrentX: 0,
             cropCurrentY: 0,
-            firebaseInitialized: false,
-            db: null
+            firebaseInitialized: true
         };
 
         // DOM Elements
@@ -1103,7 +1094,6 @@
             watermarkCheckbox: document.getElementById('watermarkCheckbox'),
             autoOptimizeCheckbox: document.getElementById('autoOptimizeCheckbox'),
             toast: document.getElementById('toast'),
-            userEmail: document.getElementById('userEmail'),
             premiumStatus: document.getElementById('premiumStatus'),
             upgradeBtn: document.getElementById('upgradeBtn'),
             logoutBtn: document.getElementById('logoutBtn')
@@ -1117,65 +1107,51 @@
                 elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
             
+            // Check premium status
+            checkPremiumStatus();
+            
+            // Проверка аутентификации
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    state.user = user;
+                    checkPremiumStatus();
+                } else {
+                    // Перенаправление на страницу входа
+                    window.location.href = 'auth.html';
+                }
+            });
+            
             // Load history
             renderHistory();
             
-            // Инициализация Firebase
-            try {
-                firebase.initializeApp(firebaseConfig);
-                state.firebaseInitialized = true;
-                state.db = firebase.firestore();
-                console.log("Firebase initialized");
-                
-                // Проверка аутентификации
-                firebase.auth().onAuthStateChanged(async user => {
-                    if (user) {
-                        state.user.email = user.email || 'Анонімний користувач';
-                        state.user.uid = user.uid;
-                        state.user.isAnonymous = user.isAnonymous;
-                        elements.userEmail.textContent = state.user.email;
-                        
-                        // Для аутентифицированных пользователей проверяем премиум
-                        if (!user.isAnonymous) {
-                            try {
-                                const userDoc = await state.db.collection("users").doc(user.uid).get();
-                                if (userDoc.exists) {
-                                    state.isPremium = userDoc.data().premium || false;
-                                } else {
-                                    // Создаем запись для нового пользователя
-                                    await state.db.collection("users").doc(user.uid).set({
-                                        email: user.email,
-                                        premium: false
-                                    });
-                                    state.isPremium = false;
-                                }
-                            } catch (error) {
-                                console.error("Ошибка при получении данных пользователя:", error);
-                                state.isPremium = false;
-                            }
-                        } else {
-                            state.isPremium = false;
-                        }
-                        
-                        localStorage.setItem('premiumUser', state.isPremium);
-                        updatePremiumUI();
-                    } else {
-                        // Автоматический вход для демо
-                        firebase.auth().signInAnonymously()
-                            .then(() => {
-                                state.isPremium = false;
-                                localStorage.setItem('premiumUser', 'false');
-                                updatePremiumUI();
-                            })
-                            .catch(error => console.error("Anonymous sign-in error:", error));
-                    }
-                });
-            } catch (e) {
-                console.error("Firebase initialization error", e);
-            }
-            
             // Event listeners
             setupEventListeners();
+        }
+
+        // Check premium status
+        async function checkPremiumStatus() {
+            if (!state.user) return;
+            
+            try {
+                const userDoc = await db.collection('users').doc(state.user.uid).get();
+                if (userDoc.exists) {
+                    state.isPremium = userDoc.data().premium || false;
+                    localStorage.setItem('premiumUser', state.isPremium.toString());
+                }
+            } catch (error) {
+                console.error("Error getting premium status:", error);
+            }
+            
+            elements.premiumStatus.textContent = state.isPremium ? 'Premium' : 'Базовий';
+            
+            if (state.isPremium) {
+                elements.premiumStatus.style.background = 'linear-gradient(135deg, #ffd700, #ff9800)';
+                elements.premiumStatus.style.color = '#333';
+                elements.upgradeBtn.style.display = 'none';
+            } else {
+                elements.premiumStatus.style.background = '#a5b1c2';
+                elements.upgradeBtn.style.display = 'block';
+            }
         }
 
         // Set up all event listeners
@@ -1233,49 +1209,17 @@
             });
             
             // Premium and logout
-            elements.upgradeBtn.addEventListener('click', async () => {
-                if (state.user.isAnonymous) {
-                    showToast('Будь ласка, зареєструйтесь для отримання преміум!');
-                    return;
-                }
-
-                try {
-                    await state.db.collection("users").doc(state.user.uid).update({
-                        premium: true
-                    });
-                    state.isPremium = true;
-                    localStorage.setItem('premiumUser', 'true');
-                    updatePremiumUI();
-                    showToast('Вітаємо з підпискою Premium!');
-                } catch (error) {
-                    console.error("Помилка оновлення преміум-статусу:", error);
-                    showToast('Сталася помилка. Спробуйте пізніше.');
-                }
+            elements.upgradeBtn.addEventListener('click', () => {
+                window.location.href = 'pay.html';
             });
             
             elements.logoutBtn.addEventListener('click', () => {
-                firebase.auth().signOut().then(() => {
-                    state.isPremium = false;
-                    state.user = { email: 'test@example.com', uid: null, isAnonymous: true };
+                auth.signOut().then(() => {
                     localStorage.removeItem('premiumUser');
-                    updatePremiumUI();
-                    showToast('Ви вийшли з системи');
+                    localStorage.removeItem('userId');
+                    window.location.href = 'auth.html';
                 });
             });
-        }
-
-        // Update premium UI
-        function updatePremiumUI() {
-            elements.premiumStatus.textContent = state.isPremium ? 'Premium' : 'Базовий';
-            
-            if (state.isPremium) {
-                elements.premiumStatus.style.background = 'linear-gradient(135deg, #ffd700, #ff9800)';
-                elements.premiumStatus.style.color = '#333';
-                elements.upgradeBtn.style.display = 'none';
-            } else {
-                elements.premiumStatus.style.background = '#a5b1c2';
-                elements.upgradeBtn.style.display = 'block';
-            }
         }
 
         // Show toast notification
@@ -1665,21 +1609,6 @@
         async function processImages() {
             if (state.originalFiles.length === 0) return;
 
-            // Проверка лимитов для бесплатных пользователей
-            if (!state.isPremium) {
-                if (state.originalFiles.length > 5) {
-                    showToast('Безкоштовні користувачі: макс. 5 файлів');
-                    return;
-                }
-                
-                for (const file of state.originalFiles) {
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast(`Файл ${file.name} перевищує 5MB для безкоштовного користування`);
-                        return;
-                    }
-                }
-            }
-
             elements.processing.style.display = 'block';
             elements.previewSection.style.display = 'none';
             state.optimizedFiles = [];
@@ -2017,10 +1946,10 @@
             localStorage.setItem('imageopt-history', JSON.stringify(state.history));
             
             // Save to Firebase
-            if (state.firebaseInitialized && firebase.auth().currentUser) {
-                const userId = firebase.auth().currentUser.uid;
+            if (state.firebaseInitialized && state.user) {
+                const userId = state.user.uid;
                 
-                state.db.collection("optimizations").add({
+                db.collection("optimizations").add({
                     userId,
                     ...historyItem,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
