@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Авторизація</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 40px; background: #f5f5f5; }
+    .form { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    input { width: 100%; margin-bottom: 10px; padding: 10px; }
+    button { width: 100%; padding: 10px; background: #6a5af9; color: white; border: none; }
+  </style>
+</head>
+<body>
+  <div class="form">
+    <h2>Вхід або реєстрація</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Пароль">
+    <button onclick="signUp()">Реєстрація</button>
+    <button onclick="signIn()">Вхід</button>
+    <p id="message"></p>
+  </div>
+  <script src="auth.js"></script>
+</body>
+</html>
