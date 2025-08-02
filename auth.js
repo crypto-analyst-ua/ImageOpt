@@ -111,4 +111,4 @@ function validateEmail(email) {
 
 // Экспорт функций для использования в HTML
 window.signUp = signUp;
-window.signIn = signIn;
+window.signIn = signIn; 

@@ -208,7 +208,7 @@
       elements.logoutBtn.addEventListener('click', () => {
         firebase.auth().signOut().then(() => {
           localStorage.removeItem('premiumUser');
-          window.location.href = 'auth.html';
+          window.location.href = 'index.html';
         });
       });
     }
@@ -223,8 +223,27 @@
             await checkPremiumStatus();
             resolve();
           } else {
-            // Перенаправление если пользователь не авторизован
-            window.location.href = 'auth.html';
+            // Гостевой режим - предлагаем войти
+            elements.userEmail.textContent = "Гість";
+            elements.paypalContainer.innerHTML = `
+              <div style="padding: 20px; text-align: center;">
+                <p style="font-size: 1.2rem; margin-bottom: 20px;">
+                  Для оновлення до Premium будь ласка увійдіть
+                </p>
+                <button style="
+                  background: linear-gradient(135deg, #6a5af9, #d66efd);
+                  color: white;
+                  border: none;
+                  padding: 12px 30px;
+                  border-radius: 30px;
+                  font-size: 1.1rem;
+                  cursor: pointer;
+                " onclick="window.location.href='auth.html'">
+                  <i class="fas fa-sign-in-alt"></i> Увійти
+                </button>
+              </div>
+            `;
+            resolve();
           }
         });
       });
@@ -232,6 +251,8 @@
 
     // Проверка премиум статуса
     async function checkPremiumStatus() {
+      if (!state.user) return;
+      
       const userDoc = await window.db.collection('users').doc(state.user.uid).get();
       if (userDoc.exists) {
         state.premium = userDoc.data().premium || false;
@@ -244,6 +265,8 @@
 
     // Инициализация PayPal
     function initPayPal() {
+      if (!state.user) return;
+      
       paypal.Buttons({
         createOrder: function(data, actions) {
           return actions.order.create({

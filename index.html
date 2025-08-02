@@ -959,7 +959,6 @@
                         </select>
                     </div>
                     
-                    <!-- Новые элементы управления -->
                     <div class="control-group">
                         <label for="watermark">Додати водяний знак</label>
                         <div class="watermark-control">
@@ -969,7 +968,7 @@
                     </div>
                     
                     <div class="control-group">
-                        <label for="autoOptimize">Автоматична оптимізація</label>
+                        <label for="auto-optimize">Автоматична оптимізація</label>
                         <div class="auto-optimize">
                             <input type="checkbox" id="autoOptimizeCheckbox">
                             <span>Увімкнути</span>
@@ -988,7 +987,6 @@
                 <div class="processing" id="processing">
                     <div class="spinner"></div>
                     <p>Обробка зображень...</p>
-                    <!-- Добавлен прогресс-бар -->
                     <div class="progress-container">
                         <div class="progress-bar" id="progressBar"></div>
                     </div>
@@ -1023,19 +1021,18 @@
         </div>
     </div>
 
-    <!-- Элемент для уведомлений -->
     <div class="toast" id="toast"></div>
 
     <script>
         // Конфигурация Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
-  authDomain: "imageopt-pro.firebaseapp.com",
-  projectId: "imageopt-pro",
-  storageBucket: "imageopt-pro.appspot.com",
-  messagingSenderId: "135619164867",
-  appId: "1:135619164867:web:20abe6f99ab9d468eac076"
-};
+            apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
+            authDomain: "imageopt-pro.firebaseapp.com",
+            projectId: "imageopt-pro",
+            storageBucket: "imageopt-pro.appspot.com",
+            messagingSenderId: "135619164867",
+            appId: "1:135619164867:web:20abe6f99ab9d468eac076"
+        };
 
         // State management
         const state = {
@@ -1125,27 +1122,35 @@
                     
                     // Проверка аутентификации
                     firebase.auth().onAuthStateChanged(user => {
-                        state.user = user;
                         if (user) {
+                            state.user = user;
                             elements.userEmail.textContent = user.email;
                             checkPremiumStatus();
                         } else {
-                            window.location.href = 'auth.html';
+                            // Гостевой режим
+                            state.user = { email: "guest@example.com", uid: "guest" };
+                            elements.userEmail.textContent = "Гість";
+                            state.isPremium = false;
+                            updatePremiumUI();
                         }
                         renderHistory();
                     });
                 } else {
                     console.warn("Firebase не загружен");
                     // Оффлайн режим
-                    state.user = { email: "guest@example.com" };
+                    state.user = { email: "guest@example.com", uid: "guest" };
                     elements.userEmail.textContent = "Гість";
+                    state.isPremium = false;
+                    updatePremiumUI();
                     renderHistory();
                 }
             } catch (e) {
                 console.error("Ошибка Firebase:", e);
                 // Оффлайн режим при ошибке
-                state.user = { email: "guest@example.com" };
+                state.user = { email: "guest@example.com", uid: "guest" };
                 elements.userEmail.textContent = "Гість (оффлайн)";
+                state.isPremium = false;
+                updatePremiumUI();
                 renderHistory();
             }
             
@@ -1226,17 +1231,25 @@
             
             // Premium and logout
             elements.upgradeBtn.addEventListener('click', () => {
-                window.location.href = 'pay.html';
+                if (!state.user || state.user.uid === "guest") {
+                    showToast("Будь ласка, увійдіть для оновлення до Premium");
+                    setTimeout(() => window.location.href = 'auth.html', 2000);
+                } else {
+                    window.location.href = 'pay.html';
+                }
             });
             
             elements.logoutBtn.addEventListener('click', () => {
-                if (state.firebaseInitialized) {
+                if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
                     firebase.auth().signOut().then(() => {
                         localStorage.removeItem('premiumUser');
-                        window.location.href = 'auth.html';
+                        localStorage.removeItem('userId');
+                        window.location.href = 'index.html';
                     });
                 } else {
-                    window.location.href = 'auth.html';
+                    // For guest users
+                    localStorage.removeItem('premiumUser');
+                    window.location.href = 'index.html';
                 }
             });
         }
@@ -1255,7 +1268,7 @@
 
         // Check premium status
         function checkPremiumStatus() {
-            if (!state.firebaseInitialized || !state.user) {
+            if (!state.firebaseInitialized || !state.user || state.user.uid === "guest") {
                 state.isPremium = false;
                 updatePremiumUI();
                 return;
@@ -1281,9 +1294,17 @@
                 elements.premiumStatus.style.background = 'linear-gradient(135deg, #ffd700, #ff9800)';
                 elements.premiumStatus.style.color = '#333';
                 elements.upgradeBtn.style.display = 'none';
+                
+                // Enable AVIF for premium users
+                const avifOption = document.querySelector('#format option[value="avif"]');
+                if (avifOption) avifOption.disabled = false;
             } else {
                 elements.premiumStatus.style.background = '#a5b1c2';
                 elements.upgradeBtn.style.display = 'block';
+                
+                // Disable AVIF for free users
+                const avifOption = document.querySelector('#format option[value="avif"]');
+                if (avifOption) avifOption.disabled = true;
             }
         }
 
@@ -1673,6 +1694,20 @@
                 return;
             }
 
+            // Free user limitations
+            if (!state.isPremium) {
+                if (state.originalFiles.length > 5) {
+                    showToast("Безкоштовна версія: макс. 5 файлів");
+                    return;
+                }
+                
+                const largeFiles = state.originalFiles.filter(file => file.size > 5 * 1024 * 1024);
+                if (largeFiles.length > 0) {
+                    showToast("Безкоштовна версія: макс. розмір файлу 5MB");
+                    return;
+                }
+            }
+
             elements.processing.style.display = 'block';
             elements.previewSection.style.display = 'none';
             state.optimizedFiles = [];
@@ -2029,7 +2064,7 @@
             localStorage.setItem('imageopt-history', JSON.stringify(state.history));
             
             // Save to Firebase
-            if (state.firebaseInitialized && state.user) {
+            if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
                 state.db.collection("optimizations").add({
                     userId: state.user.uid,
                     ...historyItem,

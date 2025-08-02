@@ -15,4 +15,4 @@ const db = app.firestore();
 
 // Экспорт для использования в других файлах
 window.auth = auth;
-window.db = db;
+window.db = db; 
