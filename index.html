@@ -682,17 +682,18 @@
         
         .crop-handle {
             position: absolute;
-            width: 12px;
-            height: 12px;
+            width: 24px;
+            height: 24px;
             background: var(--accent);
             border-radius: 50%;
             z-index: 10;
+            touch-action: none;
         }
         
-        .handle-nw { top: -6px; left: -6px; cursor: nw-resize; }
-        .handle-ne { top: -6px; right: -6px; cursor: ne-resize; }
-        .handle-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
-        .handle-se { bottom: -6px; right: -6px; cursor: se-resize; }
+        .handle-nw { top: -12px; left: -12px; cursor: nw-resize; }
+        .handle-ne { top: -12px; right: -12px; cursor: ne-resize; }
+        .handle-sw { bottom: -12px; left: -12px; cursor: sw-resize; }
+        .handle-se { bottom: -12px; right: -12px; cursor: se-resize; }
         
         /* Новые стили */
         .progress-container {
@@ -775,6 +776,7 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .btn-premium:hover {
@@ -793,6 +795,60 @@
 
         .btn-logout:hover {
             color: var(--danger);
+        }
+        
+        /* Premium tooltip styles */
+        .premium-tooltip {
+            position: absolute;
+            background: var(--card-bg);
+            color: var(--text-dark);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 300px;
+            z-index: 1000;
+            top: 70px;
+            right: 20px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            text-align: left;
+        }
+        
+        .premium-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        
+        .premium-tooltip h4 {
+            margin-bottom: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .premium-tooltip ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .premium-tooltip li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .premium-tooltip li:last-child {
+            border-bottom: none;
+        }
+        
+        .premium-tooltip li i {
+            color: var(--accent);
         }
 
         @media (max-width: 768px) {
@@ -830,6 +886,12 @@
                 justify-content: center;
                 padding: 8px;
             }
+            
+            .premium-tooltip {
+                width: 280px;
+                right: 10px;
+                top: 60px;
+            }
         }
     </style>
 </head>
@@ -854,9 +916,23 @@
             </div>
             <div class="user-info">
                 <div id="premiumStatus" class="premium-badge">Базовий</div>
-                <button id="upgradeBtn" class="btn-premium">
-                    <i class="fas fa-crown"></i> Premium
-                </button>
+                <div class="premium-tooltip-container">
+                    <button id="upgradeBtn" class="btn-premium">
+                        <i class="fas fa-crown"></i> Premium
+                    </button>
+                    <!-- Premium benefits tooltip -->
+                    <div class="premium-tooltip" id="premiumTooltip">
+                        <h4><i class="fas fa-crown"></i> Premium Переваги</h4>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Оптимізація до 50 зображень одночасно</li>
+                            <li><i class="fas fa-check-circle"></i> Розмір файлу до 15MB</li>
+                            <li><i class="fas fa-check-circle"></i> Формат AVIF</li>
+                            <li><i class="fas fa-check-circle"></i> Без водяних знаків</li>
+                            <li><i class="fas fa-check-circle"></i> Збереження історії обробки</li>
+                            <li><i class="fas fa-check-circle"></i> Пріоритетна обробка</li>
+                        </ul>
+                    </div>
+                </div>
                 <span id="userEmail" style="margin: 0 10px; color: white;"></span>
                 <button id="logoutBtn" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i>
@@ -1057,7 +1133,9 @@
             cropCurrentX: 0,
             cropCurrentY: 0,
             firebaseInitialized: false,
-            db: null
+            db: null,
+            resizing: false,
+            resizeHandle: null
         };
 
         // DOM Elements
@@ -1102,7 +1180,8 @@
             userEmail: document.getElementById('userEmail'),
             premiumStatus: document.getElementById('premiumStatus'),
             upgradeBtn: document.getElementById('upgradeBtn'),
-            logoutBtn: document.getElementById('logoutBtn')
+            logoutBtn: document.getElementById('logoutBtn'),
+            premiumTooltip: document.getElementById('premiumTooltip')
         };
 
         // Initialize application
@@ -1226,6 +1305,22 @@
                 if (e.ctrlKey && e.key === 'z') {
                     resetEditState();
                     showToast('Зміни скасовано!');
+                }
+            });
+            
+            // Premium tooltip
+            elements.upgradeBtn.addEventListener('mouseenter', () => {
+                elements.premiumTooltip.classList.add('show');
+            });
+            
+            elements.upgradeBtn.addEventListener('mouseleave', () => {
+                elements.premiumTooltip.classList.remove('show');
+            });
+            
+            // Для мобильных устройств
+            elements.upgradeBtn.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    elements.premiumTooltip.classList.toggle('show');
                 }
             });
             
@@ -1595,28 +1690,29 @@
             
             // Добавляем обработчики событий
             cropBox.addEventListener('mousedown', startCrop);
-            cropBox.addEventListener('touchstart', handleTouchStart);
-        }
-
-        // Touch handler
-        function handleTouchStart(e) {
-            if (!state.cropMode) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousedown', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
+            cropBox.addEventListener('touchstart', startCrop, { passive: false });
+            
+            // Добавляем обработчики для ручек изменения размера
+            const handleElements = cropBox.querySelectorAll('.crop-handle');
+            handleElements.forEach(handle => {
+                handle.addEventListener('mousedown', startResize);
+                handle.addEventListener('touchstart', startResize, { passive: false });
             });
-            state.cropBox.dispatchEvent(mouseEvent);
         }
         
-        // Начало обрезки
+        // Универсальная функция начала обрезки
         function startCrop(e) {
+            e.preventDefault();
             if (!state.cropMode) return;
             
+            // Определяем тип события (мышь или касание)
+            const isTouch = e.type === 'touchstart';
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            
             state.cropping = true;
-            state.cropStartX = e.clientX;
-            state.cropStartY = e.clientY;
+            state.cropStartX = clientX;
+            state.cropStartY = clientY;
             
             // Позиция элемента обрезки
             const rect = state.cropBox.getBoundingClientRect();
@@ -1625,49 +1721,148 @@
             state.cropBoxWidth = rect.width;
             state.cropBoxHeight = rect.height;
             
+            // Добавляем обработчики перемещения
             document.addEventListener('mousemove', cropMove);
-            document.addEventListener('mouseup', endCrop);
+            document.addEventListener('touchmove', cropMove, { passive: false });
             
-            e.preventDefault();
+            // Добавляем обработчики завершения
+            document.addEventListener('mouseup', endCrop);
+            document.addEventListener('touchend', endCrop);
         }
         
-        // Перемещение при обрезке
+        // Универсальная функция перемещения при обрезке
         function cropMove(e) {
             if (!state.cropMode || !state.cropping) return;
+            e.preventDefault();
             
-            const dx = e.clientX - state.cropStartX;
-            const dy = e.clientY - state.cropStartY;
+            // Определяем тип события
+            const isTouch = e.type === 'touchmove';
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            // Вычисляем смещение
+            const dx = clientX - state.cropStartX;
+            const dy = clientY - state.cropStartY;
             
             // Обновляем позицию элемента обрезки
             state.cropBox.style.left = `${state.cropBoxX + dx}px`;
             state.cropBox.style.top = `${state.cropBoxY + dy}px`;
-            
-            e.preventDefault();
         }
         
-        // Завершение обрезки
-        function endCrop(e) {
+        // Универсальная функция завершения обрезки
+        function endCrop() {
             if (!state.cropMode || !state.cropping) return;
             
             state.cropping = false;
             
             // Удаляем обработчики
             document.removeEventListener('mousemove', cropMove);
+            document.removeEventListener('touchmove', cropMove);
             document.removeEventListener('mouseup', endCrop);
-            
-            // Сохраняем координаты обрезки
-            const rect = state.cropBox.getBoundingClientRect();
-            const imgRect = elements.previewImage.getBoundingClientRect();
-            
-            // Рассчитываем относительные координаты
-            const x = (rect.left - imgRect.left) / imgRect.width;
-            const y = (rect.top - imgRect.top) / imgRect.height;
-            const width = rect.width / imgRect.width;
-            const height = rect.height / imgRect.height;
-            
-            state.crop = { x, y, width, height };
-            
+            document.removeEventListener('touchend', endCrop);
+        }
+        
+        // Универсальная функция начала изменения размера
+        function startResize(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            if (!state.cropMode) return;
+            
+            // Определяем тип события
+            const isTouch = e.type === 'touchstart';
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            state.resizing = true;
+            state.cropStartX = clientX;
+            state.cropStartY = clientY;
+            
+            // Определяем тип ручки
+            state.resizeHandle = e.target.classList[1].split('-')[1]; // например 'se'
+            
+            // Сохраняем текущие параметры области обрезки
+            const rect = state.cropBox.getBoundingClientRect();
+            state.cropBoxX = rect.left;
+            state.cropBoxY = rect.top;
+            state.cropBoxWidth = rect.width;
+            state.cropBoxHeight = rect.height;
+            
+            // Добавляем обработчики перемещения
+            document.addEventListener('mousemove', resizeMove);
+            document.addEventListener('touchmove', resizeMove, { passive: false });
+            
+            // Добавляем обработчики завершения
+            document.addEventListener('mouseup', endResize);
+            document.addEventListener('touchend', endResize);
+        }
+        
+        // Универсальная функция перемещения при изменении размера
+        function resizeMove(e) {
+            if (!state.cropMode || !state.resizing) return;
+            e.preventDefault();
+            
+            // Определяем тип события
+            const isTouch = e.type === 'touchmove';
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+            
+            // Вычисляем смещение
+            const dx = clientX - state.cropStartX;
+            const dy = clientY - state.cropStartY;
+            
+            // Рассчитываем новые размеры в зависимости от типа ручки
+            let newWidth = state.cropBoxWidth;
+            let newHeight = state.cropBoxHeight;
+            let newLeft = state.cropBoxX;
+            let newTop = state.cropBoxY;
+            
+            const minSize = 50; // Минимальный размер области
+            
+            switch(state.resizeHandle) {
+                case 'se': // Нижний правый угол
+                    newWidth = Math.max(minSize, state.cropBoxWidth + dx);
+                    newHeight = Math.max(minSize, state.cropBoxHeight + dy);
+                    break;
+                    
+                case 'sw': // Нижний левый угол
+                    newWidth = Math.max(minSize, state.cropBoxWidth - dx);
+                    newHeight = Math.max(minSize, state.cropBoxHeight + dy);
+                    newLeft = state.cropBoxX + dx;
+                    break;
+                    
+                case 'ne': // Верхний правый угол
+                    newWidth = Math.max(minSize, state.cropBoxWidth + dx);
+                    newHeight = Math.max(minSize, state.cropBoxHeight - dy);
+                    newTop = state.cropBoxY + dy;
+                    break;
+                    
+                case 'nw': // Верхний левый угол
+                    newWidth = Math.max(minSize, state.cropBoxWidth - dx);
+                    newHeight = Math.max(minSize, state.cropBoxHeight - dy);
+                    newLeft = state.cropBoxX + dx;
+                    newTop = state.cropBoxY + dy;
+                    break;
+            }
+            
+            // Применяем изменения
+            state.cropBox.style.width = `${newWidth}px`;
+            state.cropBox.style.height = `${newHeight}px`;
+            state.cropBox.style.left = `${newLeft}px`;
+            state.cropBox.style.top = `${newTop}px`;
+        }
+        
+        // Универсальная функция завершения изменения размера
+        function endResize() {
+            if (!state.cropMode || !state.resizing) return;
+            
+            state.resizing = false;
+            
+            // Удаляем обработчики
+            document.removeEventListener('mousemove', resizeMove);
+            document.removeEventListener('touchmove', resizeMove);
+            document.removeEventListener('mouseup', endResize);
+            document.removeEventListener('touchend', endResize);
         }
         
         // Apply crop
