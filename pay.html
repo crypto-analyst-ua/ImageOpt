@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Оновлення до Premium</title>
+  <script src="https://www.paypal.com/sdk/js?client-id=ATnZIAG3susq8624ujWJL8C5iu3D_1C6lQeYkuESE8VE_v7qonBxxeSFICHlY3dOq9XQD8GwAHne2Uwf&currency=USD"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #6a5af9, #d66efd);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #6a5af9, #4b3df7);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      padding: 30px;
+    }
+    
+    .plan {
+      border: 2px solid #f0f0f0;
+      border-radius: 15px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    
+    .plan.premium {
+      border-color: #ffd700;
+      background: #fffdf0;
+      transform: scale(1.03);
+      box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2);
+    }
+    
+    .plan h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .price {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #6a5af9;
+    }
+    
+    .premium .price {
+      color: #ff9800;
+    }
+    
+    .features {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+    
+    .features li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .features li:last-child {
+      border-bottom: none;
+    }
+    
+    .features li i {
+      color: #6a5af9;
+    }
+    
+    .premium .features li i {
+      color: #ff9800;
+    }
+    
+    .payment-container {
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .paypal-note {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ImageOpt Pro Premium</h1>
+      <p>Розблокуйте всі можливості без обмежень</p>
+    </div>
+    
+    <div class="plans">
+      <div class="plan">
+        <h2>Базовий</h2>
+        <div class="price">Безкоштовно</div>
+        <ul class="features">
+          <li><i class="fas fa-check"></i> Обробка до 5 зображень на день</li>
+          <li><i class="fas fa-check"></i> Макс. розмір файлу: 5MB</li>
+          <li><i class="fas fa-check"></i> Базові налаштування якості</li>
+          <li><i class="fas fa-times"></i> Формат AVIF</li>
+          <li><i class="fas fa-times"></i> Пакетна обробка</li>
+          <li><i class="fas fa-times"></i> Приорітетна підтримка</li>
+        </ul>
+      </div>
+      
+      <div class="plan premium">
+        <h2>Premium</h2>
+        <div class="price">$4.99/міс</div>
+        <ul class="features">
+          <li><i class="fas fa-check"></i> Необмежена обробка зображень</li>
+          <li><i class="fas fa-check"></i> Макс. розмір файлу: 50MB</li>
+          <li><i class="fas fa-check"></i> Розширені налаштування якості</li>
+          <li><i class="fas fa-check"></i> Підтримка формату AVIF</li>
+          <li><i class="fas fa-check"></i> Пакетна обробка</li>
+          <li><i class="fas fa-check"></i> Приорітетна підтримка</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="payment-container">
+      <h2>Оплата через PayPal</h2>
+      <div id="paypalContainer"></div>
+      <p class="paypal-note">
+        <i class="fab fa-paypal"></i> Ваша оплата буде оброблена безпечно через PayPal
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Инициализация Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Состояние приложения
+    const state = {
+      user: null,
+      premium: false
+    };
+
+    // DOM элементы
+    const elements = {
+      paypalContainer: document.getElementById('paypalContainer')
+    };
+
+    // Инициализация
+    async function init() {
+      await checkAuthState();
+      initPayPal();
+    }
+
+    // Проверка состояния аутентификации
+    async function checkAuthState() {
+      return new Promise((resolve) => {
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            state.user = user;
+            await checkPremiumStatus();
+            resolve();
+          } else {
+            // Перенаправление если пользователь не авторизован
+            window.location.href = 'auth.html';
+          }
+        });
+      });
+    }
+
+    // Проверка премиум статуса
+    async function checkPremiumStatus() {
+      const userDoc = await db.collection('users').doc(state.user.uid).get();
+      if (userDoc.exists) {
+        state.premium = userDoc.data().premium || false;
+        if (state.premium) {
+          // Если уже премиум, перенаправляем обратно
+          window.location.href = 'index.html';
+        }
+      }
+    }
+
+    // Инициализация PayPal
+    function initPayPal() {
+      paypal.Buttons({
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: '4.99'
+              }
+            }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(async function(details) {
+            // Обновляем статус пользователя в Firestore
+            await db.collection('users').doc(state.user.uid).update({
+              premium: true,
+              premiumSince: new Date(),
+              paymentId: details.id
+            });
+            
+            alert('Оплата успішна! Ваш акаунт оновлено до Premium');
+            window.location.href = 'index.html';
+          });
+        },
+        onError: function(err) {
+          console.error('PayPal error:', err);
+          alert('Сталася помилка при оплаті: ' + err.message);
+        }
+      }).render('#paypalContainer');
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

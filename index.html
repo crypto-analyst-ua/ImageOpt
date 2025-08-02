@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImageOpt Pro - Покращений Оптимізатор Зображень</title>
+    <title>ImageOpt Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -48,11 +54,15 @@
             color: var(--text-dark);
             transition: background 0.3s ease;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            width: 100%;
         }
 
         header {
@@ -659,12 +669,15 @@
             height: 100%;
             background: rgba(0,0,0,0.5);
             display: none;
+            cursor: crosshair;
         }
         
         .crop-box {
             position: absolute;
             border: 2px solid var(--accent);
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
             cursor: move;
+            display: none;
         }
         
         .crop-handle {
@@ -734,6 +747,54 @@
             margin-top: 10px;
         }
 
+        /* User info styles */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 15px;
+            border-radius: 30px;
+        }
+
+        .premium-badge {
+            background: #a5b1c2;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #ffd700, #ff9800);
+            color: #333;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-logout {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            color: var(--danger);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -763,6 +824,12 @@
             .editor-preview {
                 height: 300px;
             }
+            
+            .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 8px;
+            }
         }
     </style>
 </head>
@@ -786,6 +853,16 @@
                     <i class="fas fa-history"></i>
                 </button>
             </div>
+            <div class="user-info">
+                <span id="userEmail">test@example.com</span>
+                <div id="premiumStatus" class="premium-badge">Базовий</div>
+                <button id="upgradeBtn" class="btn-premium">
+                    <i class="fas fa-crown"></i> Premium
+                </button>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
         </header>
 
         <div class="main-grid">
@@ -805,9 +882,7 @@
                 <div class="editor-container" id="editorContainer">
                     <div class="editor-preview">
                         <img id="previewImage" src="" alt="Попередній перегляд">
-                        <div class="crop-overlay" id="cropOverlay">
-                            <div class="crop-box" id="cropBox"></div>
-                        </div>
+                        <div class="crop-overlay" id="cropOverlay"></div>
                     </div>
                     
                     <div class="edit-notification" id="editNotification">
@@ -869,6 +944,7 @@
                             <option value="jpeg">JPEG</option>
                             <option value="png">PNG</option>
                             <option value="webp">WebP</option>
+                            <option value="avif">AVIF</option>
                         </select>
                     </div>
                     
@@ -943,13 +1019,25 @@
             <h3 class="history-title"><i class="fas fa-history"></i> Історія обробки</h3>
             <button class="close-history" id="closeHistory"><i class="fas fa-times"></i></button>
         </div>
-        <div id="historyList"></div>
+        <div id="historyList">
+            <p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>
+        </div>
     </div>
 
     <!-- Элемент для уведомлений -->
     <div class="toast" id="toast"></div>
 
     <script>
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
+            authDomain: "imageopt-pro.firebaseapp.com",
+            projectId: "imageopt-pro",
+            storageBucket: "imageopt-pro.appspot.com",
+            messagingSenderId: "135619164867",
+            appId: "1:135619164867:web:20abe6f99ab9d468eac076"
+        };
+
         // State management
         const state = {
             originalFiles: [],
@@ -963,7 +1051,16 @@
             editingMode: false,
             cropRatio: 'free',
             cropBox: null,
-            avifSupported: false
+            avifSupported: true,
+            isPremium: localStorage.getItem('premiumUser') === 'true',
+            user: { email: 'test@example.com' },
+            cropMode: false,
+            cropping: false,
+            cropStartX: 0,
+            cropStartY: 0,
+            cropCurrentX: 0,
+            cropCurrentY: 0,
+            firebaseInitialized: false
         };
 
         // DOM Elements
@@ -1000,46 +1097,55 @@
             cropRatios: document.querySelectorAll('.crop-ratio'),
             editNotification: document.getElementById('editNotification'),
             cropOverlay: document.getElementById('cropOverlay'),
-            cropBox: document.getElementById('cropBox'),
             progressText: document.getElementById('progressText'),
             progressBar: document.getElementById('progressBar'),
             watermarkCheckbox: document.getElementById('watermarkCheckbox'),
             autoOptimizeCheckbox: document.getElementById('autoOptimizeCheckbox'),
-            toast: document.getElementById('toast')
+            toast: document.getElementById('toast'),
+            userEmail: document.getElementById('userEmail'),
+            premiumStatus: document.getElementById('premiumStatus'),
+            upgradeBtn: document.getElementById('upgradeBtn'),
+            logoutBtn: document.getElementById('logoutBtn')
         };
 
         // Initialize application
         async function init() {
-            // Check AVIF support
-            state.avifSupported = await checkAvifSupport();
-            if (state.avifSupported) {
-                const avifOption = document.createElement('option');
-                avifOption.value = 'avif';
-                avifOption.textContent = 'AVIF';
-                elements.formatSelect.appendChild(avifOption);
-            }
-            
             // Set theme
             if (state.darkMode) {
                 document.body.setAttribute('data-theme', 'dark');
                 elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
             
+            // Check premium status
+            checkPremiumStatus();
+            
             // Load history
             renderHistory();
             
+            // Инициализация Firebase
+            try {
+                firebase.initializeApp(firebaseConfig);
+                state.firebaseInitialized = true;
+                console.log("Firebase initialized");
+                
+                // Проверка аутентификации
+                firebase.auth().onAuthStateChanged(user => {
+                    if (user) {
+                        state.user.email = user.email;
+                        elements.userEmail.textContent = user.email;
+                        checkPremiumStatus();
+                    } else {
+                        // Автоматический вход для демо
+                        firebase.auth().signInAnonymously()
+                            .catch(error => console.error("Anonymous sign-in error:", error));
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase initialization error", e);
+            }
+            
             // Event listeners
             setupEventListeners();
-        }
-
-        // Check AVIF support
-        async function checkAvifSupport() {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+EERAQAA';
-            });
         }
 
         // Set up all event listeners
@@ -1085,7 +1191,6 @@
                     elements.cropRatios.forEach(r => r.classList.remove('active'));
                     ratio.classList.add('active');
                     state.cropRatio = ratio.dataset.ratio;
-                    updateCropBox();
                 });
             });
             
@@ -1095,6 +1200,21 @@
                     resetEditState();
                     showToast('Зміни скасовано!');
                 }
+            });
+            
+            // Premium and logout
+            elements.upgradeBtn.addEventListener('click', () => {
+                state.isPremium = true;
+                localStorage.setItem('premiumUser', 'true');
+                checkPremiumStatus();
+                showToast('Вітаємо з підпискою Premium!');
+            });
+            
+            elements.logoutBtn.addEventListener('click', () => {
+                state.isPremium = false;
+                localStorage.removeItem('premiumUser');
+                checkPremiumStatus();
+                showToast('Ви вийшли з системи');
             });
         }
 
@@ -1106,6 +1226,20 @@
             setTimeout(() => {
                 elements.toast.classList.remove('show');
             }, duration);
+        }
+
+        // Check premium status
+        function checkPremiumStatus() {
+            elements.premiumStatus.textContent = state.isPremium ? 'Premium' : 'Базовий';
+            
+            if (state.isPremium) {
+                elements.premiumStatus.style.background = 'linear-gradient(135deg, #ffd700, #ff9800)';
+                elements.premiumStatus.style.color = '#333';
+                elements.upgradeBtn.style.display = 'none';
+            } else {
+                elements.premiumStatus.style.background = '#a5b1c2';
+                elements.upgradeBtn.style.display = 'block';
+            }
         }
 
         // Drag and drop handlers
@@ -1144,6 +1278,18 @@
 
         // Add files to the state and preview
         function addFiles(files) {
+            // Free user limitations
+            if (!state.isPremium) {
+                // Max 5 files
+                if (state.originalFiles.length + files.length > 5) {
+                    showToast('Безкоштовні користувачі: макс. 5 файлів');
+                    files = files.slice(0, 5 - state.originalFiles.length);
+                }
+                
+                // Max file size 5MB
+                files = files.filter(file => file.size <= 5 * 1024 * 1024);
+            }
+            
             // Filter out non-image files
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
             
@@ -1227,7 +1373,7 @@
                 
                 // Reset crop
                 state.crop = null;
-                elements.cropOverlay.style.display = 'none';
+                elements.cropOverlay.innerHTML = '';
             };
             
             reader.readAsDataURL(file);
@@ -1294,8 +1440,10 @@
             state.crop = null;
             applyImageTransformations();
             elements.cropControls.style.display = 'none';
+            elements.cropOverlay.innerHTML = '';
             elements.cropOverlay.style.display = 'none';
             elements.editNotification.style.display = 'none';
+            state.cropMode = false;
             
             // Reset crop ratios
             elements.cropRatios.forEach(ratio => ratio.classList.remove('active'));
@@ -1332,216 +1480,123 @@
 
         // Toggle crop mode
         function toggleCropMode() {
-            if (state.originalFiles.length === 0) return;
-            
             if (elements.cropControls.style.display === 'grid') {
                 elements.cropControls.style.display = 'none';
+                elements.cropOverlay.innerHTML = '';
                 elements.cropOverlay.style.display = 'none';
+                state.cropMode = false;
                 return;
             }
             
+            state.cropMode = true;
             elements.cropControls.style.display = 'grid';
             elements.cropOverlay.style.display = 'block';
+            
+            // Инициализация обрезки
+            initCrop();
             showEditNotification('Режим обрізки активовано');
-            initCropBox();
         }
         
-        // Initialize crop box
-        function initCropBox() {
-            const img = elements.previewImage;
-            const container = elements.editorContainer.querySelector('.editor-preview');
+        // Инициализация обрезки
+        function initCrop() {
+            // Создаем элемент для обрезки
+            const cropBox = document.createElement('div');
+            cropBox.className = 'crop-box';
+            cropBox.style.display = 'block';
+            cropBox.style.position = 'absolute';
+            cropBox.style.border = '2px solid var(--accent)';
+            cropBox.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+            cropBox.style.cursor = 'move';
+            cropBox.style.width = '200px';
+            cropBox.style.height = '200px';
+            cropBox.style.left = '50%';
+            cropBox.style.top = '50%';
+            cropBox.style.transform = 'translate(-50%, -50%)';
             
-            // Set initial crop box size (50% of image)
-            const width = img.clientWidth * 0.5;
-            const height = img.clientHeight * 0.5;
-            const left = (img.clientWidth - width) / 2;
-            const top = (img.clientHeight - height) / 2;
-            
-            elements.cropBox.style.width = `${width}px`;
-            elements.cropBox.style.height = `${height}px`;
-            elements.cropBox.style.left = `${left}px`;
-            elements.cropBox.style.top = `${top}px`;
-            
-            // Add crop handles
-            addCropHandles();
-            
-            // Make crop box draggable
-            makeDraggable(elements.cropBox);
-        }
-        
-        // Add crop handles
-        function addCropHandles() {
-            elements.cropBox.innerHTML = '';
-            
-            const handles = [
-                { class: 'handle-nw', position: 'nw' },
-                { class: 'handle-ne', position: 'ne' },
-                { class: 'handle-sw', position: 'sw' },
-                { class: 'handle-se', position: 'se' }
-            ];
-            
-            handles.forEach(handle => {
-                const handleEl = document.createElement('div');
-                handleEl.className = `crop-handle ${handle.class}`;
-                handleEl.dataset.position = handle.position;
-                elements.cropBox.appendChild(handleEl);
-                
-                // Add resize functionality
-                handleEl.addEventListener('mousedown', startResize);
+            // Добавляем ручки для изменения размера
+            const handles = ['nw', 'ne', 'sw', 'se'];
+            handles.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `crop-handle handle-${pos}`;
+                cropBox.appendChild(handle);
             });
+            
+            elements.cropOverlay.innerHTML = '';
+            elements.cropOverlay.appendChild(cropBox);
+            
+            // Сохраняем ссылку на элемент
+            state.cropBox = cropBox;
+            
+            // Добавляем обработчики событий
+            cropBox.addEventListener('mousedown', startCrop);
+            document.addEventListener('mousemove', cropMove);
+            document.addEventListener('mouseup', endCrop);
         }
         
-        // Make element draggable
-        function makeDraggable(element) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        // Начало обрезки
+        function startCrop(e) {
+            if (!state.cropMode) return;
             
-            element.onmousedown = dragMouseDown;
+            state.cropping = true;
+            state.cropStartX = e.clientX;
+            state.cropStartY = e.clientY;
             
-            function dragMouseDown(e) {
-                e.preventDefault();
-                // Get mouse position
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-            }
+            // Позиция элемента обрезки
+            const rect = state.cropBox.getBoundingClientRect();
+            state.cropBoxX = rect.left;
+            state.cropBoxY = rect.top;
+            state.cropBoxWidth = rect.width;
+            state.cropBoxHeight = rect.height;
             
-            function elementDrag(e) {
-                e.preventDefault();
-                // Calculate new position
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                
-                // Set new position
-                element.style.top = (element.offsetTop - pos2) + "px";
-                element.style.left = (element.offsetLeft - pos1) + "px";
-            }
-            
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
-        }
-        
-        // Start resize
-        function startResize(e) {
             e.preventDefault();
-            const handle = e.target;
-            const position = handle.dataset.position;
-            const box = elements.cropBox;
-            
-            let startX = e.clientX;
-            let startY = e.clientY;
-            let startWidth = box.offsetWidth;
-            let startHeight = box.offsetHeight;
-            let startLeft = box.offsetLeft;
-            let startTop = box.offsetTop;
-            
-            document.onmousemove = resize;
-            document.onmouseup = stopResize;
-            
-            function resize(e) {
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                let newWidth = startWidth;
-                let newHeight = startHeight;
-                let newLeft = startLeft;
-                let newTop = startTop;
-                
-                switch(position) {
-                    case 'se':
-                        newWidth = Math.max(50, startWidth + dx);
-                        newHeight = Math.max(50, startHeight + dy);
-                        break;
-                    case 'sw':
-                        newWidth = Math.max(50, startWidth - dx);
-                        newHeight = Math.max(50, startHeight + dy);
-                        newLeft = startLeft + dx;
-                        break;
-                    case 'ne':
-                        newWidth = Math.max(50, startWidth + dx);
-                        newHeight = Math.max(50, startHeight - dy);
-                        newTop = startTop + dy;
-                        break;
-                    case 'nw':
-                        newWidth = Math.max(50, startWidth - dx);
-                        newHeight = Math.max(50, startHeight - dy);
-                        newLeft = startLeft + dx;
-                        newTop = startTop + dy;
-                        break;
-                }
-                
-                // Apply new size and position
-                box.style.width = `${newWidth}px`;
-                box.style.height = `${newHeight}px`;
-                box.style.left = `${newLeft}px`;
-                box.style.top = `${newTop}px`;
-            }
-            
-            function stopResize() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-            }
         }
         
-        // Update crop box based on ratio
-        function updateCropBox() {
-            const img = elements.previewImage;
-            const box = elements.cropBox;
+        // Перемещение при обрезке
+        function cropMove(e) {
+            if (!state.cropMode || !state.cropping) return;
             
-            if (!img || !box) return;
+            const dx = e.clientX - state.cropStartX;
+            const dy = e.clientY - state.cropStartY;
             
-            const currentWidth = box.offsetWidth;
-            const currentHeight = box.offsetHeight;
+            // Обновляем позицию элемента обрезки
+            state.cropBox.style.left = `${state.cropBoxX + dx}px`;
+            state.cropBox.style.top = `${state.cropBoxY + dy}px`;
             
-            let newWidth = currentWidth;
-            let newHeight = currentHeight;
+            e.preventDefault();
+        }
+        
+        // Завершение обрезки
+        function endCrop(e) {
+            if (!state.cropMode || !state.cropping) return;
             
-            if (state.cropRatio !== 'free') {
-                const [ratioX, ratioY] = state.cropRatio.split(':').map(Number);
-                const ratio = ratioX / ratioY;
-                
-                // Calculate new dimensions based on ratio
-                if (currentWidth / currentHeight > ratio) {
-                    newHeight = currentWidth / ratio;
-                } else {
-                    newWidth = currentHeight * ratio;
-                }
-            }
+            state.cropping = false;
             
-            // Apply new size
-            box.style.width = `${newWidth}px`;
-            box.style.height = `${newHeight}px`;
+            // Сохраняем координаты обрезки
+            const rect = state.cropBox.getBoundingClientRect();
+            const imgRect = elements.previewImage.getBoundingClientRect();
+            
+            // Рассчитываем относительные координаты
+            const x = (rect.left - imgRect.left) / imgRect.width;
+            const y = (rect.top - imgRect.top) / imgRect.height;
+            const width = rect.width / imgRect.width;
+            const height = rect.height / imgRect.height;
+            
+            state.crop = { x, y, width, height };
+            
+            e.preventDefault();
         }
         
         // Apply crop
         function applyCrop() {
-            const box = elements.cropBox;
-            const img = elements.previewImage;
-            
-            if (!box || !img) return;
-            
-            // Calculate crop parameters relative to image
-            const scaleX = img.naturalWidth / img.clientWidth;
-            const scaleY = img.naturalHeight / img.clientHeight;
-            
-            const cropX = box.offsetLeft * scaleX;
-            const cropY = box.offsetTop * scaleY;
-            const cropWidth = box.offsetWidth * scaleX;
-            const cropHeight = box.offsetHeight * scaleY;
-            
-            state.crop = {
-                x: cropX,
-                y: cropY,
-                width: cropWidth,
-                height: cropHeight
-            };
-            
             elements.cropControls.style.display = 'none';
             elements.cropOverlay.style.display = 'none';
+            state.cropMode = false;
+            
+            // Удаляем обработчики событий
+            state.cropBox.removeEventListener('mousedown', startCrop);
+            document.removeEventListener('mousemove', cropMove);
+            document.removeEventListener('mouseup', endCrop);
+            
             showEditNotification('Обрізка застосована!');
         }
         
@@ -1549,10 +1604,18 @@
         function cancelCrop() {
             elements.cropControls.style.display = 'none';
             elements.cropOverlay.style.display = 'none';
+            state.cropMode = false;
             state.crop = null;
+            
+            // Удаляем обработчики событий
+            if (state.cropBox) {
+                state.cropBox.removeEventListener('mousedown', startCrop);
+            }
+            document.removeEventListener('mousemove', cropMove);
+            document.removeEventListener('mouseup', endCrop);
         }
 
-        // Process images with batch processing
+        // Process images
         async function processImages() {
             if (state.originalFiles.length === 0) return;
 
@@ -1564,37 +1627,30 @@
             const format = elements.formatSelect.value;
             const maxWidth = elements.maxWidthSelect.value ? parseInt(elements.maxWidthSelect.value) : null;
 
-            // Пакетная обработка (4 файла одновременно)
-            const batchSize = 4;
-            const batches = Math.ceil(state.originalFiles.length / batchSize);
-            
-            for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
-                const start = batchIndex * batchSize;
-                const end = Math.min(start + batchSize, state.originalFiles.length);
-                const batchFiles = state.originalFiles.slice(start, end);
-                
-                await Promise.all(batchFiles.map(async (file, indexInBatch) => {
-                    const fileIndex = start + indexInBatch;
-                    try {
-                        const optimizedFile = await optimizeImage(
-                            file, 
-                            quality, 
-                            format, 
-                            maxWidth, 
-                            fileIndex === state.currentFileIndex
-                        );
-                        state.optimizedFiles[fileIndex] = optimizedFile;
-                    } catch (error) {
-                        console.error('Помилка обробки файлу:', error);
-                        showToast(`Помилка при обробці ${file.name}`, 5000);
-                    }
+            // Process files sequentially
+            for (let i = 0; i < state.originalFiles.length; i++) {
+                const file = state.originalFiles[i];
+                try {
+                    const optimizedFile = await optimizeImage(
+                        file, 
+                        quality, 
+                        format, 
+                        maxWidth, 
+                        i === state.currentFileIndex
+                    );
+                    state.optimizedFiles[i] = optimizedFile;
                     
-                    // Обновление прогресса
-                    const processed = fileIndex + 1;
-                    const progress = Math.round((processed / state.originalFiles.length) * 100);
+                    // Update progress
+                    const progress = Math.round(((i + 1) / state.originalFiles.length) * 100);
                     elements.progressText.textContent = `${progress}%`;
                     elements.progressBar.style.width = `${progress}%`;
-                }));
+                    
+                    // Small delay to show progress
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.error('Помилка обробки файлу:', error);
+                    showToast(`Помилка при обробці ${file.name}`, 5000);
+                }
             }
 
             displayResults();
@@ -1604,7 +1660,7 @@
             showToast('Оптимізацію завершено!');
         }
 
-        // Optimize image with new features
+        // Optimize image
         function optimizeImage(file, quality, format, maxWidth, applyEdits) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
@@ -1656,21 +1712,31 @@
                     
                     // Apply crop if needed
                     if (applyEdits && state.crop) {
-                        const tempCanvas = document.createElement('canvas');
-                        const tempCtx = tempCanvas.getContext('2d');
+                        const { x, y, width: cropWidth, height: cropHeight } = state.crop;
                         
-                        // Create cropped image
-                        tempCanvas.width = state.crop.width;
-                        tempCanvas.height = state.crop.height;
-                        tempCtx.drawImage(
+                        // Calculate crop dimensions
+                        const cropX = x * canvas.width;
+                        const cropY = y * canvas.height;
+                        const cropW = cropWidth * canvas.width;
+                        const cropH = cropHeight * canvas.height;
+                        
+                        // Create new canvas for cropped image
+                        const croppedCanvas = document.createElement('canvas');
+                        croppedCanvas.width = cropW;
+                        croppedCanvas.height = cropH;
+                        const croppedCtx = croppedCanvas.getContext('2d');
+                        
+                        // Draw cropped portion
+                        croppedCtx.drawImage(
                             canvas, 
-                            state.crop.x, state.crop.y, state.crop.width, state.crop.height,
-                            0, 0, state.crop.width, state.crop.height
+                            cropX, cropY, cropW, cropH,
+                            0, 0, cropW, cropH
                         );
                         
-                        canvas.width = state.crop.width;
-                        canvas.height = state.crop.height;
-                        ctx.drawImage(tempCanvas, 0, 0);
+                        // Replace canvas with cropped version
+                        canvas.width = cropW;
+                        canvas.height = cropH;
+                        ctx.drawImage(croppedCanvas, 0, 0);
                     }
                     
                     // Resize if needed
@@ -1693,24 +1759,14 @@
                         addWatermark(ctx, canvas.width, canvas.height);
                     }
 
-                    // Convert to AVIF if selected
-                    if (format === 'avif') {
-                        canvas.toBlob((blob) => {
-                            const optimizedFile = new File([blob], 
-                                file.name.replace(/\.[^/.]+$/, '.avif'), 
-                                { type: 'image/avif' }
-                            );
-                            resolve(optimizedFile);
-                        }, 'image/avif', quality);
-                    } else {
-                        canvas.toBlob((blob) => {
-                            const optimizedFile = new File([blob], 
-                                file.name.replace(/\.[^/.]+$/, `.${format === 'jpeg' ? 'jpg' : format}`), 
-                                { type: `image/${format}` }
-                            );
-                            resolve(optimizedFile);
-                        }, `image/${format}`, quality);
-                    }
+                    // Convert to selected format
+                    canvas.toBlob((blob) => {
+                        const optimizedFile = new File([blob], 
+                            file.name.replace(/\.[^/.]+$/, `.${format === 'jpeg' ? 'jpg' : format}`), 
+                            { type: `image/${format}` }
+                        );
+                        resolve(optimizedFile);
+                    }, `image/${format}`, quality);
                 };
 
                 img.src = URL.createObjectURL(file);
@@ -1736,6 +1792,7 @@
 
             state.originalFiles.forEach((originalFile, index) => {
                 const optimizedFile = state.optimizedFiles[index];
+                if (!optimizedFile) return;
                 
                 totalOriginalSize += originalFile.size;
                 totalOptimizedSize += optimizedFile.size;
@@ -1752,7 +1809,6 @@
                     <div class="file-info">
                         <div><strong>${originalFile.name}</strong></div>
                         <div>Розмір: ${formatFileSize(originalFile.size)}</div>
-                        <div>Розмірність: ${getImageDimensions(originalFile)}</div>
                     </div>
                 `;
 
@@ -1764,7 +1820,6 @@
                     <div class="file-info">
                         <div><strong>${optimizedFile.name}</strong></div>
                         <div>Розмір: ${formatFileSize(optimizedFile.size)}</div>
-                        <div>Розмірність: ${getImageDimensions(optimizedFile)}</div>
                         <div>Економія: ${Math.round((1 - optimizedFile.size / originalFile.size) * 100)}%</div>
                     </div>
                 `;
@@ -1774,43 +1829,35 @@
             });
 
             // Display stats
-            const compressionRatio = Math.round((1 - totalOptimizedSize / totalOriginalSize) * 100);
-            const savings = formatFileSize(totalOriginalSize - totalOptimizedSize);
-            elements.stats.innerHTML = `
-                <div class="stat-item">
-                    <div class="stat-value">${state.originalFiles.length}</div>
-                    <div class="stat-label">Файлів</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${formatFileSize(totalOriginalSize)}</div>
-                    <div class="stat-label">Оригінальний розмір</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${formatFileSize(totalOptimizedSize)}</div>
-                    <div class="stat-label">Оптимізований розмір</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${compressionRatio}%</div>
-                    <div class="stat-label">Економія</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${savings}</div>
-                    <div class="stat-label">Заощаджено</div>
-                </div>
-            `;
+            if (state.originalFiles.length > 0) {
+                const compressionRatio = Math.round((1 - totalOptimizedSize / totalOriginalSize) * 100);
+                const savings = formatFileSize(totalOriginalSize - totalOptimizedSize);
+                
+                elements.stats.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-value">${state.originalFiles.length}</div>
+                        <div class="stat-label">Файлів</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${formatFileSize(totalOriginalSize)}</div>
+                        <div class="stat-label">Оригінальний розмір</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${formatFileSize(totalOptimizedSize)}</div>
+                        <div class="stat-label">Оптимізований розмір</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${compressionRatio}%</div>
+                        <div class="stat-label">Економія</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${savings}</div>
+                        <div class="stat-label">Заощаджено</div>
+                    </div>
+                `;
+            }
 
             elements.downloadBtn.disabled = false;
-        }
-
-        // Get image dimensions
-        function getImageDimensions(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = function() {
-                    resolve(`${this.width}×${this.height}`);
-                };
-                img.src = URL.createObjectURL(file);
-            }).then(dimensions => dimensions);
         }
 
         // Format file size
@@ -1908,6 +1955,20 @@
             // Save to localStorage
             localStorage.setItem('imageopt-history', JSON.stringify(state.history));
             
+            // Save to Firebase
+            if (state.firebaseInitialized && firebase.auth().currentUser) {
+                const db = firebase.firestore();
+                const userId = firebase.auth().currentUser.uid;
+                
+                db.collection("optimizations").add({
+                    userId,
+                    ...historyItem,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(docRef => console.log("Optimization saved to Firestore:", docRef.id))
+                .catch(error => console.error("Error saving to Firestore:", error));
+            }
+            
             // Update UI
             renderHistory();
         }
@@ -1962,7 +2023,5 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>
