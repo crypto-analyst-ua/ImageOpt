@@ -8,9 +8,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="firebase.js"></script>
-  <script src="auth.js"></script>
+  <script src="auth.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Стили остаются без изменений */
     * {
       margin: 0;
       padding: 0;
@@ -128,6 +128,7 @@
       border-radius: 8px;
       text-align: center;
       font-weight: 500;
+      display: none;
     }
     
     .success {
@@ -158,6 +159,7 @@
       text-decoration: none;
       font-weight: 500;
       transition: color 0.3s;
+      cursor: pointer;
     }
     
     .reset-link a:hover {
@@ -185,16 +187,16 @@
       </div>
       
       <div class="btn-group">
-        <button class="btn-secondary" onclick="window.signUp()">
+        <button class="btn-secondary" onclick="signUp()">
           <i class="fas fa-user-plus"></i> Реєстрація
         </button>
-        <button class="btn-primary" onclick="window.signIn()">
+        <button class="btn-primary" onclick="signIn()">
           <i class="fas fa-sign-in-alt"></i> Вхід
         </button>
       </div>
       
       <div class="reset-link">
-        <a href="#" onclick="resetPassword()">Забули пароль?</a>
+        <a onclick="resetPassword()">Забули пароль?</a>
       </div>
       
       <div id="message"></div>
@@ -204,75 +206,5 @@
       <p>© 2025 ImageOpt Pro. Усі права захищено.</p>
     </div>
   </div>
-
-  <!-- Font Awesome для иконок -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-  
-  <script>
-    // Инициализация Firebase
-    document.addEventListener('DOMContentLoaded', () => {
-      // Обработка состояния аутентификации
-      firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          window.location.href = "index.html";
-        }
-      });
-
-      // Обработка Enter в полях ввода
-      document.getElementById("email").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          window.signIn();
-        }
-      });
-      
-      document.getElementById("password").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          window.signIn();
-        }
-      });
-    });
-
-    // Валидация email
-    function validateEmail(email) {
-      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(String(email).toLowerCase());
-    }
-
-    // Восстановление пароля
-    function resetPassword() {
-      const email = document.getElementById("email").value;
-      if (!email) {
-        email = prompt("Введіть ваш email для відновлення пароля:");
-      }
-      
-      if (email) {
-        if (validateEmail(email)) {
-          firebase.auth().sendPasswordResetEmail(email)
-            .then(() => {
-              showMessage("Лист для відновлення пароля відправлено на вашу пошту!", "success");
-            })
-            .catch(error => {
-              console.error("Помилка відновлення пароля:", error);
-              showMessage("Помилка: " + error.message, "error");
-            });
-        } else {
-          showMessage("Будь ласка, введіть коректний email", "error");
-        }
-      }
-    }
-
-    // Показать сообщение
-    function showMessage(text, type) {
-      const messageDiv = document.getElementById("message");
-      messageDiv.textContent = text;
-      messageDiv.className = type;
-      messageDiv.style.display = "block";
-      
-      // Автоскрытие сообщения через 5 секунд
-      setTimeout(() => {
-        messageDiv.style.display = "none";
-      }, 5000);
-    }
-  </script>
 </body>
 </html>
