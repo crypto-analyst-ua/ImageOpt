@@ -8,11 +8,20 @@ const firebaseConfig = {
   appId: "1:135619164867:web:20abe6f99ab9d468eac076"
 };
 
-// Инициализация Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = app.auth();
-const db = app.firestore();
+// Проверка инициализации Firebase
+let app;
+let auth;
+let db;
+
+if (!firebase.apps.length) {
+  app = firebase.initializeApp(firebaseConfig);
+} else {
+  app = firebase.app();
+}
+
+auth = firebase.auth();
+db = firebase.firestore();
 
 // Экспорт для использования в других файлах
 window.auth = auth;
-window.db = db; 
+window.db = db;

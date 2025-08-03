@@ -10,6 +10,7 @@
   <script src="firebase.js"></script>
   <script src="auth.js"></script>
   <style>
+    /* Стили остаются без изменений */
     * {
       margin: 0;
       padding: 0;
@@ -146,6 +147,23 @@
       color: #666;
       font-size: 0.9rem;
     }
+    
+    .reset-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+    
+    .reset-link a {
+      color: #6a5af9;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    
+    .reset-link a:hover {
+      color: #4b3df7;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -175,6 +193,10 @@
         </button>
       </div>
       
+      <div class="reset-link">
+        <a href="#" onclick="resetPassword()">Забули пароль?</a>
+      </div>
+      
       <div id="message"></div>
     </div>
     
@@ -187,19 +209,70 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   
   <script>
-    // Обработка отправки формы по Enter
-    document.getElementById("password").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        window.signIn();
-      }
+    // Инициализация Firebase
+    document.addEventListener('DOMContentLoaded', () => {
+      // Обработка состояния аутентификации
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          window.location.href = "index.html";
+        }
+      });
+
+      // Обработка Enter в полях ввода
+      document.getElementById("email").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          window.signIn();
+        }
+      });
+      
+      document.getElementById("password").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          window.signIn();
+        }
+      });
     });
-    
-    // Если пользователь уже вошел, перенаправляем на главную
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        window.location.href = "index.html";
+
+    // Валидация email
+    function validateEmail(email) {
+      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    // Восстановление пароля
+    function resetPassword() {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        email = prompt("Введіть ваш email для відновлення пароля:");
       }
-    });
+      
+      if (email) {
+        if (validateEmail(email)) {
+          firebase.auth().sendPasswordResetEmail(email)
+            .then(() => {
+              showMessage("Лист для відновлення пароля відправлено на вашу пошту!", "success");
+            })
+            .catch(error => {
+              console.error("Помилка відновлення пароля:", error);
+              showMessage("Помилка: " + error.message, "error");
+            });
+        } else {
+          showMessage("Будь ласка, введіть коректний email", "error");
+        }
+      }
+    }
+
+    // Показать сообщение
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById("message");
+      messageDiv.textContent = text;
+      messageDiv.className = type;
+      messageDiv.style.display = "block";
+      
+      // Автоскрытие сообщения через 5 секунд
+      setTimeout(() => {
+        messageDiv.style.display = "none";
+      }, 5000);
+    }
   </script>
 </body>
 </html>

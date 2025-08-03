@@ -4,15 +4,13 @@ function signUp() {
   
   // Валидация email
   if (!validateEmail(email)) {
-    document.getElementById("message").innerText = "Некоректний email";
-    document.getElementById("message").className = "error";
+    showMessage("Некоректний email", "error");
     return;
   }
   
   // Валидация пароля
   if (password.length < 6) {
-    document.getElementById("message").innerText = "Пароль повинен містити принаймні 6 символів";
-    document.getElementById("message").className = "error";
+    showMessage("Пароль повинен містити принаймні 6 символів", "error");
     return;
   }
   
@@ -21,20 +19,19 @@ function signUp() {
   btn.disabled = true;
   btn.innerHTML = "Завантаження...";
   
-  window.auth.createUserWithEmailAndPassword(email, password)
+  firebase.auth().createUserWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      document.getElementById("message").innerText = "Реєстрація успішна!";
-      document.getElementById("message").className = "success";
+      showMessage("Реєстрація успішна!", "success");
       
       // Устанавливаем статус премиум по умолчанию
-      window.db.collection("users").doc(userCredential.user.uid).set({ 
+      firebase.firestore().collection("users").doc(userCredential.user.uid).set({ 
         premium: false 
+      }).then(() => {
+        // Редирект на страницу оплаты после регистрации
+        setTimeout(() => {
+          window.location.href = "pay.html";
+        }, 2000);
       });
-      
-      // Редирект на страницу оплаты после регистрации
-      setTimeout(() => {
-        window.location.href = "pay.html";
-      }, 2000);
     })
     .catch((error) => {
       let message = "Помилка реєстрації";
@@ -48,9 +45,10 @@ function signUp() {
         case "auth/weak-password":
           message = "Пароль занадто слабкий";
           break;
+        default:
+          message = error.message;
       }
-      document.getElementById("message").innerText = message;
-      document.getElementById("message").className = "error";
+      showMessage(message, "error");
     })
     .finally(() => {
       btn.disabled = false;
@@ -67,18 +65,17 @@ function signIn() {
   btn.disabled = true;
   btn.innerHTML = "Завантаження...";
   
-  window.auth.signInWithEmailAndPassword(email, password)
+  firebase.auth().signInWithEmailAndPassword(email, password)
     .then(async (userCredential) => {
       // Проверяем премиум-статус
-      const userDoc = await window.db.collection('users').doc(userCredential.user.uid).get();
+      const userDoc = await firebase.firestore().collection('users').doc(userCredential.user.uid).get();
       const isPremium = userDoc.exists ? userDoc.data().premium || false : false;
       
       // Сохраняем статус в localStorage
       localStorage.setItem('premiumUser', isPremium);
       localStorage.setItem('userId', userCredential.user.uid);
       
-      document.getElementById("message").innerText = "Вхід виконано!";
-      document.getElementById("message").className = "success";
+      showMessage("Вхід виконано!", "success");
       setTimeout(() => {
         window.location.href = "index.html";
       }, 1000);
@@ -95,9 +92,10 @@ function signIn() {
         case "auth/invalid-email":
           message = "Некоректний email";
           break;
+        default:
+          message = error.message;
       }
-      document.getElementById("message").innerText = message;
-      document.getElementById("message").className = "error";
+      showMessage(message, "error");
     })
     .finally(() => {
       btn.disabled = false;
@@ -111,6 +109,22 @@ function validateEmail(email) {
   return re.test(email);
 }
 
+// Показать сообщение
+function showMessage(text, type) {
+  const messageDiv = document.getElementById("message");
+  messageDiv.textContent = text;
+  messageDiv.className = type;
+  messageDiv.style.display = "block";
+  
+  // Автоскрытие сообщения через 5 секунд
+  setTimeout(() => {
+    messageDiv.style.display = "none";
+  }, 5000);
+}
+
 // Экспорт функций для использования в HTML
 window.signUp = signUp;
 window.signIn = signIn;
+window.resetPassword = resetPassword;
+window.validateEmail = validateEmail;
+window.showMessage = showMessage;
