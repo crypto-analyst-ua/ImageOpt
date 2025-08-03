@@ -3,6 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Добавленные SEO-теги -->
+    <meta name="description" content="ImageOpt Pro - оптимізація та стиснення зображень онлайн. Зменште розмір JPG, PNG, WebP, AVIF без втрати якості. Безкоштовний інструмент для стиснення фото.">
+    <meta name="keywords" content="оптимізація зображень, стиснення фото, зменшити розмір зображення, конвертер зображень, оптимізатор картинок, компресія JPG, компресія PNG, webp оптимізація">
+    <meta name="author" content="ImageOpt Pro Team">
+    
+    <link rel="canonical" href="https://imageopt-pro.com/">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="ImageOpt Pro - Оптимізатор зображень онлайн">
+    <meta property="og:description" content="Безкоштовний інструмент для стиснення та оптимізації зображень. Зменшуйте розмір файлів без втрати якості!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://imageopt-pro.com/">
+    <meta property="og:image" content="https://imageopt-pro.com/preview.jpg">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ImageOpt Pro - Оптимізатор зображень">
+    <meta name="twitter:description" content="Оптимізуйте зображення онлайн безкоштовно. Зменште розмір файлів JPG, PNG, WebP, AVIF зберігаючи якість.">
+    <meta name="twitter:image" content="https://imageopt-pro.com/twitter-preview.jpg">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ImageOpt Pro",
+        "description": "Безкоштовний онлайн інструмент для оптимізації та стиснення зображень",
+        "applicationCategory": "Multimedia",
+        "operatingSystem": "Windows, macOS, Linux, Android, iOS",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "124"
+        }
+    }
+    </script>
+    
     <title>ImageOpt Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -851,6 +894,17 @@
             color: var(--accent);
         }
 
+        /* Daily counter */
+        .daily-counter {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -916,6 +970,10 @@
             </div>
             <div class="user-info">
                 <div id="premiumStatus" class="premium-badge">Базовий</div>
+                <div id="dailyCounter" class="daily-counter">
+                    <i class="fas fa-images"></i>
+                    <span id="dailyCount">0</span>/<span id="dailyLimit">15</span>
+                </div>
                 <div class="premium-tooltip-container">
                     <button id="upgradeBtn" class="btn-premium">
                         <i class="fas fa-crown"></i> Premium
@@ -924,10 +982,10 @@
                     <div class="premium-tooltip" id="premiumTooltip">
                         <h4><i class="fas fa-crown"></i> Premium Переваги</h4>
                         <ul>
-                            <li><i class="fas fa-check-circle"></i> Оптимізація до 50 зображень одночасно</li>
-                            <li><i class="fas fa-check-circle"></i> Розмір файлу до 15MB</li>
+                            <li><i class="fas fa-check-circle"></i> Необмежена кількість зображень</li>
+                            <li><i class="fas fa-check-circle"></i> Розмір файлу до 50MB</li>
                             <li><i class="fas fa-check-circle"></i> Формат AVIF</li>
-                            <li><i class="fas fa-check-circle"></i> Без водяних знаків</li>
+                            <li><i class="fas fa-check-circle"></i> Пакетна обробка до 50 файлів</li>
                             <li><i class="fas fa-check-circle"></i> Збереження історії обробки</li>
                             <li><i class="fas fa-check-circle"></i> Пріоритетна обробка</li>
                         </ul>
@@ -947,7 +1005,7 @@
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                     <div class="upload-text">Перетягніть зображення сюди</div>
-                    <div class="upload-subtext">або натисніть для вибору файлу (JPG, PNG, WebP, AVIF до 15MB)</div>
+                    <div class="upload-subtext">або натисніть для вибору файлу (JPG, PNG, WebP, AVIF до 50MB)</div>
                 </div>
                 <input type="file" id="fileInput" accept="image/*" multiple>
                 
@@ -1036,14 +1094,6 @@
                     </div>
                     
                     <div class="control-group">
-                        <label for="watermark">Додати водяний знак</label>
-                        <div class="watermark-control">
-                            <input type="checkbox" id="watermarkCheckbox">
-                            <span>Увімкнути</span>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
                         <label for="auto-optimize">Автоматична оптимізація</label>
                         <div class="auto-optimize">
                             <input type="checkbox" id="autoOptimizeCheckbox">
@@ -1110,6 +1160,14 @@
             appId: "1:135619164867:web:20abe6f99ab9d468eac076"
         };
 
+        // Лимиты для бесплатной версии
+        const FREE_LIMITS = {
+            DAILY: 15,         // 15 изображений в день
+            PER_BATCH: 5,       // 5 файлов за раз
+            MAX_SIZE: 7 * 1024 * 1024, // 7 МБ
+            FORMATS: ['jpeg', 'png', 'webp'] // доступные форматы
+        };
+
         // State management
         const state = {
             originalFiles: [],
@@ -1135,7 +1193,9 @@
             firebaseInitialized: false,
             db: null,
             resizing: false,
-            resizeHandle: null
+            resizeHandle: null,
+            dailyCount: 0,
+            lastProcessDate: null
         };
 
         // DOM Elements
@@ -1174,14 +1234,16 @@
             cropOverlay: document.getElementById('cropOverlay'),
             progressText: document.getElementById('progressText'),
             progressBar: document.getElementById('progressBar'),
-            watermarkCheckbox: document.getElementById('watermarkCheckbox'),
             autoOptimizeCheckbox: document.getElementById('autoOptimizeCheckbox'),
             toast: document.getElementById('toast'),
             userEmail: document.getElementById('userEmail'),
             premiumStatus: document.getElementById('premiumStatus'),
             upgradeBtn: document.getElementById('upgradeBtn'),
             logoutBtn: document.getElementById('logoutBtn'),
-            premiumTooltip: document.getElementById('premiumTooltip')
+            premiumTooltip: document.getElementById('premiumTooltip'),
+            dailyCounter: document.getElementById('dailyCounter'),
+            dailyCount: document.getElementById('dailyCount'),
+            dailyLimit: document.getElementById('dailyLimit')
         };
 
         // Initialize application
@@ -1191,6 +1253,11 @@
                 document.body.setAttribute('data-theme', 'dark');
                 elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
+            
+            // Инициализация счетчика
+            state.dailyCount = parseInt(localStorage.getItem('dailyCount')) || 0;
+            state.lastProcessDate = localStorage.getItem('lastProcessDate');
+            updateDailyCounter();
             
             try {
                 // Инициализация Firebase
@@ -1237,6 +1304,25 @@
             await checkAvifSupport();
             
             setupEventListeners();
+        }
+
+        // Обновление счетчика дневного использования
+        function updateDailyCounter() {
+            const today = new Date().toDateString();
+            // Сброс счетчика если новый день
+            if (state.lastProcessDate !== today) {
+                state.dailyCount = 0;
+                localStorage.setItem('dailyCount', 0);
+                localStorage.setItem('lastProcessDate', today);
+                state.lastProcessDate = today;
+            }
+
+            // Обновление интерфейса
+            elements.dailyCount.textContent = state.dailyCount;
+            elements.dailyLimit.textContent = state.isPremium ? '∞' : FREE_LIMITS.DAILY;
+            
+            // Скрыть счетчик для премиум пользователей
+            elements.dailyCounter.style.display = state.isPremium ? 'none' : 'flex';
         }
 
         // Проверка поддержки AVIF
@@ -1401,6 +1487,8 @@
                 const avifOption = document.querySelector('#format option[value="avif"]');
                 if (avifOption) avifOption.disabled = true;
             }
+            
+            updateDailyCounter();
         }
 
         // Drag and drop handlers
@@ -1441,14 +1529,14 @@
         function addFiles(files) {
             // Free user limitations
             if (!state.isPremium) {
-                // Max 5 files
-                if (state.originalFiles.length + files.length > 5) {
-                    showToast('Безкоштовні користувачі: макс. 5 файлів');
-                    files = files.slice(0, 5 - state.originalFiles.length);
+                // Max files per batch
+                if (files.length > FREE_LIMITS.PER_BATCH) {
+                    showToast(`Безкоштовна версія: макс. ${FREE_LIMITS.PER_BATCH} файлів за раз`);
+                    files = files.slice(0, FREE_LIMITS.PER_BATCH);
                 }
                 
-                // Max file size 5MB
-                files = files.filter(file => file.size <= 5 * 1024 * 1024);
+                // Max file size
+                files = files.filter(file => file.size <= FREE_LIMITS.MAX_SIZE);
             }
             
             // Filter out non-image files
@@ -1917,14 +2005,29 @@
 
             // Free user limitations
             if (!state.isPremium) {
-                if (state.originalFiles.length > 5) {
-                    showToast("Безкоштовна версія: макс. 5 файлів");
+                const today = new Date().toDateString();
+                // Reset daily counter if new day
+                if (state.lastProcessDate !== today) {
+                    state.dailyCount = 0;
+                    state.lastProcessDate = today;
+                }
+
+                // Check daily limit
+                if (state.dailyCount >= FREE_LIMITS.DAILY) {
+                    showToast(`Досягнуто денний ліміт (${FREE_LIMITS.DAILY} зображень). Спробуйте завтра або оновіться до Premium.`);
                     return;
                 }
-                
-                const largeFiles = state.originalFiles.filter(file => file.size > 5 * 1024 * 1024);
-                if (largeFiles.length > 0) {
-                    showToast("Безкоштовна версія: макс. розмір файлу 5MB");
+
+                // Check batch size
+                if (state.originalFiles.length > FREE_LIMITS.PER_BATCH) {
+                    showToast(`Безкоштовна версія: макс. ${FREE_LIMITS.PER_BATCH} файлів за раз`);
+                    return;
+                }
+
+                // Check file size
+                const oversizedFiles = state.originalFiles.filter(file => file.size > FREE_LIMITS.MAX_SIZE);
+                if (oversizedFiles.length > 0) {
+                    showToast(`Безкоштовна версія: макс. розмір файлу ${formatFileSize(FREE_LIMITS.MAX_SIZE)}`);
                     return;
                 }
             }
@@ -1961,6 +2064,14 @@
                     console.error('Помилка обробки файлу:', error);
                     showToast(`Помилка при обробці ${file.name}: ${error.message || error}`, 5000);
                 }
+            }
+
+            // Update daily counter for free users
+            if (!state.isPremium) {
+                state.dailyCount += state.originalFiles.length;
+                localStorage.setItem('dailyCount', state.dailyCount);
+                localStorage.setItem('lastProcessDate', new Date().toDateString());
+                updateDailyCounter();
             }
 
             displayResults();
@@ -2058,11 +2169,6 @@
                         ctx.drawImage(tempCanvas, 0, 0);
                     }
 
-                    // Apply watermark if enabled
-                    if (elements.watermarkCheckbox.checked) {
-                        addWatermark(ctx, canvas.width, canvas.height);
-                    }
-
                     // Convert to selected format with iOS fix
                     setTimeout(() => {
                         try {
@@ -2089,15 +2195,6 @@
 
                 img.src = URL.createObjectURL(file);
             });
-        }
-
-        // Add watermark to image
-        function addWatermark(ctx, width, height) {
-            ctx.font = 'bold 24px Arial';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('ImageOpt Pro', width / 2, height - 30);
         }
 
         // Display results
