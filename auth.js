@@ -31,8 +31,10 @@ function signUp() {
         premium: false 
       });
       
-      // Автоматический вход после регистрации
-      setTimeout(() => signIn(), 1500);
+      // Редирект на страницу оплаты после регистрации
+      setTimeout(() => {
+        window.location.href = "pay.html";
+      }, 2000);
     })
     .catch((error) => {
       let message = "Помилка реєстрації";
@@ -111,4 +113,4 @@ function validateEmail(email) {
 
 // Экспорт функций для использования в HTML
 window.signUp = signUp;
-window.signIn = signIn; 
+window.signIn = signIn;

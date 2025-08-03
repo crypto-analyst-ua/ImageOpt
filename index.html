@@ -2015,6 +2015,36 @@
                 // Check daily limit
                 if (state.dailyCount >= FREE_LIMITS.DAILY) {
                     showToast(`Досягнуто денний ліміт (${FREE_LIMITS.DAILY} зображень). Спробуйте завтра або оновіться до Premium.`);
+                    
+                    // Show upgrade button
+                    const upgradeBtn = document.createElement('button');
+                    upgradeBtn.textContent = 'Оновити до Premium';
+                    upgradeBtn.className = 'btn-premium';
+                    upgradeBtn.style.marginTop = '15px';
+                    upgradeBtn.style.padding = '10px 20px';
+                    upgradeBtn.style.fontSize = '1rem';
+                    
+                    upgradeBtn.onclick = () => {
+                        if (!state.user || state.user.uid === "guest") {
+                            window.location.href = 'auth.html';
+                        } else {
+                            window.location.href = 'pay.html';
+                        }
+                    };
+                    
+                    showToast(`Досягнуто денний ліміт!`, 5000);
+                    elements.processing.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <p style="margin-bottom: 20px; font-size: 1.2rem;">
+                                Досягнуто денний ліміт (${FREE_LIMITS.DAILY} зображень)
+                            </p>
+                            <p style="margin-bottom: 20px;">
+                                Оновіться до Premium для безлімітної обробки
+                            </p>
+                        </div>
+                    `;
+                    elements.processing.appendChild(upgradeBtn);
+                    elements.processing.style.display = 'block';
                     return;
                 }
 

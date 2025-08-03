@@ -153,7 +153,7 @@
         <h2>Базовий</h2>
         <div class="price">Безкоштовно</div>
         <ul class="features">
-          <li><i class="fas fa-check"></i> Обробка до 5 зображень на день</li>
+          <li><i class="fas fa-check"></i> Обробка до 15 зображень на день</li>
           <li><i class="fas fa-check"></i> Макс. розмір файлу: 5MB</li>
           <li><i class="fas fa-check"></i> Базові налаштування якості</li>
           <li><i class="fas fa-times"></i> Формат AVIF</li>
@@ -290,7 +290,10 @@
             localStorage.setItem('premiumUser', 'true');
             
             alert('Оплата успішна! Ваш акаунт оновлено до Premium');
-            window.location.href = 'index.html';
+            // Редирект на главную страницу
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 2000);
           });
         },
         onError: function(err) {
