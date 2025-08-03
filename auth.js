@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', initAuth);
 function initAuth() {
   // Проверка состояния аутентификации
   firebase.auth().onAuthStateChanged(user => {
-    if (user) window.location.href = "index.html";
+    if (user && user.uid !== "guest") {
+      window.location.href = "index.html";
+    }
   });
 
   // Обработчики Enter
@@ -18,7 +20,7 @@ function initAuth() {
 }
 
 async function signUp() {
-  const email = document.getElementById("email").value;
+  const email = sanitizeInput(document.getElementById("email").value);
   const password = document.getElementById("password").value;
   
   // Валидация
@@ -53,7 +55,7 @@ async function signUp() {
 }
 
 async function signIn() {
-  const email = document.getElementById("email").value;
+  const email = sanitizeInput(document.getElementById("email").value);
   const password = document.getElementById("password").value;
   
   const btn = document.querySelector('button[onclick="signIn()"]');
@@ -85,7 +87,7 @@ async function signIn() {
 }
 
 function resetPassword() {
-  let email = document.getElementById("email").value;
+  let email = sanitizeInput(document.getElementById("email").value);
   
   if (!email) {
     email = prompt("Введіть ваш email для відновлення пароля:");
@@ -159,4 +161,11 @@ function handleAuthError(error, context) {
                 error.message;
   
   showMessage(message, "error");
+}
+
+// Защита от XSS
+function sanitizeInput(input) {
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
 }
