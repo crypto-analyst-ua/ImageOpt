@@ -675,7 +675,7 @@
         
         .crop-preview {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr));
             gap: 10px;
             margin-top: 15px;
         }
@@ -1838,14 +1838,7 @@
             });
             
             // Premium and logout
-            elements.upgradeBtn.addEventListener('click', () => {
-                if (!state.user || state.user.uid === "guest") {
-                    showToast("Будь ласка, увійдіть для оновлення до Premium");
-                    setTimeout(() => window.location.href = 'auth.html', 2000);
-                } else {
-                    window.location.href = 'pay.html';
-                }
-            });
+            elements.upgradeBtn.addEventListener('click', handlePremiumUpgrade);
             
             elements.logoutBtn.addEventListener('click', () => {
                 if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
@@ -1863,6 +1856,20 @@
             
             // Добавляем обработчик для кнопки PDF
             elements.savePdfBtn.addEventListener('click', saveAsPDF);
+        }
+
+        // Обработчик для кнопки премиум
+        function handlePremiumUpgrade() {
+            if (!state.user || state.user.uid === "guest") {
+                showToast("Будь ласка, увійдіть для оформлення Premium");
+                setTimeout(() => {
+                    // Перенаправляем на страницу аутентификации
+                    window.location.href = 'auth.html';
+                }, 2000);
+            } else {
+                // Перенаправляем на страницу оплаты
+                window.location.href = 'pay.html';
+            }
         }
 
         // Установка режима пакетного редактирования
@@ -2962,195 +2969,195 @@
                 const contentWidth = pageWidth - padding * 2;
                 const contentHeight = pageHeight - padding * 2;
                 
-                for (let i = 0; i < state.optimizedFiles.length; i++) {
-                    const file = state.optimizedFiles[i];
-                    
-                    // Добавляем новую страницу для каждого изображения (кроме первого)
-                    if (i > 0) {
-                        doc.addPage();
-                    }
-                    
-                    // Конвертируем файл в Data URL
-                    const dataUrl = await fileToDataUrl(file);
-                    
-                    // Получаем размеры изображения
-                    const img = new Image();
-                    await new Promise((resolve) => {
-                        img.onload = resolve;
-                        img.src = dataUrl;
-                    });
-                    
-                    // Рассчитываем размеры для вставки в PDF (с сохранением пропорций)
-                    const aspectRatio = img.width / img.height;
-                    let imgWidth = contentWidth;
-                    let imgHeight = contentWidth / aspectRatio;
-                    
-                    // Если изображение слишком высокое, уменьшаем по высоте
-                    if (imgHeight > contentHeight) {
-                        imgHeight = contentHeight;
-                        imgWidth = contentHeight * aspectRatio;
-                    }
-                    
-                    // Центрируем изображение
-                    const xPosition = (pageWidth - imgWidth) / 2;
-                    const yPosition = (pageHeight - imgHeight) / 2;
-                    
-                    // Добавляем изображение в PDF
-                    doc.addImage(
-                        dataUrl,
-                        'JPEG',
-                        xPosition,
-                        yPosition,
-                        imgWidth,
-                        imgHeight
-                    );
+            for (let i = 0; i < state.optimizedFiles.length; i++) {
+                const file = state.optimizedFiles[i];
+                
+                // Добавляем новую страницу для каждого изображения (кроме первого)
+                if (i > 0) {
+                    doc.addPage();
                 }
                 
-                // Сохраняем PDF
-                doc.save('optimized_images.pdf');
-                showToast("PDF успішно створено!");
-            } catch (error) {
-                console.error("Помилка створення PDF:", error);
-                showToast("Помилка при створенні PDF: " + error.message, 5000);
+                // Конвертируем файл в Data URL
+                const dataUrl = await fileToDataUrl(file);
+                
+                // Получаем размеры изображения
+                const img = new Image();
+                await new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.src = dataUrl;
+                });
+                
+                // Рассчитываем размеры для вставки в PDF (с сохранением пропорций)
+                const aspectRatio = img.width / img.height;
+                let imgWidth = contentWidth;
+                let imgHeight = contentWidth / aspectRatio;
+                
+                // Если изображение слишком высокое, уменьшаем по высоте
+                if (imgHeight > contentHeight) {
+                    imgHeight = contentHeight;
+                    imgWidth = contentHeight * aspectRatio;
+                }
+                
+                // Центрируем изображение
+                const xPosition = (pageWidth - imgWidth) / 2;
+                const yPosition = (pageHeight - imgHeight) / 2;
+                
+                // Добавляем изображение в PDF
+                doc.addImage(
+                    dataUrl,
+                    'JPEG',
+                    xPosition,
+                    yPosition,
+                    imgWidth,
+                    imgHeight
+                );
             }
+            
+            // Сохраняем PDF
+            doc.save('optimized_images.pdf');
+            showToast("PDF успішно створено!");
+        } catch (error) {
+            console.error("Помилка створення PDF:", error);
+            showToast("Помилка при створенні PDF: " + error.message, 5000);
+        }
+    }
+    
+    // Вспомогательная функция для конвертации File в Data URL
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Reset application
+    function reset() {
+        state.originalFiles = [];
+        state.optimizedFiles = [];
+        elements.fileInput.value = '';
+        elements.filePreviews.innerHTML = '';
+        elements.previewSection.style.display = 'none';
+        elements.processing.style.display = 'none';
+        elements.downloadBtn.disabled = true;
+        elements.savePdfBtn.disabled = true; // Деактивируем кнопку PDF
+        elements.editorContainer.style.display = 'none';
+        resetEditState();
+        elements.progressBar.style.width = '0%';
+        elements.progressText.textContent = '0%';
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+        state.darkMode = !state.darkMode;
+        
+        if (state.darkMode) {
+            document.body.setAttribute('data-theme', 'dark');
+            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            document.body.removeAttribute('data-theme');
+            elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         }
         
-        // Вспомогательная функция для конвертации File в Data URL
-        function fileToDataUrl(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
+        localStorage.setItem('imageopt-darkmode', state.darkMode);
+    }
 
-        // Reset application
-        function reset() {
-            state.originalFiles = [];
-            state.optimizedFiles = [];
-            elements.fileInput.value = '';
-            elements.filePreviews.innerHTML = '';
-            elements.previewSection.style.display = 'none';
-            elements.processing.style.display = 'none';
-            elements.downloadBtn.disabled = true;
-            elements.savePdfBtn.disabled = true; // Деактивируем кнопку PDF
-            elements.editorContainer.style.display = 'none';
-            resetEditState();
-            elements.progressBar.style.width = '0%';
-            elements.progressText.textContent = '0%';
-        }
-
-        // Toggle theme
-        function toggleTheme() {
-            state.darkMode = !state.darkMode;
-            
-            if (state.darkMode) {
-                document.body.setAttribute('data-theme', 'dark');
-                elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.body.removeAttribute('data-theme');
-                elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    // Save to history
+    function saveToHistory() {
+        if (state.originalFiles.length === 0) return;
+        
+        const historyItem = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            fileCount: state.originalFiles.length,
+            originalSize: state.originalFiles.reduce((sum, file) => sum + file.size, 0),
+            optimizedSize: state.optimizedFiles.reduce((sum, file) => sum + file.size, 0),
+            settings: {
+                quality: elements.qualityRange.value,
+                format: elements.formatSelect.value,
+                maxWidth: elements.maxWidthSelect.value
             }
-            
-            localStorage.setItem('imageopt-darkmode', state.darkMode);
+        };
+        
+        // Add to beginning of history
+        state.history.unshift(historyItem);
+        
+        // Keep only last 10 items
+        if (state.history.length > 10) {
+            state.history.pop();
         }
+        
+        // Save to localStorage
+        localStorage.setItem('imageopt-history', JSON.stringify(state.history));
+        
+        // Save to Firebase
+        if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
+            state.db.collection("optimizations").add({
+                userId: state.user.uid,
+                ...historyItem,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .catch(error => console.error("Помилка збереження:", error));
+        }
+        
+        // Update UI
+        renderHistory();
+    }
 
-        // Save to history
-        function saveToHistory() {
-            if (state.originalFiles.length === 0) return;
-            
-            const historyItem = {
-                id: Date.now(),
-                date: new Date().toLocaleString(),
-                fileCount: state.originalFiles.length,
-                originalSize: state.originalFiles.reduce((sum, file) => sum + file.size, 0),
-                optimizedSize: state.optimizedFiles.reduce((sum, file) => sum + file.size, 0),
-                settings: {
-                    quality: elements.qualityRange.value,
-                    format: elements.formatSelect.value,
-                    maxWidth: elements.maxWidthSelect.value
-                }
-            };
-            
-            // Add to beginning of history
-            state.history.unshift(historyItem);
-            
-            // Keep only last 10 items
-            if (state.history.length > 10) {
-                state.history.pop();
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('imageopt-history', JSON.stringify(state.history));
-            
-            // Save to Firebase
-            if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
-                state.db.collection("optimizations").add({
-                    userId: state.user.uid,
-                    ...historyItem,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .catch(error => console.error("Помилка збереження:", error));
-            }
-            
-            // Update UI
-            renderHistory();
+    // Render history
+    function renderHistory() {
+        elements.historyList.innerHTML = '';
+        
+        if (state.history.length === 0) {
+            elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>';
+            return;
         }
+        
+        state.history.forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.dataset.id = item.id;
+            
+            const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
+            
+            historyItem.innerHTML = `
+                <h4>Обробка <span>${item.date}</span></h4>
+                <div class="history-stats">
+                    <div>Файлів: ${item.fileCount}</div>
+                    <div>Економія: ${savings}%</div>
+                </div>
+            `;
+            
+            historyItem.addEventListener('click', () => loadFromHistory(item.id));
+            elements.historyList.appendChild(historyItem);
+        });
+    }
 
-        // Render history
-        function renderHistory() {
-            elements.historyList.innerHTML = '';
-            
-            if (state.history.length === 0) {
-                elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>';
-                return;
-            }
-            
-            state.history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.dataset.id = item.id;
-                
-                const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
-                
-                historyItem.innerHTML = `
-                    <h4>Обробка <span>${item.date}</span></h4>
-                    <div class="history-stats">
-                        <div>Файлів: ${item.fileCount}</div>
-                        <div>Економія: ${savings}%</div>
-                    </div>
-                `;
-                
-                historyItem.addEventListener('click', () => loadFromHistory(item.id));
-                elements.historyList.appendChild(historyItem);
-            });
-        }
+    // Load from history
+    function loadFromHistory(id) {
+        const item = state.history.find(item => item.id == id);
+        if (!item) return;
+        
+        // Apply settings
+        elements.qualityRange.value = item.settings.quality;
+        updateQualityValue();
+        elements.formatSelect.value = item.settings.format;
+        elements.maxWidthSelect.value = item.settings.maxWidth;
+        
+        // Close history panel
+        elements.historyPanel.classList.remove('active');
+        
+        // Show notification
+        showToast(`Налаштування з історії від ${item.date} застосовано!`);
+    }
 
-        // Load from history
-        function loadFromHistory(id) {
-            const item = state.history.find(item => item.id == id);
-            if (!item) return;
-            
-            // Apply settings
-            elements.qualityRange.value = item.settings.quality;
-            updateQualityValue();
-            elements.formatSelect.value = item.settings.format;
-            elements.maxWidthSelect.value = item.settings.maxWidth;
-            
-            // Close history panel
-            elements.historyPanel.classList.remove('active');
-            
-            // Show notification
-            showToast(`Налаштування з історії від ${item.date} застосовано!`);
-        }
-
-        // Initialize app when DOM is loaded
-        if (document.readyState !== 'loading') {
-            init();
-        } else {
-            document.addEventListener('DOMContentLoaded', init);
-        }
-    </script>
+    // Initialize app when DOM is loaded
+    if (document.readyState !== 'loading') {
+        init();
+    } else {
+        document.addEventListener('DOMContentLoaded', init);
+    }
+</script>
 </body>
 </html>
