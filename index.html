@@ -50,6 +50,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Добавляем библиотеку для работы с PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -400,6 +402,11 @@
             background: var(--light);
             color: var(--text-dark);
             border: 2px solid var(--primary);
+        }
+        
+        /* Добавляем стиль для кнопки PDF */
+        .btn-pdf {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
         }
 
         .quality-value {
@@ -1441,6 +1448,10 @@
                         <button class="btn" id="downloadBtn" disabled>
                             <i class="fas fa-download"></i> Завантажити
                         </button>
+                        <!-- Добавляем новую кнопку для сохранения в PDF -->
+                        <button class="btn btn-pdf" id="savePdfBtn" disabled>
+                            <i class="fas fa-file-pdf"></i> Зберегти як PDF
+                        </button>
                         <button class="btn btn-secondary" id="resetBtn">
                             <i class="fas fa-redo"></i> Новий проект
                         </button>
@@ -1543,6 +1554,7 @@
             previewContainer: document.getElementById('previewContainer'),
             stats: document.getElementById('stats'),
             downloadBtn: document.getElementById('downloadBtn'),
+            savePdfBtn: document.getElementById('savePdfBtn'), // Новая кнопка PDF
             resetBtn: document.getElementById('resetBtn'),
             processBtn: document.getElementById('processBtn'),
             themeToggle: document.getElementById('themeToggle'),
@@ -1848,6 +1860,9 @@
                     window.location.href = 'index.html';
                 }
             });
+            
+            // Добавляем обработчик для кнопки PDF
+            elements.savePdfBtn.addEventListener('click', saveAsPDF);
         }
 
         // Установка режима пакетного редактирования
@@ -2884,6 +2899,7 @@
             }
 
             elements.downloadBtn.disabled = false;
+            elements.savePdfBtn.disabled = false; // Активируем кнопку PDF
         }
 
         // Format file size
@@ -2927,6 +2943,109 @@
                 }
             }
         }
+        
+        // Новая функция для сохранения в PDF
+        async function saveAsPDF() {
+            if (state.optimizedFiles.length === 0) {
+                showToast("Спершу оптимізуйте зображення!");
+                return;
+            }
+            
+            showToast("Створення PDF...");
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const padding = 10;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const contentWidth = pageWidth - padding * 2;
+                
+                // Добавляем заголовок
+                doc.setFontSize(20);
+                doc.text("ImageOpt Pro - Оптимізовані зображення", pageWidth / 2, 20, null, null, 'center');
+                doc.setFontSize(12);
+                doc.text(`Дата: ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, null, null, 'center');
+                
+                let yPosition = 40;
+                
+                for (let i = 0; i < state.optimizedFiles.length; i++) {
+                    const file = state.optimizedFiles[i];
+                    
+                    // Если это не первое изображение, добавляем новую страницу
+                    if (i > 0) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    // Заголовок изображения
+                    doc.setFontSize(14);
+                    doc.text(`Зображення ${i + 1}: ${file.name}`, padding, yPosition);
+                    yPosition += 10;
+                    
+                    // Конвертируем файл в Data URL
+                    const dataUrl = await fileToDataUrl(file);
+                    
+                    // Получаем размеры изображения
+                    const img = new Image();
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.src = dataUrl;
+                    });
+                    
+                    // Рассчитываем размеры для вставки в PDF
+                    const aspectRatio = img.width / img.height;
+                    let imgWidth = contentWidth;
+                    let imgHeight = contentWidth / aspectRatio;
+                    
+                    // Если изображение слишком высокое, уменьшаем его
+                    const maxHeight = pageHeight - yPosition - 20;
+                    if (imgHeight > maxHeight) {
+                        imgHeight = maxHeight;
+                        imgWidth = maxHeight * aspectRatio;
+                    }
+                    
+                    // Центрируем изображение
+                    const xPosition = (pageWidth - imgWidth) / 2;
+                    
+                    // Добавляем изображение в PDF
+                    doc.addImage(
+                        dataUrl,
+                        'JPEG', // используем JPEG для сжатия
+                        xPosition,
+                        yPosition,
+                        imgWidth,
+                        imgHeight
+                    );
+                    
+                    // Добавляем информацию о размере
+                    yPosition += imgHeight + 10;
+                    doc.setFontSize(10);
+                    doc.text(
+                        `Розмір: ${formatFileSize(file.size)} | Формат: ${file.type.split('/')[1].toUpperCase()}`,
+                        padding,
+                        yPosition
+                    );
+                }
+                
+                // Сохраняем PDF
+                doc.save('optimized_images.pdf');
+                showToast("PDF успішно створено!");
+            } catch (error) {
+                console.error("Помилка створення PDF:", error);
+                showToast("Помилка при створенні PDF: " + error.message, 5000);
+            }
+        }
+        
+        // Вспомогательная функция для конвертации File в Data URL
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
 
         // Reset application
         function reset() {
@@ -2937,6 +3056,7 @@
             elements.previewSection.style.display = 'none';
             elements.processing.style.display = 'none';
             elements.downloadBtn.disabled = true;
+            elements.savePdfBtn.disabled = true; // Деактивируем кнопку PDF
             elements.editorContainer.style.display = 'none';
             resetEditState();
             elements.progressBar.style.width = '0%';
