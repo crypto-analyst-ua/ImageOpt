@@ -2944,7 +2944,7 @@
             }
         }
         
-        // Новая функция для сохранения в PDF
+        // Новая функция для сохранения в PDF (без надписей)
         async function saveAsPDF() {
             if (state.optimizedFiles.length === 0) {
                 showToast("Спершу оптимізуйте зображення!");
@@ -2960,28 +2960,15 @@
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 const contentWidth = pageWidth - padding * 2;
-                
-                // Добавляем заголовок
-                doc.setFontSize(20);
-                doc.text("ImageOpt Pro - Оптимізовані зображення", pageWidth / 2, 20, null, null, 'center');
-                doc.setFontSize(12);
-                doc.text(`Дата: ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, null, null, 'center');
-                
-                let yPosition = 40;
+                const contentHeight = pageHeight - padding * 2;
                 
                 for (let i = 0; i < state.optimizedFiles.length; i++) {
                     const file = state.optimizedFiles[i];
                     
-                    // Если это не первое изображение, добавляем новую страницу
+                    // Добавляем новую страницу для каждого изображения (кроме первого)
                     if (i > 0) {
                         doc.addPage();
-                        yPosition = 20;
                     }
-                    
-                    // Заголовок изображения
-                    doc.setFontSize(14);
-                    doc.text(`Зображення ${i + 1}: ${file.name}`, padding, yPosition);
-                    yPosition += 10;
                     
                     // Конвертируем файл в Data URL
                     const dataUrl = await fileToDataUrl(file);
@@ -2993,38 +2980,29 @@
                         img.src = dataUrl;
                     });
                     
-                    // Рассчитываем размеры для вставки в PDF
+                    // Рассчитываем размеры для вставки в PDF (с сохранением пропорций)
                     const aspectRatio = img.width / img.height;
                     let imgWidth = contentWidth;
                     let imgHeight = contentWidth / aspectRatio;
                     
-                    // Если изображение слишком высокое, уменьшаем его
-                    const maxHeight = pageHeight - yPosition - 20;
-                    if (imgHeight > maxHeight) {
-                        imgHeight = maxHeight;
-                        imgWidth = maxHeight * aspectRatio;
+                    // Если изображение слишком высокое, уменьшаем по высоте
+                    if (imgHeight > contentHeight) {
+                        imgHeight = contentHeight;
+                        imgWidth = contentHeight * aspectRatio;
                     }
                     
                     // Центрируем изображение
                     const xPosition = (pageWidth - imgWidth) / 2;
+                    const yPosition = (pageHeight - imgHeight) / 2;
                     
                     // Добавляем изображение в PDF
                     doc.addImage(
                         dataUrl,
-                        'JPEG', // используем JPEG для сжатия
+                        'JPEG',
                         xPosition,
                         yPosition,
                         imgWidth,
                         imgHeight
-                    );
-                    
-                    // Добавляем информацию о размере
-                    yPosition += imgHeight + 10;
-                    doc.setFontSize(10);
-                    doc.text(
-                        `Розмір: ${formatFileSize(file.size)} | Формат: ${file.type.split('/')[1].toUpperCase()}`,
-                        padding,
-                        yPosition
                     );
                 }
                 
