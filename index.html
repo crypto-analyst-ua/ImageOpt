@@ -50,8 +50,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Добавляем библиотеку для работы с PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -403,11 +401,6 @@
             color: var(--text-dark);
             border: 2px solid var(--primary);
         }
-        
-        /* Добавляем стиль для кнопки PDF */
-        .btn-pdf {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
 
         .quality-value {
             display: inline-block;
@@ -675,7 +668,7 @@
         
         .crop-preview {
             display: grid;
-            grid-template-columns: repeat(3, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-top: 15px;
         }
@@ -1113,6 +1106,31 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
+        /* Стили для коррекции изображения */
+        .adjust-controls {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(248,249,255,0.5);
+            border-radius: 12px;
+        }
+        
+        .adjust-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .adjust-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
         /* Адаптивные улучшения */
         @media (max-width: 768px) {
             .touch-controls {
@@ -1268,6 +1286,10 @@
                             <i class="fas fa-arrows-alt-h"></i>
                             <span>Віддзеркалити</span>
                         </div>
+                        <div class="editor-btn" id="adjustBtn">
+                            <i class="fas fa-adjust"></i>
+                            <span>Корекція</span>
+                        </div>
                         <div class="editor-btn" id="resetEditBtn">
                             <i class="fas fa-times"></i>
                             <span>Скинути</span>
@@ -1288,6 +1310,9 @@
                         <div class="touch-btn" id="touchCrop">
                             <i class="fas fa-crop-alt"></i>
                         </div>
+                        <div class="touch-btn" id="touchAdjust">
+                            <i class="fas fa-adjust"></i>
+                        </div>
                     </div>
                     
                     <!-- Контролы обрезки -->
@@ -1306,6 +1331,46 @@
                             <div class="crop-ratio" data-ratio="16:9">16:9</div>
                             <div class="crop-ratio" data-ratio="9:16">9:16</div>
                             <div class="crop-ratio" data-ratio="5:7">5:7</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Контролы коррекции -->
+                    <div class="adjust-controls" id="adjustControls">
+                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> Корекція зображення</h3>
+                        
+                        <div class="adjust-row">
+                            <label>Яскравість</label>
+                            <input type="range" id="brightnessRange" min="-100" max="100" value="0">
+                            <span id="brightnessValue">0%</span>
+                        </div>
+                        <div class="adjust-row">
+                            <label>Контрастність</label>
+                            <input type="range" id="contrastRange" min="-100" max="100" value="0">
+                            <span id="contrastValue">0%</span>
+                        </div>
+                        <div class="adjust-row">
+                            <label>Насиченість</label>
+                            <input type="range" id="saturationRange" min="-100" max="100" value="0">
+                            <span id="saturationValue">0%</span>
+                        </div>
+                        <div class="adjust-row">
+                            <label>Різкість</label>
+                            <input type="range" id="sharpnessRange" min="0" max="100" value="0">
+                            <span id="sharpnessValue">0%</span>
+                        </div>
+                        <div class="adjust-row">
+                            <label>Температура</label>
+                            <input type="range" id="temperatureRange" min="-100" max="100" value="0">
+                            <span id="temperatureValue">0%</span>
+                        </div>
+                        
+                        <div class="adjust-actions">
+                            <button class="btn" id="applyAdjustBtn">
+                                <i class="fas fa-check"></i> Застосувати
+                            </button>
+                            <button class="btn btn-secondary" id="resetAdjustBtn">
+                                <i class="fas fa-times"></i> Скинути
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1448,10 +1513,6 @@
                         <button class="btn" id="downloadBtn" disabled>
                             <i class="fas fa-download"></i> Завантажити
                         </button>
-                        <!-- Добавляем новую кнопку для сохранения в PDF -->
-                        <button class="btn btn-pdf" id="savePdfBtn" disabled>
-                            <i class="fas fa-file-pdf"></i> Зберегти як PDF
-                        </button>
                         <button class="btn btn-secondary" id="resetBtn">
                             <i class="fas fa-redo"></i> Новий проект
                         </button>
@@ -1536,7 +1597,15 @@
             progressiveJpeg: false,
             removeMetadata: true,
             pngCompression: 'auto',
-            savedProfiles: JSON.parse(localStorage.getItem('savedProfiles')) || []
+            savedProfiles: JSON.parse(localStorage.getItem('savedProfiles')) || [],
+            // Коррекция изображения
+            adjustments: {
+                brightness: 0,
+                contrast: 0,
+                saturation: 0,
+                sharpness: 0,
+                temperature: 0
+            }
         };
 
         // DOM Elements
@@ -1554,7 +1623,6 @@
             previewContainer: document.getElementById('previewContainer'),
             stats: document.getElementById('stats'),
             downloadBtn: document.getElementById('downloadBtn'),
-            savePdfBtn: document.getElementById('savePdfBtn'), // Новая кнопка PDF
             resetBtn: document.getElementById('resetBtn'),
             processBtn: document.getElementById('processBtn'),
             themeToggle: document.getElementById('themeToggle'),
@@ -1566,6 +1634,7 @@
             rotateLeftBtn: document.getElementById('rotateLeftBtn'),
             rotateRightBtn: document.getElementById('rotateRightBtn'),
             flipHBtn: document.getElementById('flipHBtn'),
+            adjustBtn: document.getElementById('adjustBtn'),
             resetEditBtn: document.getElementById('resetEditBtn'),
             previewImage: document.getElementById('previewImage'),
             editorContainer: document.getElementById('editorContainer'),
@@ -1611,7 +1680,23 @@
             touchRotateLeft: document.getElementById('touchRotateLeft'),
             touchRotateRight: document.getElementById('touchRotateRight'),
             touchFlipH: document.getElementById('touchFlipH'),
-            touchCrop: document.getElementById('touchCrop')
+            touchCrop: document.getElementById('touchCrop'),
+            touchAdjust: document.getElementById('touchAdjust'),
+            
+            // Элементы коррекции
+            brightnessRange: document.getElementById('brightnessRange'),
+            contrastRange: document.getElementById('contrastRange'),
+            saturationRange: document.getElementById('saturationRange'),
+            sharpnessRange: document.getElementById('sharpnessRange'),
+            temperatureRange: document.getElementById('temperatureRange'),
+            brightnessValue: document.getElementById('brightnessValue'),
+            contrastValue: document.getElementById('contrastValue'),
+            saturationValue: document.getElementById('saturationValue'),
+            sharpnessValue: document.getElementById('sharpnessValue'),
+            temperatureValue: document.getElementById('temperatureValue'),
+            applyAdjustBtn: document.getElementById('applyAdjustBtn'),
+            resetAdjustBtn: document.getElementById('resetAdjustBtn'),
+            adjustControls: document.getElementById('adjustControls')
         };
 
         // Initialize application
@@ -1731,6 +1816,17 @@
             elements.touchRotateRight.addEventListener('click', () => rotateImage(90));
             elements.touchFlipH.addEventListener('click', flipImageHorizontal);
             elements.touchCrop.addEventListener('click', toggleCropMode);
+            elements.touchAdjust.addEventListener('click', toggleAdjustPanel);
+            
+            // Коррекция изображения
+            elements.adjustBtn.addEventListener('click', toggleAdjustPanel);
+            elements.brightnessRange.addEventListener('input', updateBrightnessValue);
+            elements.contrastRange.addEventListener('input', updateContrastValue);
+            elements.saturationRange.addEventListener('input', updateSaturationValue);
+            elements.sharpnessRange.addEventListener('input', updateSharpnessValue);
+            elements.temperatureRange.addEventListener('input', updateTemperatureValue);
+            elements.applyAdjustBtn.addEventListener('click', applyAdjustments);
+            elements.resetAdjustBtn.addEventListener('click', resetAdjustments);
         }
 
         // Обновление счетчика дневного использования
@@ -1838,7 +1934,14 @@
             });
             
             // Premium and logout
-            elements.upgradeBtn.addEventListener('click', handlePremiumUpgrade);
+            elements.upgradeBtn.addEventListener('click', () => {
+                if (!state.user || state.user.uid === "guest") {
+                    showToast("Будь ласка, увійдіть для оновлення до Premium");
+                    setTimeout(() => window.location.href = 'auth.html', 2000);
+                } else {
+                    window.location.href = 'pay.html';
+                }
+            });
             
             elements.logoutBtn.addEventListener('click', () => {
                 if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
@@ -1853,23 +1956,6 @@
                     window.location.href = 'index.html';
                 }
             });
-            
-            // Добавляем обработчик для кнопки PDF
-            elements.savePdfBtn.addEventListener('click', saveAsPDF);
-        }
-
-        // Обработчик для кнопки премиум
-        function handlePremiumUpgrade() {
-            if (!state.user || state.user.uid === "guest") {
-                showToast("Будь ласка, увійдіть для оформлення Premium");
-                setTimeout(() => {
-                    // Перенаправляем на страницу аутентификации
-                    window.location.href = 'auth.html';
-                }, 2000);
-            } else {
-                // Перенаправляем на страницу оплаты
-                window.location.href = 'pay.html';
-            }
         }
 
         // Установка режима пакетного редактирования
@@ -2170,6 +2256,9 @@
                 
                 // Reset crop
                 elements.cropOverlay.innerHTML = '';
+                
+                // Reset adjustments
+                resetAdjustments();
             };
             
             reader.readAsDataURL(file);
@@ -2245,6 +2334,9 @@
             elements.cropRatios.forEach(ratio => ratio.classList.remove('active'));
             document.querySelector('.crop-ratio[data-ratio="free"]').classList.add('active');
             state.cropRatio = 'free';
+            
+            // Reset adjustments
+            resetAdjustments();
             
             showEditNotification('Зміни скинуто!');
         }
@@ -2538,6 +2630,98 @@
             state.cropMode = false;
             state.crop = null;
         }
+        
+        // Toggle adjust panel
+        function toggleAdjustPanel() {
+            elements.adjustControls.style.display = 
+                elements.adjustControls.style.display === 'grid' ? 'none' : 'grid';
+        }
+        
+        // Update brightness value
+        function updateBrightnessValue() {
+            state.adjustments.brightness = parseInt(elements.brightnessRange.value);
+            elements.brightnessValue.textContent = `${state.adjustments.brightness}%`;
+            applyPreviewAdjustments();
+        }
+        
+        // Update contrast value
+        function updateContrastValue() {
+            state.adjustments.contrast = parseInt(elements.contrastRange.value);
+            elements.contrastValue.textContent = `${state.adjustments.contrast}%`;
+            applyPreviewAdjustments();
+        }
+        
+        // Update saturation value
+        function updateSaturationValue() {
+            state.adjustments.saturation = parseInt(elements.saturationRange.value);
+            elements.saturationValue.textContent = `${state.adjustments.saturation}%`;
+            applyPreviewAdjustments();
+        }
+        
+        // Update sharpness value
+        function updateSharpnessValue() {
+            state.adjustments.sharpness = parseInt(elements.sharpnessRange.value);
+            elements.sharpnessValue.textContent = `${state.adjustments.sharpness}%`;
+            applyPreviewAdjustments();
+        }
+        
+        // Update temperature value
+        function updateTemperatureValue() {
+            state.adjustments.temperature = parseInt(elements.temperatureRange.value);
+            elements.temperatureValue.textContent = `${state.adjustments.temperature}%`;
+            applyPreviewAdjustments();
+        }
+        
+        // Apply adjustments to preview
+        function applyPreviewAdjustments() {
+            const filter = `
+                brightness(${100 + state.adjustments.brightness}%)
+                contrast(${100 + state.adjustments.contrast}%)
+                saturate(${100 + state.adjustments.saturation}%)
+                blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
+            `;
+            elements.previewImage.style.filter = filter;
+            
+            // Apply temperature (warm/cool)
+            if (state.adjustments.temperature !== 0) {
+                const tempValue = state.adjustments.temperature / 100;
+                const blueValue = Math.max(0, 1 - tempValue);
+                const redValue = Math.max(0, 1 + tempValue);
+                elements.previewImage.style.filter += ` sepia(30%) hue-rotate(${-tempValue*30}deg)`;
+            }
+        }
+        
+        // Apply adjustments
+        function applyAdjustments() {
+            elements.adjustControls.style.display = 'none';
+            showEditNotification('Корекція застосована!');
+        }
+        
+        // Reset adjustments
+        function resetAdjustments() {
+            state.adjustments = {
+                brightness: 0,
+                contrast: 0,
+                saturation: 0,
+                sharpness: 0,
+                temperature: 0
+            };
+            
+            elements.brightnessRange.value = 0;
+            elements.contrastRange.value = 0;
+            elements.saturationRange.value = 0;
+            elements.sharpnessRange.value = 0;
+            elements.temperatureRange.value = 0;
+            
+            elements.brightnessValue.textContent = '0%';
+            elements.contrastValue.textContent = '0%';
+            elements.saturationValue.textContent = '0%';
+            elements.sharpnessValue.textContent = '0%';
+            elements.temperatureValue.textContent = '0%';
+            
+            elements.previewImage.style.filter = 'none';
+            showEditNotification('Корекцію скинуто!');
+        }
 
         // Process images
         async function processImages() {
@@ -2741,6 +2925,41 @@
                         canvas.height = newHeight;
                         ctx.drawImage(tempCanvas, 0, 0);
                     }
+                    
+                    // Применяем коррекцию если есть
+                    if (applyEdits && (
+                        state.adjustments.brightness !== 0 || 
+                        state.adjustments.contrast !== 0 || 
+                        state.adjustments.saturation !== 0 ||
+                        state.adjustments.sharpness !== 0 ||
+                        state.adjustments.temperature !== 0
+                    )) {
+                        // Создаем временный canvas для применения фильтров
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCanvas.width = canvas.width;
+                        tempCanvas.height = canvas.height;
+                        
+                        // Применяем фильтры
+                        tempCtx.filter = `
+                            brightness(${100 + state.adjustments.brightness}%)
+                            contrast(${100 + state.adjustments.contrast}%)
+                            saturate(${100 + state.adjustments.saturation}%)
+                            blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
+                        `;
+                        
+                        // Apply temperature
+                        if (state.adjustments.temperature !== 0) {
+                            const tempValue = state.adjustments.temperature / 100;
+                            tempCtx.filter += ` sepia(30%) hue-rotate(${-tempValue*30}deg)`;
+                        }
+                        
+                        tempCtx.drawImage(canvas, 0, 0);
+                        
+                        // Копируем обратно
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(tempCanvas, 0, 0);
+                    }
 
                     // Применяем водяной знак если включен
                     if (state.watermark.enabled) {
@@ -2906,7 +3125,6 @@
             }
 
             elements.downloadBtn.disabled = false;
-            elements.savePdfBtn.disabled = false; // Активируем кнопку PDF
         }
 
         // Format file size
@@ -2950,214 +3168,132 @@
                 }
             }
         }
-        
-        // Новая функция для сохранения в PDF (без надписей)
-        async function saveAsPDF() {
-            if (state.optimizedFiles.length === 0) {
-                showToast("Спершу оптимізуйте зображення!");
+
+        // Reset application
+        function reset() {
+            state.originalFiles = [];
+            state.optimizedFiles = [];
+            elements.fileInput.value = '';
+            elements.filePreviews.innerHTML = '';
+            elements.previewSection.style.display = 'none';
+            elements.processing.style.display = 'none';
+            elements.downloadBtn.disabled = true;
+            elements.editorContainer.style.display = 'none';
+            resetEditState();
+            elements.progressBar.style.width = '0%';
+            elements.progressText.textContent = '0%';
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            state.darkMode = !state.darkMode;
+            
+            if (state.darkMode) {
+                document.body.setAttribute('data-theme', 'dark');
+                elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.body.removeAttribute('data-theme');
+                elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            
+            localStorage.setItem('imageopt-darkmode', state.darkMode);
+        }
+
+        // Save to history
+        function saveToHistory() {
+            if (state.originalFiles.length === 0) return;
+            
+            const historyItem = {
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                fileCount: state.originalFiles.length,
+                originalSize: state.originalFiles.reduce((sum, file) => sum + file.size, 0),
+                optimizedSize: state.optimizedFiles.reduce((sum, file) => sum + file.size, 0),
+                settings: {
+                    quality: elements.qualityRange.value,
+                    format: elements.formatSelect.value,
+                    maxWidth: elements.maxWidthSelect.value
+                }
+            };
+            
+            // Add to beginning of history
+            state.history.unshift(historyItem);
+            
+            // Keep only last 10 items
+            if (state.history.length > 10) {
+                state.history.pop();
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('imageopt-history', JSON.stringify(state.history));
+            
+            // Save to Firebase
+            if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
+                state.db.collection("optimizations").add({
+                    userId: state.user.uid,
+                    ...historyItem,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .catch(error => console.error("Помилка збереження:", error));
+            }
+            
+            // Update UI
+            renderHistory();
+        }
+
+        // Render history
+        function renderHistory() {
+            elements.historyList.innerHTML = '';
+            
+            if (state.history.length === 0) {
+                elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>';
                 return;
             }
             
-            showToast("Створення PDF...");
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                const padding = 10;
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const contentWidth = pageWidth - padding * 2;
-                const contentHeight = pageHeight - padding * 2;
+            state.history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.dataset.id = item.id;
                 
-            for (let i = 0; i < state.optimizedFiles.length; i++) {
-                const file = state.optimizedFiles[i];
+                const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
                 
-                // Добавляем новую страницу для каждого изображения (кроме первого)
-                if (i > 0) {
-                    doc.addPage();
-                }
+                historyItem.innerHTML = `
+                    <h4>Обробка <span>${item.date}</span></h4>
+                    <div class="history-stats">
+                        <div>Файлів: ${item.fileCount}</div>
+                        <div>Економія: ${savings}%</div>
+                    </div>
+                `;
                 
-                // Конвертируем файл в Data URL
-                const dataUrl = await fileToDataUrl(file);
-                
-                // Получаем размеры изображения
-                const img = new Image();
-                await new Promise((resolve) => {
-                    img.onload = resolve;
-                    img.src = dataUrl;
-                });
-                
-                // Рассчитываем размеры для вставки в PDF (с сохранением пропорций)
-                const aspectRatio = img.width / img.height;
-                let imgWidth = contentWidth;
-                let imgHeight = contentWidth / aspectRatio;
-                
-                // Если изображение слишком высокое, уменьшаем по высоте
-                if (imgHeight > contentHeight) {
-                    imgHeight = contentHeight;
-                    imgWidth = contentHeight * aspectRatio;
-                }
-                
-                // Центрируем изображение
-                const xPosition = (pageWidth - imgWidth) / 2;
-                const yPosition = (pageHeight - imgHeight) / 2;
-                
-                // Добавляем изображение в PDF
-                doc.addImage(
-                    dataUrl,
-                    'JPEG',
-                    xPosition,
-                    yPosition,
-                    imgWidth,
-                    imgHeight
-                );
-            }
-            
-            // Сохраняем PDF
-            doc.save('optimized_images.pdf');
-            showToast("PDF успішно створено!");
-        } catch (error) {
-            console.error("Помилка створення PDF:", error);
-            showToast("Помилка при створенні PDF: " + error.message, 5000);
+                historyItem.addEventListener('click', () => loadFromHistory(item.id));
+                elements.historyList.appendChild(historyItem);
+            });
         }
-    }
-    
-    // Вспомогательная функция для конвертации File в Data URL
-    function fileToDataUrl(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
 
-    // Reset application
-    function reset() {
-        state.originalFiles = [];
-        state.optimizedFiles = [];
-        elements.fileInput.value = '';
-        elements.filePreviews.innerHTML = '';
-        elements.previewSection.style.display = 'none';
-        elements.processing.style.display = 'none';
-        elements.downloadBtn.disabled = true;
-        elements.savePdfBtn.disabled = true; // Деактивируем кнопку PDF
-        elements.editorContainer.style.display = 'none';
-        resetEditState();
-        elements.progressBar.style.width = '0%';
-        elements.progressText.textContent = '0%';
-    }
+        // Load from history
+        function loadFromHistory(id) {
+            const item = state.history.find(item => item.id == id);
+            if (!item) return;
+            
+            // Apply settings
+            elements.qualityRange.value = item.settings.quality;
+            updateQualityValue();
+            elements.formatSelect.value = item.settings.format;
+            elements.maxWidthSelect.value = item.settings.maxWidth;
+            
+            // Close history panel
+            elements.historyPanel.classList.remove('active');
+            
+            // Show notification
+            showToast(`Налаштування з історії від ${item.date} застосовано!`);
+        }
 
-    // Toggle theme
-    function toggleTheme() {
-        state.darkMode = !state.darkMode;
-        
-        if (state.darkMode) {
-            document.body.setAttribute('data-theme', 'dark');
-            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        // Initialize app when DOM is loaded
+        if (document.readyState !== 'loading') {
+            init();
         } else {
-            document.body.removeAttribute('data-theme');
-            elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            document.addEventListener('DOMContentLoaded', init);
         }
-        
-        localStorage.setItem('imageopt-darkmode', state.darkMode);
-    }
-
-    // Save to history
-    function saveToHistory() {
-        if (state.originalFiles.length === 0) return;
-        
-        const historyItem = {
-            id: Date.now(),
-            date: new Date().toLocaleString(),
-            fileCount: state.originalFiles.length,
-            originalSize: state.originalFiles.reduce((sum, file) => sum + file.size, 0),
-            optimizedSize: state.optimizedFiles.reduce((sum, file) => sum + file.size, 0),
-            settings: {
-                quality: elements.qualityRange.value,
-                format: elements.formatSelect.value,
-                maxWidth: elements.maxWidthSelect.value
-            }
-        };
-        
-        // Add to beginning of history
-        state.history.unshift(historyItem);
-        
-        // Keep only last 10 items
-        if (state.history.length > 10) {
-            state.history.pop();
-        }
-        
-        // Save to localStorage
-        localStorage.setItem('imageopt-history', JSON.stringify(state.history));
-        
-        // Save to Firebase
-        if (state.firebaseInitialized && state.user && state.user.uid !== "guest") {
-            state.db.collection("optimizations").add({
-                userId: state.user.uid,
-                ...historyItem,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .catch(error => console.error("Помилка збереження:", error));
-        }
-        
-        // Update UI
-        renderHistory();
-    }
-
-    // Render history
-    function renderHistory() {
-        elements.historyList.innerHTML = '';
-        
-        if (state.history.length === 0) {
-            elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>';
-            return;
-        }
-        
-        state.history.forEach(item => {
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.dataset.id = item.id;
-            
-            const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
-            
-            historyItem.innerHTML = `
-                <h4>Обробка <span>${item.date}</span></h4>
-                <div class="history-stats">
-                    <div>Файлів: ${item.fileCount}</div>
-                    <div>Економія: ${savings}%</div>
-                </div>
-            `;
-            
-            historyItem.addEventListener('click', () => loadFromHistory(item.id));
-            elements.historyList.appendChild(historyItem);
-        });
-    }
-
-    // Load from history
-    function loadFromHistory(id) {
-        const item = state.history.find(item => item.id == id);
-        if (!item) return;
-        
-        // Apply settings
-        elements.qualityRange.value = item.settings.quality;
-        updateQualityValue();
-        elements.formatSelect.value = item.settings.format;
-        elements.maxWidthSelect.value = item.settings.maxWidth;
-        
-        // Close history panel
-        elements.historyPanel.classList.remove('active');
-        
-        // Show notification
-        showToast(`Налаштування з історії від ${item.date} застосовано!`);
-    }
-
-    // Initialize app when DOM is loaded
-    if (document.readyState !== 'loading') {
-        init();
-    } else {
-        document.addEventListener('DOMContentLoaded', init);
-    }
-</script>
+    </script>
 </body>
 </html>
