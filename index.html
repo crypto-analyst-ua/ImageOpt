@@ -54,6 +54,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Добавлена библиотека для создания PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -154,7 +156,7 @@
             gap: 15px;
         }
 
-        .theme-toggle, .history-toggle {
+        .theme-toggle, .history-toggle, .pdf-toggle {
             background: rgba(255,255,255,0.15);
             border: none;
             width: 40px;
@@ -169,7 +171,7 @@
             font-size: 18px;
         }
 
-        .theme-toggle:hover, .history-toggle:hover {
+        .theme-toggle:hover, .history-toggle:hover, .pdf-toggle:hover {
             background: rgba(255,255,255,0.25);
             transform: scale(1.1);
         }
@@ -1184,6 +1186,201 @@
                 top: 60px;
             }
         }
+        
+        /* Модальное окно для PDF */
+        .pdf-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .pdf-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .pdf-modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .pdf-modal-content h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pdf-modal-content textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            background: var(--light);
+            color: var(--text-dark);
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+        
+        .pdf-modal-content h4 {
+            margin: 15px 0 10px;
+            color: var(--primary);
+        }
+        
+        .pdf-images-container {
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid var(--gray);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .pdf-image-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .pdf-image-item:last-child {
+            border-bottom: none;
+        }
+        
+        .pdf-image-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 12px;
+        }
+        
+        .pdf-image-info {
+            flex-grow: 1;
+        }
+        
+        .pdf-image-name {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .pdf-image-size {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .image-width-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .image-width-control label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        
+        .image-width-control input {
+            width: 70px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+        }
+        
+        .pdf-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        /* Новые стили для улучшения UX */
+        .info-box {
+            background: rgba(0, 207, 200, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+        
+        .info-box i {
+            color: var(--accent);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .btn-with-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(106, 90, 249, 0.2);
+            color: var(--primary);
+        }
+        
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .control-label-text {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .control-value {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .explanation-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -1204,6 +1401,9 @@
                 </button>
                 <button class="history-toggle" id="historyToggle" title="Історія обробки">
                     <i class="fas fa-history"></i>
+                </button>
+                <button class="pdf-toggle" id="pdfToggle" title="Створити PDF">
+                    <i class="fas fa-file-pdf"></i>
                 </button>
             </div>
             <div class="user-info">
@@ -1238,21 +1438,42 @@
 
         <div class="main-grid">
             <div class="card">
-                <h2 class="card-title"><i class="fas fa-upload"></i> Завантаження та налаштування</h2>
+                <div class="section-title">
+                    <i class="fas fa-upload"></i>
+                    <h2>Завантаження зображень</h2>
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    Ви можете завантажити до 15 зображень одночасно. Підтримуються формати: JPG, PNG, WebP, AVIF.
+                </div>
                 
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                     <div class="upload-text">Перетягніть зображення сюди</div>
-                    <div class="upload-subtext">або натисніть для вибору файлу (JPG, PNG, WebP, AVIF до 50MB)</div>
+                    <div class="upload-subtext">або натисніть для вибору файлів</div>
                 </div>
                 <input type="file" id="fileInput" accept="image/*" multiple>
                 
                 <div class="file-previews" id="filePreviews"></div>
                 
-                <!-- Пакетное редактирование -->
+                <div class="section-title" style="margin-top: 30px;">
+                    <i class="fas fa-edit"></i>
+                    <h2>Режим редагування</h2>
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    Оберіть режим редагування: застосовувати зміни до всіх зображень або лише до поточного.
+                </div>
+                
                 <div class="batch-controls">
-                    <div class="batch-btn" id="editSingleBtn">Редагувати одне</div>
-                    <div class="batch-btn active" id="editAllBtn">Застосувати до всіх</div>
+                    <div class="batch-btn" id="editSingleBtn">
+                        <i class="fas fa-file-image"></i> Редагувати одне
+                    </div>
+                    <div class="batch-btn active" id="editAllBtn">
+                        <i class="fas fa-layer-group"></i> Застосувати до всіх
+                    </div>
                 </div>
                 <div class="batch-edit-notice" id="batchEditNotice">
                     <i class="fas fa-info-circle"></i> Зміни застосовуються до всіх зображень
@@ -1260,6 +1481,16 @@
                 
                 <!-- Редактор изображений -->
                 <div class="editor-container" id="editorContainer">
+                    <div class="section-title">
+                        <i class="fas fa-crop-alt"></i>
+                        <h2>Редактор зображень</h2>
+                    </div>
+                    
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        Використовуйте інструменти нижче для редагування зображення. Зміни відображаються лише у попередньому перегляді.
+                    </div>
+                    
                     <div class="editor-preview">
                         <img id="previewImage" src="" alt="Попередній перегляд">
                         <div class="crop-overlay" id="cropOverlay"></div>
@@ -1412,39 +1643,68 @@
                     </div>
                 </div>
                 
+                <div class="section-title">
+                    <i class="fas fa-sliders-h"></i>
+                    <h2>Налаштування оптимізації</h2>
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    Налаштуйте параметри стиснення для досягнення оптимального співвідношення якості та розміру файлу.
+                </div>
+                
                 <div class="controls">
                     <div class="control-group">
-                        <label for="quality">Якість: <span class="quality-value" id="qualityValue">80%</span></label>
+                        <div class="control-label">
+                            <span class="control-label-text">Якість:</span>
+                            <span class="quality-value control-value" id="qualityValue">80%</span>
+                        </div>
                         <input type="range" id="quality" min="10" max="100" value="80">
+                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+                            <span class="explanation-icon">i</span>
+                            Вища якість = більший розмір файлу. Рекомендуємо 60-80% для оптимального результату.
+                        </div>
                     </div>
                     
                     <div class="control-group">
-                        <label for="format">Формат виводу:</label>
+                        <div class="control-label">
+                            <span class="control-label-text">Формат виводу:</span>
+                        </div>
                         <select id="format">
                             <option value="jpeg">JPEG</option>
                             <option value="png">PNG</option>
                             <option value="webp">WebP</option>
                             <option value="avif">AVIF</option>
                         </select>
+                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+                            <span class="explanation-icon">i</span>
+                            WebP та AVIF забезпечують найкраще стиснення без втрат якості.
+                        </div>
                     </div>
                     
                     <div class="control-group">
-                        <label for="maxWidth">Макс. ширина (px):</label>
+                        <div class="control-label">
+                            <span class="control-label-text">Макс. ширина (px):</span>
+                        </div>
                         <select id="maxWidth">
                             <option value="">Без зміни</option>
-                            <option value="640">640px</option>
-                            <option value="800">800px</option>
-                            <option value="1024">1024px</option>
-                            <option value="1200">1200px</option>
-                            <option value="1920">1920px</option>
+                            <option value="640">640px (для мобільних)</option>
+                            <option value="800">800px (для планшетів)</option>
+                            <option value="1024">1024px (для ноутбуків)</option>
+                            <option value="1200">1200px (для моніторів)</option>
+                            <option value="1920">1920px (4K)</option>
                         </select>
+                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+                            <span class="explanation-icon">i</span>
+                            Зменшення ширини значно знижує розмір файлу.
+                        </div>
                     </div>
                     
                     <div class="control-group">
                         <label for="auto-optimize">Автоматична оптимізація</label>
                         <div class="auto-optimize">
                             <input type="checkbox" id="autoOptimizeCheckbox">
-                            <span>Увімкнути</span>
+                            <span>Оптимізувати одразу після завантаження</span>
                         </div>
                     </div>
                 </div>
@@ -1461,20 +1721,20 @@
                         <label>Додаткові налаштування JPEG</label>
                         <div class="progressive-toggle">
                             <input type="checkbox" id="progressiveJpeg">
-                            <span>Прогресивний JPEG</span>
+                            <span>Прогресивний JPEG (краща якість)</span>
                         </div>
                         <div class="metadata-toggle">
                             <input type="checkbox" id="removeMetadata" checked>
-                            <span>Видалити метадані</span>
+                            <span>Видалити метадані (екіф, GPS тощо)</span>
                         </div>
                     </div>
                     
                     <div class="control-group">
                         <label>Налаштування PNG</label>
                         <select id="pngCompression">
-                            <option value="auto">Автоматична компресія</option>
-                            <option value="lossless">Без втрат</option>
-                            <option value="lossy">З втратами</option>
+                            <option value="auto">Автоматична компресія (рекомендовано)</option>
+                            <option value="lossless">Без втрат (краща якість)</option>
+                            <option value="lossy">З втратами (краще стиснення)</option>
                         </select>
                     </div>
                     
@@ -1482,9 +1742,14 @@
                         <label>Водяний знак</label>
                         <div class="watermark-control">
                             <input type="checkbox" id="enableWatermark">
-                            <span>Увімкнути водяний знак</span>
+                            <span>Додати водяний знак до зображень</span>
                         </div>
                     </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <i class="fas fa-bolt"></i>
+                    Після налаштування параметрів натисніть кнопку "Оптимізувати зображення" для початку обробки.
                 </div>
                 
                 <button class="btn" id="processBtn">
@@ -1493,7 +1758,15 @@
             </div>
             
             <div class="card">
-                <h2 class="card-title"><i class="fas fa-tachometer-alt"></i> Результати оптимізації</h2>
+                <div class="section-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h2>Результати оптимізації</h2>
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    Тут відображатимуться результати після оптимізації. Ви зможете порівняти оригінал та оптимізоване зображення.
+                </div>
                 
                 <div class="processing" id="processing">
                     <div class="spinner"></div>
@@ -1508,6 +1781,11 @@
                     <div class="stats" id="stats"></div>
                     
                     <div class="preview-container" id="previewContainer"></div>
+                    
+                    <div class="info-box" style="margin-top: 20px;">
+                        <i class="fas fa-download"></i>
+                        Після оптимізації ви зможете завантажити результати або зберегти налаштування для майбутнього використання.
+                    </div>
                     
                     <div class="buttons">
                         <button class="btn" id="downloadBtn" disabled>
@@ -1532,6 +1810,32 @@
         </div>
         <div id="historyList">
             <p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно для создания PDF -->
+    <div class="pdf-modal" id="pdfModal">
+        <div class="pdf-modal-content">
+            <h3><i class="fas fa-file-pdf"></i> Створити PDF</h3>
+            <textarea id="pdfText" placeholder="Введіть текст для PDF..."></textarea>
+            
+            <!-- Секция для добавления изображений -->
+            <h4><i class="fas fa-images"></i> Додати зображення</h4>
+            <div class="pdf-images-container" id="pdfImagesContainer">
+                <p style="text-align: center; padding: 20px; color: var(--gray);">
+                    Немає доступних зображень. Спочатку оптимізуйте зображення.
+                </p>
+            </div>
+            
+            <div class="image-width-control">
+                <label for="imageWidthPercent">Ширина зображень (% від ширини сторінки):</label>
+                <input type="number" id="imageWidthPercent" min="10" max="100" value="80">
+            </div>
+            
+            <div class="pdf-modal-buttons">
+                <button class="btn btn-secondary" id="pdfCancelBtn">Скасувати</button>
+                <button class="btn" id="pdfCreateBtn">Створити</button>
+            </div>
         </div>
     </div>
 
@@ -1696,7 +2000,16 @@
             temperatureValue: document.getElementById('temperatureValue'),
             applyAdjustBtn: document.getElementById('applyAdjustBtn'),
             resetAdjustBtn: document.getElementById('resetAdjustBtn'),
-            adjustControls: document.getElementById('adjustControls')
+            adjustControls: document.getElementById('adjustControls'),
+            
+            // Элементы для PDF
+            pdfToggle: document.getElementById('pdfToggle'),
+            pdfModal: document.getElementById('pdfModal'),
+            pdfCancelBtn: document.getElementById('pdfCancelBtn'),
+            pdfCreateBtn: document.getElementById('pdfCreateBtn'),
+            pdfText: document.getElementById('pdfText'),
+            pdfImagesContainer: document.getElementById('pdfImagesContainer'),
+            imageWidthPercent: document.getElementById('imageWidthPercent')
         };
 
         // Initialize application
@@ -1956,6 +2269,24 @@
                     window.location.href = 'index.html';
                 }
             });
+            
+            // PDF functionality
+            elements.pdfToggle.addEventListener('click', () => {
+                elements.pdfModal.classList.add('active');
+                renderPdfImageList();
+            });
+            
+            elements.pdfCancelBtn.addEventListener('click', () => {
+                elements.pdfModal.classList.remove('active');
+            });
+            
+            elements.pdfModal.addEventListener('click', (e) => {
+                if (e.target === elements.pdfModal) {
+                    elements.pdfModal.classList.remove('active');
+                }
+            });
+            
+            elements.pdfCreateBtn.addEventListener('click', createPDF);
         }
 
         // Установка режима пакетного редактирования
@@ -2674,21 +3005,20 @@
         
         // Apply adjustments to preview
         function applyPreviewAdjustments() {
-            const filter = `
+            let filter = `
                 brightness(${100 + state.adjustments.brightness}%)
                 contrast(${100 + state.adjustments.contrast}%)
                 saturate(${100 + state.adjustments.saturation}%)
                 blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
             `;
-            elements.previewImage.style.filter = filter;
             
             // Apply temperature (warm/cool)
             if (state.adjustments.temperature !== 0) {
                 const tempValue = state.adjustments.temperature / 100;
-                const blueValue = Math.max(0, 1 - tempValue);
-                const redValue = Math.max(0, 1 + tempValue);
-                elements.previewImage.style.filter += ` sepia(30%) hue-rotate(${-tempValue*30}deg)`;
+                filter += ` sepia(${Math.abs(tempValue)*30}%) hue-rotate(${-tempValue*30}deg)`;
             }
+            
+            elements.previewImage.style.filter = filter;
         }
         
         // Apply adjustments
@@ -2951,7 +3281,7 @@
                         // Apply temperature
                         if (state.adjustments.temperature !== 0) {
                             const tempValue = state.adjustments.temperature / 100;
-                            tempCtx.filter += ` sepia(30%) hue-rotate(${-tempValue*30}deg)`;
+                            tempCtx.filter += ` sepia(${Math.abs(tempValue)*30}%) hue-rotate(${-tempValue*30}deg)`;
                         }
                         
                         tempCtx.drawImage(canvas, 0, 0);
@@ -3286,6 +3616,165 @@
             
             // Show notification
             showToast(`Налаштування з історії від ${item.date} застосовано!`);
+        }
+
+        // Функция для отображения списка изображений в модальном окне PDF
+        function renderPdfImageList() {
+            const container = elements.pdfImagesContainer;
+            container.innerHTML = '';
+            
+            if (state.optimizedFiles.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Немає оптимізованих зображень. Спочатку оптимізуйте зображення.</p>';
+                return;
+            }
+            
+            state.optimizedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'pdf-image-item';
+                
+                const img = document.createElement('img');
+                img.className = 'pdf-image-preview';
+                img.src = URL.createObjectURL(file);
+                
+                const info = document.createElement('div');
+                info.className = 'pdf-image-info';
+                
+                const name = document.createElement('div');
+                name.className = 'pdf-image-name';
+                name.textContent = file.name;
+                
+                const size = document.createElement('div');
+                size.className = 'pdf-image-size';
+                size.textContent = formatFileSize(file.size);
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.index = index;
+                checkbox.style.marginLeft = '10px';
+                
+                info.appendChild(name);
+                info.appendChild(size);
+                
+                item.appendChild(img);
+                item.appendChild(info);
+                item.appendChild(checkbox);
+                container.appendChild(item);
+            });
+        }
+
+        // Обновленная функция создания PDF с поддержкой изображений
+        async function createPDF() {
+            const text = elements.pdfText.value.trim();
+            const imageWidthPercent = parseInt(elements.imageWidthPercent.value) || 80;
+            const selectedImageIndexes = [];
+            
+            // Собираем выбранные изображения
+            document.querySelectorAll('#pdfImagesContainer input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedImageIndexes.push(parseInt(checkbox.dataset.index));
+            });
+
+            if (!text && selectedImageIndexes.length === 0) {
+                showToast('Будь ласка, введіть текст або виберіть зображення.');
+                return;
+            }
+
+            // Проверяем, загружена ли библиотека
+            if (typeof jspdf !== 'undefined') {
+                const doc = new jspdf.jsPDF();
+                
+                // Настройки документа
+                const fontSize = 12;
+                const lineHeight = fontSize * 1.2;
+                const margin = 20;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const maxWidth = pageWidth - margin * 2;
+                const imageWidth = (pageWidth - margin * 2) * (imageWidthPercent / 100);
+                
+                let y = margin;
+                
+                // Добавляем текст
+                if (text) {
+                    const lines = doc.splitTextToSize(text, maxWidth);
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (y > doc.internal.pageSize.getHeight() - margin) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                        
+                        doc.text(lines[i], margin, y);
+                        y += lineHeight;
+                    }
+                }
+                
+                // Добавляем изображения
+                if (selectedImageIndexes.length > 0) {
+                    // Делаем отступ после текста
+                    if (text) {
+                        y += 15;
+                    }
+                    
+                    for (let i = 0; i < selectedImageIndexes.length; i++) {
+                        const index = selectedImageIndexes[i];
+                        const file = state.optimizedFiles[index];
+                        
+                        // Преобразуем File в data URL
+                        const dataUrl = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(file);
+                        });
+                        
+                        // Получаем размеры изображения
+                        const img = new Image();
+                        img.src = dataUrl;
+                        await new Promise(resolve => { img.onload = resolve; });
+                        
+                        const imgHeight = (img.height * imageWidth) / img.width;
+                        
+                        // Проверяем, поместится ли изображение на текущей странице
+                        if (y + imgHeight > doc.internal.pageSize.getHeight() - margin) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                        
+                        // Определяем формат для jsPDF
+                        let format = 'JPEG'; // по умолчанию
+                        if (file.type === 'image/png') {
+                            format = 'PNG';
+                        }
+                        
+                        // Добавляем изображение (центрируем по горизонтали)
+                        doc.addImage(
+                            dataUrl,
+                            format,
+                            margin + (maxWidth - imageWidth) / 2,
+                            y,
+                            imageWidth,
+                            imgHeight
+                        );
+                        
+                        // Добавляем подпись под изображением
+                        y += imgHeight + 5;
+                        if (y < doc.internal.pageSize.getHeight() - margin - 10) {
+                            doc.setFontSize(10);
+                            doc.text(file.name, margin, y);
+                            doc.setFontSize(fontSize);
+                            y += 10;
+                        }
+                        
+                        // Добавляем отступ после изображения
+                        y += 10;
+                    }
+                }
+                
+                // Сохраняем PDF
+                doc.save("imageopt-document.pdf");
+                elements.pdfModal.classList.remove('active');
+                showToast('PDF успішно створено!');
+            } else {
+                showToast('Помилка: Бібліотека PDF не завантажилась. Спробуйте оновити сторінку.');
+            }
         }
 
         // Initialize app when DOM is loaded
