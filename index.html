@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO-теги -->
-    <meta name="description" content="ImageOpt Pro - оптимізація та стиснення зображень онлайн. Зменште розмір JPG, PNG, WebP, AVIF без втрати якості. Безкоштовний інструмент для стиснення фото.">
-    <meta name="keywords" content="оптимізація зображень, стиснення фото, зменшити розмір зображення, конвертер зображень, оптимізатор картинок, компресія JPG, компресія PNG, webp оптимізація">
+    <meta name="description" content="ImageOpt Pro - online image optimization and compression. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Free photo compression tool.">
+    <meta name="keywords" content="image optimization, photo compression, reduce image size, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
     <meta name="author" content="ImageOpt Pro Team">
     
     <link rel="canonical" href="https://imageopt-pro.com/">
     
     <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="ImageOpt Pro - Оптимізатор зображень онлайн">
-    <meta property="og:description" content="Безкоштовний інструмент для стиснення та оптимізації зображень. Зменшуйте розмір файлів без втрати якості!">
+    <meta property="og:title" content="ImageOpt Pro - Online Image Optimizer">
+    <meta property="og:description" content="Free tool for compressing and optimizing images. Reduce file sizes without quality loss!">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://imageopt-pro.com/">
     <meta property="og:image" content="https://imageopt-pro.com/preview.jpg">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ImageOpt Pro - Оптимізатор зображень">
-    <meta name="twitter:description" content="Оптимізуйте зображення онлайн безкоштовно. Зменште розмір файлів JPG, PNG, WebP, AVIF зберігаючи якість.">
+    <meta name="twitter:title" content="ImageOpt Pro - Image Optimizer">
+    <meta name="twitter:description" content="Optimize images online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
     <meta name="twitter:image" content="https://imageopt-pro.com/twitter-preview.jpg">
     
     <!-- Structured Data -->
@@ -30,7 +30,7 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "ImageOpt Pro",
-        "description": "Безкоштовний онлайн інструмент для оптимізації та стиснення зображень",
+        "description": "Free online tool for image optimization and compression",
         "applicationCategory": "Multimedia",
         "operatingSystem": "Windows, macOS, Linux, Android, iOS",
         "offers": {
@@ -54,7 +54,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Добавлена библиотека для создания PDF -->
+    <!-- Added PDF library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
@@ -1392,22 +1392,22 @@
                 </div>
                 <div class="header-text">
                     <h1>ImageOpt Pro</h1>
-                    <div class="subtitle">Розширена оптимізація зображень</div>
+                    <div class="subtitle">Advanced Image Optimization</div>
                 </div>
             </div>
             <div class="header-actions">
-                <button class="theme-toggle" id="themeToggle" title="Змінити тему">
+                <button class="theme-toggle" id="themeToggle" title="Change theme">
                     <i class="fas fa-moon"></i>
                 </button>
-                <button class="history-toggle" id="historyToggle" title="Історія обробки">
+                <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
-                <button class="pdf-toggle" id="pdfToggle" title="Створити PDF">
+                <button class="pdf-toggle" id="pdfToggle" title="Create PDF">
                     <i class="fas fa-file-pdf"></i>
                 </button>
             </div>
             <div class="user-info">
-                <div id="premiumStatus" class="premium-badge">Базовий</div>
+                <div id="premiumStatus" class="premium-badge">Basic</div>
                 <div id="dailyCounter" class="daily-counter">
                     <i class="fas fa-images"></i>
                     <span id="dailyCount">0</span>/<span id="dailyLimit">15</span>
@@ -1418,14 +1418,14 @@
                     </button>
                     <!-- Premium benefits tooltip -->
                     <div class="premium-tooltip" id="premiumTooltip">
-                        <h4><i class="fas fa-crown"></i> Premium Переваги</h4>
+                        <h4><i class="fas fa-crown"></i> Premium Benefits</h4>
                         <ul>
-                            <li><i class="fas fa-check-circle"></i> Необмежена кількість зображень</li>
-                            <li><i class="fas fa-check-circle"></i> Розмір файлу до 50MB</li>
-                            <li><i class="fas fa-check-circle"></i> Формат AVIF</li>
-                            <li><i class="fas fa-check-circle"></i> Пакетна обробка до 50 файлів</li>
-                            <li><i class="fas fa-check-circle"></i> Збереження історії обробки</li>
-                            <li><i class="fas fa-check-circle"></i> Пріоритетна обробка</li>
+                            <li><i class="fas fa-check-circle"></i> Unlimited images</li>
+                            <li><i class="fas fa-check-circle"></i> File size up to 50MB</li>
+                            <li><i class="fas fa-check-circle"></i> AVIF format</li>
+                            <li><i class="fas fa-check-circle"></i> Batch processing up to 50 files</li>
+                            <li><i class="fas fa-check-circle"></i> Save processing history</li>
+                            <li><i class="fas fa-check-circle"></i> Priority processing</li>
                         </ul>
                     </div>
                 </div>
@@ -1440,18 +1440,18 @@
             <div class="card">
                 <div class="section-title">
                     <i class="fas fa-upload"></i>
-                    <h2>Завантаження зображень</h2>
+                    <h2>Upload Images</h2>
                 </div>
                 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    Ви можете завантажити до 15 зображень одночасно. Підтримуються формати: JPG, PNG, WebP, AVIF.
+                    You can upload up to 15 images at once. Supported formats: JPG, PNG, WebP, AVIF.
                 </div>
                 
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                    <div class="upload-text">Перетягніть зображення сюди</div>
-                    <div class="upload-subtext">або натисніть для вибору файлів</div>
+                    <div class="upload-text">Drag & drop images here</div>
+                    <div class="upload-subtext">or click to select files</div>
                 </div>
                 <input type="file" id="fileInput" accept="image/*" multiple>
                 
@@ -1459,75 +1459,75 @@
                 
                 <div class="section-title" style="margin-top: 30px;">
                     <i class="fas fa-edit"></i>
-                    <h2>Режим редагування</h2>
+                    <h2>Edit Mode</h2>
                 </div>
                 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    Оберіть режим редагування: застосовувати зміни до всіх зображень або лише до поточного.
+                    Select edit mode: apply changes to all images or only to the current one.
                 </div>
                 
                 <div class="batch-controls">
                     <div class="batch-btn" id="editSingleBtn">
-                        <i class="fas fa-file-image"></i> Редагувати одне
+                        <i class="fas fa-file-image"></i> Edit Single
                     </div>
                     <div class="batch-btn active" id="editAllBtn">
-                        <i class="fas fa-layer-group"></i> Застосувати до всіх
+                        <i class="fas fa-layer-group"></i> Apply to All
                     </div>
                 </div>
                 <div class="batch-edit-notice" id="batchEditNotice">
-                    <i class="fas fa-info-circle"></i> Зміни застосовуються до всіх зображень
+                    <i class="fas fa-info-circle"></i> Changes applied to all images
                 </div>
                 
-                <!-- Редактор изображений -->
+                <!-- Image editor -->
                 <div class="editor-container" id="editorContainer">
                     <div class="section-title">
                         <i class="fas fa-crop-alt"></i>
-                        <h2>Редактор зображень</h2>
+                        <h2>Image Editor</h2>
                     </div>
                     
                     <div class="info-box">
                         <i class="fas fa-info-circle"></i>
-                        Використовуйте інструменти нижче для редагування зображення. Зміни відображаються лише у попередньому перегляді.
+                        Use the tools below to edit the image. Changes are only displayed in the preview.
                     </div>
                     
                     <div class="editor-preview">
-                        <img id="previewImage" src="" alt="Попередній перегляд">
+                        <img id="previewImage" src="" alt="Preview">
                         <div class="crop-overlay" id="cropOverlay"></div>
                     </div>
                     
                     <div class="edit-notification" id="editNotification">
-                        <i class="fas fa-info-circle"></i> Зміни відображаються лише у попередньому перегляді
+                        <i class="fas fa-info-circle"></i> Changes are only displayed in preview
                     </div>
                     
                     <div class="editor-controls">
                         <div class="editor-btn" id="cropBtn">
                             <i class="fas fa-crop-alt"></i>
-                            <span>Обрізати</span>
+                            <span>Crop</span>
                         </div>
                         <div class="editor-btn" id="rotateLeftBtn">
                             <i class="fas fa-undo"></i>
-                            <span>Вліво 90°</span>
+                            <span>Rotate Left</span>
                         </div>
                         <div class="editor-btn" id="rotateRightBtn">
                             <i class="fas fa-redo"></i>
-                            <span>Вправо 90°</span>
+                            <span>Rotate Right</span>
                         </div>
                         <div class="editor-btn" id="flipHBtn">
                             <i class="fas fa-arrows-alt-h"></i>
-                            <span>Віддзеркалити</span>
+                            <span>Flip</span>
                         </div>
                         <div class="editor-btn" id="adjustBtn">
                             <i class="fas fa-adjust"></i>
-                            <span>Корекція</span>
+                            <span>Adjust</span>
                         </div>
                         <div class="editor-btn" id="resetEditBtn">
                             <i class="fas fa-times"></i>
-                            <span>Скинути</span>
+                            <span>Reset</span>
                         </div>
                     </div>
                     
-                    <!-- Сенсорное управление для мобильных -->
+                    <!-- Touch controls for mobile -->
                     <div class="touch-controls">
                         <div class="touch-btn" id="touchRotateLeft">
                             <i class="fas fa-undo"></i>
@@ -1546,17 +1546,17 @@
                         </div>
                     </div>
                     
-                    <!-- Контролы обрезки -->
+                    <!-- Crop controls -->
                     <div class="crop-controls" id="cropControls">
                         <button class="btn" id="applyCropBtn">
-                            <i class="fas fa-check"></i> Застосувати
+                            <i class="fas fa-check"></i> Apply
                         </button>
                         <button class="btn btn-secondary" id="cancelCropBtn">
-                            <i class="fas fa-times"></i> Скасувати
+                            <i class="fas fa-times"></i> Cancel
                         </button>
                         
                         <div class="crop-preview">
-                            <div class="crop-ratio active" data-ratio="free">Вільний</div>
+                            <div class="crop-ratio active" data-ratio="free">Free</div>
                             <div class="crop-ratio" data-ratio="1:1">1:1</div>
                             <div class="crop-ratio" data-ratio="4:3">4:3</div>
                             <div class="crop-ratio" data-ratio="16:9">16:9</div>
@@ -1565,110 +1565,110 @@
                         </div>
                     </div>
                     
-                    <!-- Контролы коррекции -->
+                    <!-- Adjustment controls -->
                     <div class="adjust-controls" id="adjustControls">
-                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> Корекція зображення</h3>
+                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> Image Adjustments</h3>
                         
                         <div class="adjust-row">
-                            <label>Яскравість</label>
+                            <label>Brightness</label>
                             <input type="range" id="brightnessRange" min="-100" max="100" value="0">
                             <span id="brightnessValue">0%</span>
                         </div>
                         <div class="adjust-row">
-                            <label>Контрастність</label>
+                            <label>Contrast</label>
                             <input type="range" id="contrastRange" min="-100" max="100" value="0">
                             <span id="contrastValue">0%</span>
                         </div>
                         <div class="adjust-row">
-                            <label>Насиченість</label>
+                            <label>Saturation</label>
                             <input type="range" id="saturationRange" min="-100" max="100" value="0">
                             <span id="saturationValue">0%</span>
                         </div>
                         <div class="adjust-row">
-                            <label>Різкість</label>
+                            <label>Sharpness</label>
                             <input type="range" id="sharpnessRange" min="0" max="100" value="0">
                             <span id="sharpnessValue">0%</span>
                         </div>
                         <div class="adjust-row">
-                            <label>Температура</label>
+                            <label>Temperature</label>
                             <input type="range" id="temperatureRange" min="-100" max="100" value="0">
                             <span id="temperatureValue">0%</span>
                         </div>
                         
                         <div class="adjust-actions">
                             <button class="btn" id="applyAdjustBtn">
-                                <i class="fas fa-check"></i> Застосувати
+                                <i class="fas fa-check"></i> Apply
                             </button>
                             <button class="btn btn-secondary" id="resetAdjustBtn">
-                                <i class="fas fa-times"></i> Скинути
+                                <i class="fas fa-times"></i> Reset
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Водяные знаки -->
+                <!-- Watermarks -->
                 <div class="watermark-controls" id="watermarkControls">
-                    <h3 class="card-title"><i class="fas fa-water"></i> Водяний знак</h3>
+                    <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
                     
                     <div class="watermark-row">
-                        <input type="text" id="watermarkText" placeholder="Текст водяного знака">
+                        <input type="text" id="watermarkText" placeholder="Watermark text">
                         <input type="color" id="watermarkColor" value="#ffffff">
                     </div>
                     
                     <div class="watermark-row">
-                        <label>Розмір:</label>
+                        <label>Size:</label>
                         <input type="range" id="watermarkSize" min="10" max="50" value="24">
                         <span id="watermarkSizeValue">24px</span>
                     </div>
                     
                     <div class="watermark-row">
-                        <label>Прозорість:</label>
+                        <label>Opacity:</label>
                         <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
                         <span id="watermarkOpacityValue">70%</span>
                     </div>
                     
                     <div class="watermark-row">
-                        <label>Позиція:</label>
+                        <label>Position:</label>
                         <select id="watermarkPosition">
-                            <option value="bottom-right">Нижній правий</option>
-                            <option value="bottom-left">Нижній лівий</option>
-                            <option value="top-right">Верхній правий</option>
-                            <option value="top-left">Верхній лівий</option>
-                            <option value="center">Центр</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="top-right">Top Right</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="center">Center</option>
                         </select>
                     </div>
                     
                     <div class="watermark-preview">
-                        <span id="watermarkPreview">Приклад водяного знака</span>
+                        <span id="watermarkPreview">Watermark Preview</span>
                     </div>
                 </div>
                 
                 <div class="section-title">
                     <i class="fas fa-sliders-h"></i>
-                    <h2>Налаштування оптимізації</h2>
+                    <h2>Optimization Settings</h2>
                 </div>
                 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    Налаштуйте параметри стиснення для досягнення оптимального співвідношення якості та розміру файлу.
+                    Configure compression settings to achieve the optimal balance between quality and file size.
                 </div>
                 
                 <div class="controls">
                     <div class="control-group">
                         <div class="control-label">
-                            <span class="control-label-text">Якість:</span>
+                            <span class="control-label-text">Quality:</span>
                             <span class="quality-value control-value" id="qualityValue">80%</span>
                         </div>
                         <input type="range" id="quality" min="10" max="100" value="80">
                         <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
                             <span class="explanation-icon">i</span>
-                            Вища якість = більший розмір файлу. Рекомендуємо 60-80% для оптимального результату.
+                            Higher quality = larger file size. We recommend 60-80% for optimal results.
                         </div>
                     </div>
                     
                     <div class="control-group">
                         <div class="control-label">
-                            <span class="control-label-text">Формат виводу:</span>
+                            <span class="control-label-text">Output Format:</span>
                         </div>
                         <select id="format">
                             <option value="jpeg">JPEG</option>
@@ -1678,99 +1678,99 @@
                         </select>
                         <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
                             <span class="explanation-icon">i</span>
-                            WebP та AVIF забезпечують найкраще стиснення без втрат якості.
+                            WebP and AVIF provide the best compression without quality loss.
                         </div>
                     </div>
                     
                     <div class="control-group">
                         <div class="control-label">
-                            <span class="control-label-text">Макс. ширина (px):</span>
+                            <span class="control-label-text">Max Width (px):</span>
                         </div>
                         <select id="maxWidth">
-                            <option value="">Без зміни</option>
-                            <option value="640">640px (для мобільних)</option>
-                            <option value="800">800px (для планшетів)</option>
-                            <option value="1024">1024px (для ноутбуків)</option>
-                            <option value="1200">1200px (для моніторів)</option>
+                            <option value="">No resize</option>
+                            <option value="640">640px (for mobile)</option>
+                            <option value="800">800px (for tablets)</option>
+                            <option value="1024">1024px (for laptops)</option>
+                            <option value="1200">1200px (for monitors)</option>
                             <option value="1920">1920px (4K)</option>
                         </select>
                         <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
                             <span class="explanation-icon">i</span>
-                            Зменшення ширини значно знижує розмір файлу.
+                            Reducing width significantly decreases file size.
                         </div>
                     </div>
                     
                     <div class="control-group">
-                        <label for="auto-optimize">Автоматична оптимізація</label>
+                        <label for="auto-optimize">Auto Optimization</label>
                         <div class="auto-optimize">
                             <input type="checkbox" id="autoOptimizeCheckbox">
-                            <span>Оптимізувати одразу після завантаження</span>
+                            <span>Optimize immediately after upload</span>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Расширенные настройки -->
+                <!-- Advanced settings -->
                 <div class="settings-toggle">
                     <button class="settings-toggle-btn" id="toggleAdvancedSettings">
-                        <i class="fas fa-cog"></i> Розширені налаштування
+                        <i class="fas fa-cog"></i> Advanced Settings
                     </button>
                 </div>
                 
                 <div class="advanced-settings" id="advancedSettings">
                     <div class="control-group">
-                        <label>Додаткові налаштування JPEG</label>
+                        <label>Advanced JPEG Settings</label>
                         <div class="progressive-toggle">
                             <input type="checkbox" id="progressiveJpeg">
-                            <span>Прогресивний JPEG (краща якість)</span>
+                            <span>Progressive JPEG (better quality)</span>
                         </div>
                         <div class="metadata-toggle">
                             <input type="checkbox" id="removeMetadata" checked>
-                            <span>Видалити метадані (екіф, GPS тощо)</span>
+                            <span>Remove metadata (EXIF, GPS, etc.)</span>
                         </div>
                     </div>
                     
                     <div class="control-group">
-                        <label>Налаштування PNG</label>
+                        <label>PNG Settings</label>
                         <select id="pngCompression">
-                            <option value="auto">Автоматична компресія (рекомендовано)</option>
-                            <option value="lossless">Без втрат (краща якість)</option>
-                            <option value="lossy">З втратами (краще стиснення)</option>
+                            <option value="auto">Auto compression (recommended)</option>
+                            <option value="lossless">Lossless (best quality)</option>
+                            <option value="lossy">Lossy (better compression)</option>
                         </select>
                     </div>
                     
                     <div class="control-group">
-                        <label>Водяний знак</label>
+                        <label>Watermark</label>
                         <div class="watermark-control">
                             <input type="checkbox" id="enableWatermark">
-                            <span>Додати водяний знак до зображень</span>
+                            <span>Add watermark to images</span>
                         </div>
                     </div>
                 </div>
                 
                 <div class="info-box" style="margin-top: 20px;">
                     <i class="fas fa-bolt"></i>
-                    Після налаштування параметрів натисніть кнопку "Оптимізувати зображення" для початку обробки.
+                    After setting parameters, click "Optimize Images" to start processing.
                 </div>
                 
                 <button class="btn" id="processBtn">
-                    <i class="fas fa-cogs"></i> Оптимізувати зображення
+                    <i class="fas fa-cogs"></i> Optimize Images
                 </button>
             </div>
             
             <div class="card">
                 <div class="section-title">
                     <i class="fas fa-tachometer-alt"></i>
-                    <h2>Результати оптимізації</h2>
+                    <h2>Optimization Results</h2>
                 </div>
                 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    Тут відображатимуться результати після оптимізації. Ви зможете порівняти оригінал та оптимізоване зображення.
+                    Results will be displayed here after optimization. You can compare original and optimized images.
                 </div>
                 
                 <div class="processing" id="processing">
                     <div class="spinner"></div>
-                    <p>Обробка зображень...</p>
+                    <p>Processing images...</p>
                     <div class="progress-container">
                         <div class="progress-bar" id="progressBar"></div>
                     </div>
@@ -1784,18 +1784,18 @@
                     
                     <div class="info-box" style="margin-top: 20px;">
                         <i class="fas fa-download"></i>
-                        Після оптимізації ви зможете завантажити результати або зберегти налаштування для майбутнього використання.
+                        After optimization, you can download results or save settings for future use.
                     </div>
                     
                     <div class="buttons">
                         <button class="btn" id="downloadBtn" disabled>
-                            <i class="fas fa-download"></i> Завантажити
+                            <i class="fas fa-download"></i> Download
                         </button>
                         <button class="btn btn-secondary" id="resetBtn">
-                            <i class="fas fa-redo"></i> Новий проект
+                            <i class="fas fa-redo"></i> New Project
                         </button>
                         <button class="btn" id="saveSettingsBtn">
-                            <i class="fas fa-save"></i> Зберегти профіль
+                            <i class="fas fa-save"></i> Save Profile
                         </button>
                     </div>
                 </div>
@@ -1805,36 +1805,36 @@
     
     <div class="history-panel" id="historyPanel">
         <div class="history-header">
-            <h3 class="history-title"><i class="fas fa-history"></i> Історія обробки</h3>
+            <h3 class="history-title"><i class="fas fa-history"></i> Processing History</h3>
             <button class="close-history" id="closeHistory"><i class="fas fa-times"></i></button>
         </div>
         <div id="historyList">
-            <p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>
+            <p style="text-align: center; padding: 20px; color: var(--gray);">History is empty</p>
         </div>
     </div>
 
-    <!-- Модальное окно для создания PDF -->
+    <!-- PDF Modal -->
     <div class="pdf-modal" id="pdfModal">
         <div class="pdf-modal-content">
-            <h3><i class="fas fa-file-pdf"></i> Створити PDF</h3>
-            <textarea id="pdfText" placeholder="Введіть текст для PDF..."></textarea>
+            <h3><i class="fas fa-file-pdf"></i> Create PDF</h3>
+            <textarea id="pdfText" placeholder="Enter text for PDF..."></textarea>
             
-            <!-- Секция для добавления изображений -->
-            <h4><i class="fas fa-images"></i> Додати зображення</h4>
+            <!-- Image section -->
+            <h4><i class="fas fa-images"></i> Add Images</h4>
             <div class="pdf-images-container" id="pdfImagesContainer">
                 <p style="text-align: center; padding: 20px; color: var(--gray);">
-                    Немає доступних зображень. Спочатку оптимізуйте зображення.
+                    No optimized images available. Optimize images first.
                 </p>
             </div>
             
             <div class="image-width-control">
-                <label for="imageWidthPercent">Ширина зображень (% від ширини сторінки):</label>
+                <label for="imageWidthPercent">Image width (% of page width):</label>
                 <input type="number" id="imageWidthPercent" min="10" max="100" value="80">
             </div>
             
             <div class="pdf-modal-buttons">
-                <button class="btn btn-secondary" id="pdfCancelBtn">Скасувати</button>
-                <button class="btn" id="pdfCreateBtn">Створити</button>
+                <button class="btn btn-secondary" id="pdfCancelBtn">Cancel</button>
+                <button class="btn" id="pdfCreateBtn">Create</button>
             </div>
         </div>
     </div>
@@ -1842,7 +1842,7 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Конфигурация Firebase
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
             authDomain: "imageopt-pro.firebaseapp.com",
@@ -1852,12 +1852,12 @@
             appId: "1:135619164867:web:20abe6f99ab9d468eac076"
         };
 
-        // Лимиты для бесплатной версии
+        // Free version limits
         const FREE_LIMITS = {
-            DAILY: 15,         // 15 изображений в день
-            PER_BATCH: 5,       // 5 файлов за раз
-            MAX_SIZE: 7 * 1024 * 1024, // 7 МБ
-            FORMATS: ['jpeg', 'png', 'webp'] // доступные форматы
+            DAILY: 15,         // 15 images per day
+            PER_BATCH: 5,       // 5 files at once
+            MAX_SIZE: 7 * 1024 * 1024, // 7 MB
+            FORMATS: ['jpeg', 'png', 'webp'] // available formats
         };
 
         // State management
@@ -1888,8 +1888,8 @@
             resizeHandle: null,
             dailyCount: 0,
             lastProcessDate: null,
-            // Новые свойства для улучшений
-            batchEditMode: 'all', // 'single' или 'all'
+            // New properties for enhancements
+            batchEditMode: 'all', // 'single' or 'all'
             watermark: {
                 enabled: false,
                 text: 'ImageOpt Pro',
@@ -1902,7 +1902,7 @@
             removeMetadata: true,
             pngCompression: 'auto',
             savedProfiles: JSON.parse(localStorage.getItem('savedProfiles')) || [],
-            // Коррекция изображения
+            // Image adjustments
             adjustments: {
                 brightness: 0,
                 contrast: 0,
@@ -1914,7 +1914,7 @@
 
         // DOM Elements
         const elements = {
-            // Основные элементы
+            // Basic elements
             uploadArea: document.getElementById('uploadArea'),
             fileInput: document.getElementById('fileInput'),
             filePreviews: document.getElementById('filePreviews'),
@@ -1961,7 +1961,7 @@
             dailyCount: document.getElementById('dailyCount'),
             dailyLimit: document.getElementById('dailyLimit'),
             
-            // Новые элементы для улучшений
+            // New elements for enhancements
             editSingleBtn: document.getElementById('editSingleBtn'),
             editAllBtn: document.getElementById('editAllBtn'),
             batchEditNotice: document.getElementById('batchEditNotice'),
@@ -1987,7 +1987,7 @@
             touchCrop: document.getElementById('touchCrop'),
             touchAdjust: document.getElementById('touchAdjust'),
             
-            // Элементы коррекции
+            // Adjustment elements
             brightnessRange: document.getElementById('brightnessRange'),
             contrastRange: document.getElementById('contrastRange'),
             saturationRange: document.getElementById('saturationRange'),
@@ -2002,7 +2002,7 @@
             resetAdjustBtn: document.getElementById('resetAdjustBtn'),
             adjustControls: document.getElementById('adjustControls'),
             
-            // Элементы для PDF
+            // PDF elements
             pdfToggle: document.getElementById('pdfToggle'),
             pdfModal: document.getElementById('pdfModal'),
             pdfCancelBtn: document.getElementById('pdfCancelBtn'),
@@ -2020,62 +2020,62 @@
                 elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
             
-            // Инициализация счетчика
+            // Initialize counter
             state.dailyCount = parseInt(localStorage.getItem('dailyCount')) || 0;
             state.lastProcessDate = localStorage.getItem('lastProcessDate');
             updateDailyCounter();
             
             try {
-                // Инициализация Firebase
+                // Initialize Firebase
                 if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
                     firebase.initializeApp(firebaseConfig);
                     state.firebaseInitialized = true;
                     state.db = firebase.firestore();
                     
-                    // Проверка аутентификации
+                    // Check authentication
                     firebase.auth().onAuthStateChanged(user => {
                         if (user) {
                             state.user = user;
                             elements.userEmail.textContent = user.email;
                             checkPremiumStatus();
                         } else {
-                            // Гостевой режим
+                            // Guest mode
                             state.user = { email: "guest@example.com", uid: "guest" };
-                            elements.userEmail.textContent = "Гість";
+                            elements.userEmail.textContent = "Guest";
                             state.isPremium = false;
                             updatePremiumUI();
                         }
                         renderHistory();
                     });
                 } else {
-                    console.warn("Firebase не загружен");
-                    // Оффлайн режим
+                    console.warn("Firebase not loaded");
+                    // Offline mode
                     state.user = { email: "guest@example.com", uid: "guest" };
-                    elements.userEmail.textContent = "Гість";
+                    elements.userEmail.textContent = "Guest";
                     state.isPremium = false;
                     updatePremiumUI();
                     renderHistory();
                 }
             } catch (e) {
-                console.error("Ошибка Firebase:", e);
-                // Оффлайн режим при ошибке
+                console.error("Firebase error:", e);
+                // Offline mode on error
                 state.user = { email: "guest@example.com", uid: "guest" };
-                elements.userEmail.textContent = "Гість (оффлайн)";
+                elements.userEmail.textContent = "Guest (offline)";
                 state.isPremium = false;
                 updatePremiumUI();
                 renderHistory();
             }
             
-            // Проверка поддержки AVIF
+            // Check AVIF support
             await checkAvifSupport();
             
             setupEventListeners();
             initEnhancements();
         }
 
-        // Инициализация новых функций
+        // Initialize new features
         function initEnhancements() {
-            // Инициализация водяных знаков
+            // Initialize watermarks
             elements.watermarkText.value = state.watermark.text;
             elements.watermarkSize.value = state.watermark.size;
             elements.watermarkSizeValue.textContent = `${state.watermark.size}px`;
@@ -2085,23 +2085,23 @@
             elements.watermarkPosition.value = state.watermark.position;
             updateWatermarkPreview();
             
-            // Инициализация расширенных настроек
+            // Initialize advanced settings
             elements.progressiveJpeg.checked = state.progressiveJpeg;
             elements.removeMetadata.checked = state.removeMetadata;
             elements.pngCompression.value = state.pngCompression;
             elements.enableWatermark.checked = state.watermark.enabled;
             
-            // Обработчики событий для новых элементов
+            // Event handlers for new elements
             setupEnhancementEventListeners();
         }
 
-        // Настройка обработчиков событий для улучшений
+        // Setup event handlers for enhancements
         function setupEnhancementEventListeners() {
-            // Пакетное редактирование
+            // Batch editing
             elements.editSingleBtn.addEventListener('click', () => setBatchEditMode('single'));
             elements.editAllBtn.addEventListener('click', () => setBatchEditMode('all'));
             
-            // Водяные знаки
+            // Watermarks
             elements.enableWatermark.addEventListener('change', toggleWatermarkControls);
             elements.watermarkText.addEventListener('input', updateWatermarkPreview);
             elements.watermarkSize.addEventListener('input', updateWatermarkSize);
@@ -2109,7 +2109,7 @@
             elements.watermarkColor.addEventListener('input', updateWatermarkPreview);
             elements.watermarkPosition.addEventListener('change', updateWatermarkPreview);
             
-            // Расширенные настройки
+            // Advanced settings
             elements.toggleAdvancedSettings.addEventListener('click', toggleAdvancedSettings);
             elements.progressiveJpeg.addEventListener('change', function() {
                 state.progressiveJpeg = this.checked;
@@ -2121,17 +2121,17 @@
                 state.pngCompression = this.value;
             });
             
-            // Сохранение профиля
+            // Save profile
             elements.saveSettingsBtn.addEventListener('click', saveProfile);
             
-            // Сенсорное управление
+            // Touch controls
             elements.touchRotateLeft.addEventListener('click', () => rotateImage(-90));
             elements.touchRotateRight.addEventListener('click', () => rotateImage(90));
             elements.touchFlipH.addEventListener('click', flipImageHorizontal);
             elements.touchCrop.addEventListener('click', toggleCropMode);
             elements.touchAdjust.addEventListener('click', toggleAdjustPanel);
             
-            // Коррекция изображения
+            // Image adjustments
             elements.adjustBtn.addEventListener('click', toggleAdjustPanel);
             elements.brightnessRange.addEventListener('input', updateBrightnessValue);
             elements.contrastRange.addEventListener('input', updateContrastValue);
@@ -2142,10 +2142,10 @@
             elements.resetAdjustBtn.addEventListener('click', resetAdjustments);
         }
 
-        // Обновление счетчика дневного использования
+        // Update daily usage counter
         function updateDailyCounter() {
             const today = new Date().toDateString();
-            // Сброс счетчика если новый день
+            // Reset counter if new day
             if (state.lastProcessDate !== today) {
                 state.dailyCount = 0;
                 localStorage.setItem('dailyCount', 0);
@@ -2153,15 +2153,15 @@
                 state.lastProcessDate = today;
             }
 
-            // Обновление интерфейса
+            // Update UI
             elements.dailyCount.textContent = state.dailyCount;
             elements.dailyLimit.textContent = state.isPremium ? '∞' : FREE_LIMITS.DAILY;
             
-            // Скрыть счетчик для премиум пользователей
+            // Hide counter for premium users
             elements.dailyCounter.style.display = state.isPremium ? 'none' : 'flex';
         }
 
-        // Проверка поддержки AVIF
+        // Check AVIF support
         async function checkAvifSupport() {
             const avifImage = new Image();
             avifImage.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+EERQ==';
@@ -2226,7 +2226,7 @@
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.key === 'z') {
                     resetEditState();
-                    showToast('Зміни скасовано!');
+                    showToast('Changes canceled!');
                 }
             });
             
@@ -2239,7 +2239,7 @@
                 elements.premiumTooltip.classList.remove('show');
             });
             
-            // Для мобильных устройств
+            // For mobile devices
             elements.upgradeBtn.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     elements.premiumTooltip.classList.toggle('show');
@@ -2249,7 +2249,7 @@
             // Premium and logout
             elements.upgradeBtn.addEventListener('click', () => {
                 if (!state.user || state.user.uid === "guest") {
-                    showToast("Будь ласка, увійдіть для оновлення до Premium");
+                    showToast("Please login to upgrade to Premium");
                     setTimeout(() => window.location.href = 'auth.html', 2000);
                 } else {
                     window.location.href = 'pay.html';
@@ -2289,22 +2289,22 @@
             elements.pdfCreateBtn.addEventListener('click', createPDF);
         }
 
-        // Установка режима пакетного редактирования
+        // Set batch edit mode
         function setBatchEditMode(mode) {
             state.batchEditMode = mode;
             elements.editSingleBtn.classList.toggle('active', mode === 'single');
             elements.editAllBtn.classList.toggle('active', mode === 'all');
             elements.batchEditNotice.style.display = mode === 'all' ? 'block' : 'none';
-            showToast(`Режим редагування: ${mode === 'all' ? 'до всіх зображень' : 'до одного зображення'}`);
+            showToast(`Edit mode: ${mode === 'all' ? 'apply to all images' : 'apply to single image'}`);
         }
 
-        // Переключение водяных знаков
+        // Toggle watermark controls
         function toggleWatermarkControls() {
             state.watermark.enabled = elements.enableWatermark.checked;
             elements.watermarkControls.style.display = state.watermark.enabled ? 'block' : 'none';
         }
 
-        // Обновление предпросмотра водяного знака
+        // Update watermark preview
         function updateWatermarkPreview() {
             state.watermark.text = elements.watermarkText.value;
             state.watermark.color = elements.watermarkColor.value;
@@ -2315,7 +2315,7 @@
             elements.watermarkPreview.style.color = state.watermark.color;
             elements.watermarkPreview.style.opacity = state.watermark.opacity / 100;
             
-            // Позиционирование
+            // Positioning
             elements.watermarkPreview.style.position = 'absolute';
             elements.watermarkPreview.style.margin = '10px';
             
@@ -2344,36 +2344,36 @@
             }
         }
 
-        // Обновление размера водяного знака
+        // Update watermark size
         function updateWatermarkSize(e) {
             state.watermark.size = parseInt(e.target.value);
             elements.watermarkSizeValue.textContent = `${state.watermark.size}px`;
             updateWatermarkPreview();
         }
 
-        // Обновление прозрачности водяного знака
+        // Update watermark opacity
         function updateWatermarkOpacity(e) {
             state.watermark.opacity = parseInt(e.target.value);
             elements.watermarkOpacityValue.textContent = `${state.watermark.opacity}%`;
             updateWatermarkPreview();
         }
 
-        // Переключение расширенных настроек
+        // Toggle advanced settings
         function toggleAdvancedSettings() {
             elements.advancedSettings.style.display = 
                 elements.advancedSettings.style.display === 'block' ? 'none' : 'block';
             
             const icon = elements.toggleAdvancedSettings.querySelector('i');
             if (elements.advancedSettings.style.display === 'block') {
-                elements.toggleAdvancedSettings.innerHTML = '<i class="fas fa-cog"></i> Сховати розширені налаштування';
+                elements.toggleAdvancedSettings.innerHTML = '<i class="fas fa-cog"></i> Hide Advanced Settings';
             } else {
-                elements.toggleAdvancedSettings.innerHTML = '<i class="fas fa-cog"></i> Розширені налаштування';
+                elements.toggleAdvancedSettings.innerHTML = '<i class="fas fa-cog"></i> Advanced Settings';
             }
         }
 
-        // Сохранение профиля настроек
+        // Save settings profile
         function saveProfile() {
-            const profileName = prompt("Введіть назву профілю:");
+            const profileName = prompt("Enter profile name:");
             if (!profileName) return;
             
             const profile = {
@@ -2392,7 +2392,7 @@
             
             state.savedProfiles.push(profile);
             localStorage.setItem('savedProfiles', JSON.stringify(state.savedProfiles));
-            showToast(`Профіль "${profileName}" збережено!`);
+            showToast(`Profile "${profileName}" saved!`);
         }
 
         // Show toast notification
@@ -2430,7 +2430,7 @@
 
         // Update premium UI
         function updatePremiumUI() {
-            elements.premiumStatus.textContent = state.isPremium ? 'Premium' : 'Базовий';
+            elements.premiumStatus.textContent = state.isPremium ? 'Premium' : 'Basic';
             if (state.isPremium) {
                 elements.premiumStatus.style.background = 'linear-gradient(135deg, #ffd700, #ff9800)';
                 elements.premiumStatus.style.color = '#333';
@@ -2491,7 +2491,7 @@
             if (!state.isPremium) {
                 // Max files per batch
                 if (files.length > FREE_LIMITS.PER_BATCH) {
-                    showToast(`Безкоштовна версія: макс. ${FREE_LIMITS.PER_BATCH} файлів за раз`);
+                    showToast(`Free version: max ${FREE_LIMITS.PER_BATCH} files at once`);
                     files = files.slice(0, FREE_LIMITS.PER_BATCH);
                 }
                 
@@ -2669,7 +2669,7 @@
             // Reset adjustments
             resetAdjustments();
             
-            showEditNotification('Зміни скинуто!');
+            showEditNotification('Changes reset!');
         }
 
         // Rotate image
@@ -2678,19 +2678,19 @@
             // Normalize rotation to 0-360 range
             state.rotation = (state.rotation % 360 + 360) % 360;
             applyImageTransformations();
-            showEditNotification('Зображення повернуто!');
+            showEditNotification('Image rotated!');
         }
 
         // Flip image horizontally
         function flipImageHorizontal() {
             state.flipHorizontal = !state.flipHorizontal;
             applyImageTransformations();
-            showEditNotification('Зображення віддзеркалено!');
+            showEditNotification('Image flipped!');
         }
         
         // Show edit notification
         function showEditNotification(message) {
-            elements.editNotification.textContent = message || 'Зміни застосовано!';
+            elements.editNotification.textContent = message || 'Changes applied!';
             elements.editNotification.style.display = 'block';
             setTimeout(() => {
                 elements.editNotification.style.display = 'none';
@@ -2711,14 +2711,14 @@
             elements.cropControls.style.display = 'grid';
             elements.cropOverlay.style.display = 'block';
             
-            // Инициализация обрезки
+            // Initialize cropping
             initCrop();
-            showEditNotification('Режим обрізки активовано');
+            showEditNotification('Crop mode activated');
         }
         
-        // Инициализация обрезки
+        // Initialize cropping
         function initCrop() {
-            // Создаем элемент для обрезки
+            // Create crop element
             const cropBox = document.createElement('div');
             cropBox.className = 'crop-box';
             cropBox.style.display = 'block';
@@ -2732,7 +2732,7 @@
             cropBox.style.top = '50%';
             cropBox.style.transform = 'translate(-50%, -50%)';
             
-            // Добавляем ручки для изменения размера
+            // Add resize handles
             const handles = ['nw', 'ne', 'sw', 'se'];
             handles.forEach(pos => {
                 const handle = document.createElement('div');
@@ -2743,14 +2743,14 @@
             elements.cropOverlay.innerHTML = '';
             elements.cropOverlay.appendChild(cropBox);
             
-            // Сохраняем ссылку на элемент
+            // Save reference to element
             state.cropBox = cropBox;
             
-            // Добавляем обработчики событий
+            // Add event handlers
             cropBox.addEventListener('mousedown', startCrop);
             cropBox.addEventListener('touchstart', startCrop, { passive: false });
             
-            // Добавляем обработчики для ручек изменения размера
+            // Add event handlers for resize handles
             const handleElements = cropBox.querySelectorAll('.crop-handle');
             handleElements.forEach(handle => {
                 handle.addEventListener('mousedown', startResize);
@@ -2758,12 +2758,12 @@
             });
         }
         
-        // Универсальная функция начала обрезки
+        // Start cropping (universal)
         function startCrop(e) {
             e.preventDefault();
             if (!state.cropMode) return;
             
-            // Определяем тип события (мышь или касание)
+            // Determine event type (mouse or touch)
             const isTouch = e.type === 'touchstart';
             const clientX = isTouch ? e.touches[0].clientX : e.clientX;
             const clientY = isTouch ? e.touches[0].clientY : e.clientY;
@@ -2772,62 +2772,62 @@
             state.cropStartX = clientX;
             state.cropStartY = clientY;
             
-            // Позиция элемента обрезки
+            // Crop element position
             const rect = state.cropBox.getBoundingClientRect();
             state.cropBoxX = rect.left;
             state.cropBoxY = rect.top;
             state.cropBoxWidth = rect.width;
             state.cropBoxHeight = rect.height;
             
-            // Добавляем обработчики перемещения
+            // Add move handlers
             document.addEventListener('mousemove', cropMove);
             document.addEventListener('touchmove', cropMove, { passive: false });
             
-            // Добавляем обработчики завершения
+            // Add end handlers
             document.addEventListener('mouseup', endCrop);
             document.addEventListener('touchend', endCrop);
         }
         
-        // Универсальная функция перемещения при обрезке
+        // Crop move (universal)
         function cropMove(e) {
             if (!state.cropMode || !state.cropping) return;
             e.preventDefault();
             
-            // Определяем тип события
+            // Determine event type
             const isTouch = e.type === 'touchmove';
             const clientX = isTouch ? e.touches[0].clientX : e.clientX;
             const clientY = isTouch ? e.touches[0].clientY : e.clientY;
             
-            // Вычисляем смещение
+            // Calculate offset
             const dx = clientX - state.cropStartX;
             const dy = clientY - state.cropStartY;
             
-            // Обновляем позицию элемента обрезки
+            // Update crop element position
             state.cropBox.style.left = `${state.cropBoxX + dx}px`;
             state.cropBox.style.top = `${state.cropBoxY + dy}px`;
         }
         
-        // Универсальная функция завершения обрезки
+        // End crop (universal)
         function endCrop() {
             if (!state.cropMode || !state.cropping) return;
             
             state.cropping = false;
             
-            // Удаляем обработчики
+            // Remove handlers
             document.removeEventListener('mousemove', cropMove);
             document.removeEventListener('touchmove', cropMove);
             document.removeEventListener('mouseup', endCrop);
             document.removeEventListener('touchend', endCrop);
         }
         
-        // Универсальная функция начала изменения размера
+        // Start resize (universal)
         function startResize(e) {
             e.preventDefault();
             e.stopPropagation();
             
             if (!state.cropMode) return;
             
-            // Определяем тип события
+            // Determine event type
             const isTouch = e.type === 'touchstart';
             const clientX = isTouch ? e.touches[0].clientX : e.clientX;
             const clientY = isTouch ? e.touches[0].clientY : e.clientY;
@@ -2836,66 +2836,66 @@
             state.cropStartX = clientX;
             state.cropStartY = clientY;
             
-            // Определяем тип ручки
-            state.resizeHandle = e.target.classList[1].split('-')[1]; // например 'se'
+            // Determine handle type
+            state.resizeHandle = e.target.classList[1].split('-')[1]; // e.g. 'se'
             
-            // Сохраняем текущие параметры области обрезки
+            // Save current crop area parameters
             const rect = state.cropBox.getBoundingClientRect();
             state.cropBoxX = rect.left;
             state.cropBoxY = rect.top;
             state.cropBoxWidth = rect.width;
             state.cropBoxHeight = rect.height;
             
-            // Добавляем обработчики перемещения
+            // Add move handlers
             document.addEventListener('mousemove', resizeMove);
             document.addEventListener('touchmove', resizeMove, { passive: false });
             
-            // Добавляем обработчики завершения
+            // Add end handlers
             document.addEventListener('mouseup', endResize);
             document.addEventListener('touchend', endResize);
         }
         
-        // Универсальная функция перемещения при изменении размера
+        // Resize move (universal)
         function resizeMove(e) {
             if (!state.cropMode || !state.resizing) return;
             e.preventDefault();
             
-            // Определяем тип события
+            // Determine event type
             const isTouch = e.type === 'touchmove';
             const clientX = isTouch ? e.touches[0].clientX : e.clientX;
             const clientY = isTouch ? e.touches[0].clientY : e.clientY;
             
-            // Вычисляем смещение
+            // Calculate offset
             const dx = clientX - state.cropStartX;
             const dy = clientY - state.cropStartY;
             
-            // Рассчитываем новые размеры в зависимости от типа ручки
+            // Calculate new dimensions based on handle type
             let newWidth = state.cropBoxWidth;
             let newHeight = state.cropBoxHeight;
             let newLeft = state.cropBoxX;
             let newTop = state.cropBoxY;
             
-            const minSize = 50; // Минимальный размер области
+            const minSize = 50; // Minimum area size
             
             switch(state.resizeHandle) {
-                case 'se': // Нижний правый угол
+                case 'se': // Bottom-right corner
                     newWidth = Math.max(minSize, state.cropBoxWidth + dx);
                     newHeight = Math.max(minSize, state.cropBoxHeight + dy);
                     break;
                     
-                case 'sw': // Нижний левый угол
+                case 'sw': // Bottom-left corner
                     newWidth = Math.max(minSize, state.cropBoxWidth - dx);
                     newHeight = Math.max(minSize, state.cropBoxHeight + dy);
                     newLeft = state.cropBoxX + dx;
                     break;
                     
-                case 'ne': // Верхний правый угол
+                case 'ne': // Top-right corner
                     newWidth = Math.max(minSize, state.cropBoxWidth + dx);
                     newHeight = Math.max(minSize, state.cropBoxHeight - dy);
                     newTop = state.cropBoxY + dy;
                     break;
                     
-                case 'nw': // Верхний левый угол
+                case 'nw': // Top-left corner
                     newWidth = Math.max(minSize, state.cropBoxWidth - dx);
                     newHeight = Math.max(minSize, state.cropBoxHeight - dy);
                     newLeft = state.cropBoxX + dx;
@@ -2903,43 +2903,43 @@
                     break;
             }
             
-            // Гарантируем, что область обрезки не выйдет за пределы изображения
+            // Ensure crop area doesn't go beyond image
             newLeft = Math.max(0, newLeft);
             newTop = Math.max(0, newTop);
             newWidth = Math.min(newWidth, elements.cropOverlay.offsetWidth - newLeft);
             newHeight = Math.min(newHeight, elements.cropOverlay.offsetHeight - newTop);
             
-            // Применяем изменения
+            // Apply changes
             state.cropBox.style.width = `${newWidth}px`;
             state.cropBox.style.height = `${newHeight}px`;
             state.cropBox.style.left = `${newLeft}px`;
             state.cropBox.style.top = `${newTop}px`;
         }
         
-        // Универсальная функция завершения изменения размера
+        // End resize (universal)
         function endResize() {
             if (!state.cropMode || !state.resizing) return;
             
             state.resizing = false;
             
-            // Удаляем обработчики
+            // Remove handlers
             document.removeEventListener('mousemove', resizeMove);
             document.removeEventListener('touchmove', resizeMove);
             document.removeEventListener('mouseup', endResize);
             document.removeEventListener('touchend', endResize);
         }
         
-        // Apply crop - ИСПРАВЛЕННАЯ ФУНКЦИЯ
+        // Apply crop
         function applyCrop() {
-            // Рассчитываем относительные координаты обрезки
+            // Calculate relative crop coordinates
             const imgRect = elements.previewImage.getBoundingClientRect();
             const cropRect = state.cropBox.getBoundingClientRect();
             
-            // Масштабирование (отношение натурального размера к отображаемому)
+            // Scaling (natural size to displayed ratio)
             const scaleX = elements.previewImage.naturalWidth / imgRect.width;
             const scaleY = elements.previewImage.naturalHeight / imgRect.height;
             
-            // Рассчитываем координаты относительно исходного изображения
+            // Calculate coordinates relative to original image
             state.crop = {
                 x: (cropRect.left - imgRect.left) * scaleX,
                 y: (cropRect.top - imgRect.top) * scaleY,
@@ -2951,7 +2951,7 @@
             elements.cropOverlay.style.display = 'none';
             state.cropMode = false;
             
-            showEditNotification('Обрізка застосована!');
+            showEditNotification('Crop applied!');
         }
         
         // Cancel crop
@@ -3024,7 +3024,7 @@
         // Apply adjustments
         function applyAdjustments() {
             elements.adjustControls.style.display = 'none';
-            showEditNotification('Корекція застосована!');
+            showEditNotification('Adjustments applied!');
         }
         
         // Reset adjustments
@@ -3050,13 +3050,13 @@
             elements.temperatureValue.textContent = '0%';
             
             elements.previewImage.style.filter = 'none';
-            showEditNotification('Корекцію скинуто!');
+            showEditNotification('Adjustments reset!');
         }
 
         // Process images
         async function processImages() {
             if (state.originalFiles.length === 0) {
-                showToast("Спершу завантажте зображення!");
+                showToast("Please upload images first!");
                 return;
             }
 
@@ -3071,11 +3071,11 @@
 
                 // Check daily limit
                 if (state.dailyCount >= FREE_LIMITS.DAILY) {
-                    showToast(`Досягнуто денний ліміт (${FREE_LIMITS.DAILY} зображень). Спробуйте завтра або оновіться до Premium.`);
+                    showToast(`Daily limit reached (${FREE_LIMITS.DAILY} images). Try tomorrow or upgrade to Premium.`);
                     
                     // Show upgrade button
                     const upgradeBtn = document.createElement('button');
-                    upgradeBtn.textContent = 'Оновити до Premium';
+                    upgradeBtn.textContent = 'Upgrade to Premium';
                     upgradeBtn.className = 'btn-premium';
                     upgradeBtn.style.marginTop = '15px';
                     upgradeBtn.style.padding = '10px 20px';
@@ -3089,14 +3089,14 @@
                         }
                     };
                     
-                    showToast(`Досягнуто денний ліміт!`, 5000);
+                    showToast(`Daily limit reached!`, 5000);
                     elements.processing.innerHTML = `
                         <div style="text-align: center; padding: 20px;">
                             <p style="margin-bottom: 20px; font-size: 1.2rem;">
-                                Досягнуто денний ліміт (${FREE_LIMITS.DAILY} зображень)
+                                Daily limit reached (${FREE_LIMITS.DAILY} images)
                             </p>
                             <p style="margin-bottom: 20px;">
-                                Оновіться до Premium для безлімітної обробки
+                                Upgrade to Premium for unlimited processing
                             </p>
                         </div>
                     `;
@@ -3107,14 +3107,14 @@
 
                 // Check batch size
                 if (state.originalFiles.length > FREE_LIMITS.PER_BATCH) {
-                    showToast(`Безкоштовна версія: макс. ${FREE_LIMITS.PER_BATCH} файлів за раз`);
+                    showToast(`Free version: max ${FREE_LIMITS.PER_BATCH} files at once`);
                     return;
                 }
 
                 // Check file size
                 const oversizedFiles = state.originalFiles.filter(file => file.size > FREE_LIMITS.MAX_SIZE);
                 if (oversizedFiles.length > 0) {
-                    showToast(`Безкоштовна версія: макс. розмір файлу ${formatFileSize(FREE_LIMITS.MAX_SIZE)}`);
+                    showToast(`Free version: max file size ${formatFileSize(FREE_LIMITS.MAX_SIZE)}`);
                     return;
                 }
             }
@@ -3148,8 +3148,8 @@
                     // Small delay to show progress
                     await new Promise(resolve => setTimeout(resolve, 100));
                 } catch (error) {
-                    console.error('Помилка обробки файлу:', error);
-                    showToast(`Помилка при обробці ${file.name}: ${error.message || error}`, 5000);
+                    console.error('Error processing file:', error);
+                    showToast(`Error processing ${file.name}: ${error.message || error}`, 5000);
                 }
             }
 
@@ -3165,10 +3165,10 @@
             saveToHistory();
             elements.processing.style.display = 'none';
             elements.previewSection.style.display = 'block';
-            showToast('Оптимізацію завершено!');
+            showToast('Optimization completed!');
         }
 
-        // Optimize image - ИСПРАВЛЕННЫЙ БЛОК ОБРЕЗКИ
+        // Optimize image
         function optimizeImage(file, quality, format, maxWidth, applyEdits) {
             return new Promise((resolve, reject) => {
                 const canvas = document.createElement('canvas');
@@ -3218,24 +3218,24 @@
                         }
                     }
                     
-                    // ПРИМЕНЕНИЕ ОБРЕЗКИ - ИСПРАВЛЕННЫЙ КОД
+                    // APPLY CROP
                     if (applyEdits && state.crop) {
                         const {x, y, width: cropWidth, height: cropHeight} = state.crop;
                         
-                        // Создаем временный canvas для обрезанного изображения
+                        // Create temporary canvas for cropped image
                         const croppedCanvas = document.createElement('canvas');
                         croppedCanvas.width = cropWidth;
                         croppedCanvas.height = cropHeight;
                         const croppedCtx = croppedCanvas.getContext('2d');
                         
-                        // Вырезаем нужную область
+                        // Crop the required area
                         croppedCtx.drawImage(
                             canvas, 
                             x, y, cropWidth, cropHeight,
                             0, 0, cropWidth, cropHeight
                         );
                         
-                        // Заменяем основной canvas
+                        // Replace main canvas
                         canvas.width = cropWidth;
                         canvas.height = cropHeight;
                         ctx.drawImage(croppedCanvas, 0, 0);
@@ -3256,7 +3256,7 @@
                         ctx.drawImage(tempCanvas, 0, 0);
                     }
                     
-                    // Применяем коррекцию если есть
+                    // Apply adjustments if any
                     if (applyEdits && (
                         state.adjustments.brightness !== 0 || 
                         state.adjustments.contrast !== 0 || 
@@ -3264,13 +3264,13 @@
                         state.adjustments.sharpness !== 0 ||
                         state.adjustments.temperature !== 0
                     )) {
-                        // Создаем временный canvas для применения фильтров
+                        // Create temporary canvas for applying filters
                         const tempCanvas = document.createElement('canvas');
                         const tempCtx = tempCanvas.getContext('2d');
                         tempCanvas.width = canvas.width;
                         tempCanvas.height = canvas.height;
                         
-                        // Применяем фильтры
+                        // Apply filters
                         tempCtx.filter = `
                             brightness(${100 + state.adjustments.brightness}%)
                             contrast(${100 + state.adjustments.contrast}%)
@@ -3286,12 +3286,12 @@
                         
                         tempCtx.drawImage(canvas, 0, 0);
                         
-                        // Копируем обратно
+                        // Copy back
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         ctx.drawImage(tempCanvas, 0, 0);
                     }
 
-                    // Применяем водяной знак если включен
+                    // Apply watermark if enabled
                     if (state.watermark.enabled) {
                         applyWatermark(ctx, canvas);
                     }
@@ -3299,7 +3299,7 @@
                     // Convert to selected format with iOS fix
                     setTimeout(() => {
                         try {
-                            // Для прогрессивного JPEG
+                            // For progressive JPEG
                             const jpegOptions = {};
                             if (format === 'jpeg' && state.progressiveJpeg) {
                                 jpegOptions.progressive = true;
@@ -3307,7 +3307,7 @@
                             
                             canvas.toBlob((blob) => {
                                 if (!blob) {
-                                    reject(new Error("Не вдалося створити зображення"));
+                                    reject(new Error("Failed to create image"));
                                     return;
                                 }
                                 const optimizedFile = new File([blob], 
@@ -3323,14 +3323,14 @@
                 };
 
                 img.onerror = () => {
-                    reject(new Error("Помилка завантаження зображення"));
+                    reject(new Error("Error loading image"));
                 };
 
                 img.src = URL.createObjectURL(file);
             });
         }
 
-        // Применение водяного знака
+        // Apply watermark
         function applyWatermark(ctx, canvas) {
             ctx.save();
             ctx.globalAlpha = state.watermark.opacity / 100;
@@ -3369,7 +3369,7 @@
                     break;
             }
             
-            // Добавляем тень для лучшей читаемости
+            // Add shadow for better readability
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
             ctx.shadowBlur = 5;
             ctx.shadowOffsetX = 2;
@@ -3401,23 +3401,23 @@
                 const optimizedUrl = URL.createObjectURL(optimizedFile);
 
                 previewItem.innerHTML = `
-                    <h3><i class="fas fa-file-image"></i> Оригінал</h3>
-                    <img src="${originalUrl}" alt="Оригінал">
+                    <h3><i class="fas fa-file-image"></i> Original</h3>
+                    <img src="${originalUrl}" alt="Original">
                     <div class="file-info">
                         <div><strong>${originalFile.name}</strong></div>
-                        <div>Розмір: ${formatFileSize(originalFile.size)}</div>
+                        <div>Size: ${formatFileSize(originalFile.size)}</div>
                     </div>
                 `;
 
                 const optimizedItem = document.createElement('div');
                 optimizedItem.className = 'preview-item';
                 optimizedItem.innerHTML = `
-                    <h3><i class="fas fa-bolt"></i> Оптимізовано</h3>
-                    <img src="${optimizedUrl}" alt="Оптимізовано">
+                    <h3><i class="fas fa-bolt"></i> Optimized</h3>
+                    <img src="${optimizedUrl}" alt="Optimized">
                     <div class="file-info">
                         <div><strong>${optimizedFile.name}</strong></div>
-                        <div>Розмір: ${formatFileSize(optimizedFile.size)}</div>
-                        <div>Економія: ${Math.round((1 - optimizedFile.size / originalFile.size) * 100)}%</div>
+                        <div>Size: ${formatFileSize(optimizedFile.size)}</div>
+                        <div>Savings: ${Math.round((1 - optimizedFile.size / originalFile.size) * 100)}%</div>
                     </div>
                 `;
 
@@ -3433,23 +3433,23 @@
                 elements.stats.innerHTML = `
                     <div class="stat-item">
                         <div class="stat-value">${state.originalFiles.length}</div>
-                        <div class="stat-label">Файлів</div>
+                        <div class="stat-label">Files</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">${formatFileSize(totalOriginalSize)}</div>
-                        <div class="stat-label">Оригінальний розмір</div>
+                        <div class="stat-label">Original Size</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">${formatFileSize(totalOptimizedSize)}</div>
-                        <div class="stat-label">Оптимізований розмір</div>
+                        <div class="stat-label">Optimized Size</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">${compressionRatio}%</div>
-                        <div class="stat-label">Економія</div>
+                        <div class="stat-label">Savings</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">${savings}</div>
-                        <div class="stat-label">Заощаджено</div>
+                        <div class="stat-label">Saved</div>
                     </div>
                 `;
             }
@@ -3469,7 +3469,7 @@
         // Download optimized images
         async function downloadOptimized() {
             if (state.optimizedFiles.length === 0) {
-                showToast("Спершу оптимізуйте зображення!");
+                showToast("Optimize images first!");
                 return;
             }
 
@@ -3494,7 +3494,7 @@
                     const content = await zip.generateAsync({type:"blob"});
                     saveAs(content, "optimized_images.zip");
                 } catch (error) {
-                    alert('Для завантаження кількох файлів, будь ласка, клікніть правою кнопкою миші на кожне зображення та виберіть "Зберегти зображення як..."');
+                    alert('For multiple files, please right-click each image and select "Save image as..."');
                 }
             }
         }
@@ -3564,7 +3564,7 @@
                     ...historyItem,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 })
-                .catch(error => console.error("Помилка збереження:", error));
+                .catch(error => console.error("Save error:", error));
             }
             
             // Update UI
@@ -3576,7 +3576,7 @@
             elements.historyList.innerHTML = '';
             
             if (state.history.length === 0) {
-                elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Історія порожня</p>';
+                elements.historyList.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">History is empty</p>';
                 return;
             }
             
@@ -3588,10 +3588,10 @@
                 const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
                 
                 historyItem.innerHTML = `
-                    <h4>Обробка <span>${item.date}</span></h4>
+                    <h4>Processing <span>${item.date}</span></h4>
                     <div class="history-stats">
-                        <div>Файлів: ${item.fileCount}</div>
-                        <div>Економія: ${savings}%</div>
+                        <div>Files: ${item.fileCount}</div>
+                        <div>Savings: ${savings}%</div>
                     </div>
                 `;
                 
@@ -3615,16 +3615,16 @@
             elements.historyPanel.classList.remove('active');
             
             // Show notification
-            showToast(`Налаштування з історії від ${item.date} застосовано!`);
+            showToast(`Settings from ${item.date} applied!`);
         }
 
-        // Функция для отображения списка изображений в модальном окне PDF
+        // Render image list for PDF modal
         function renderPdfImageList() {
             const container = elements.pdfImagesContainer;
             container.innerHTML = '';
             
             if (state.optimizedFiles.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">Немає оптимізованих зображень. Спочатку оптимізуйте зображення.</p>';
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">No optimized images available. Optimize images first.</p>';
                 return;
             }
             
@@ -3662,27 +3662,27 @@
             });
         }
 
-        // Обновленная функция создания PDF с поддержкой изображений
+        // Create PDF with image support
         async function createPDF() {
             const text = elements.pdfText.value.trim();
             const imageWidthPercent = parseInt(elements.imageWidthPercent.value) || 80;
             const selectedImageIndexes = [];
             
-            // Собираем выбранные изображения
+            // Collect selected images
             document.querySelectorAll('#pdfImagesContainer input[type="checkbox"]:checked').forEach(checkbox => {
                 selectedImageIndexes.push(parseInt(checkbox.dataset.index));
             });
 
             if (!text && selectedImageIndexes.length === 0) {
-                showToast('Будь ласка, введіть текст або виберіть зображення.');
+                showToast('Please enter text or select images.');
                 return;
             }
 
-            // Проверяем, загружена ли библиотека
+            // Check if library is loaded
             if (typeof jspdf !== 'undefined') {
                 const doc = new jspdf.jsPDF();
                 
-                // Настройки документа
+                // Document settings
                 const fontSize = 12;
                 const lineHeight = fontSize * 1.2;
                 const margin = 20;
@@ -3692,7 +3692,7 @@
                 
                 let y = margin;
                 
-                // Добавляем текст
+                // Add text
                 if (text) {
                     const lines = doc.splitTextToSize(text, maxWidth);
                     
@@ -3707,9 +3707,9 @@
                     }
                 }
                 
-                // Добавляем изображения
+                // Add images
                 if (selectedImageIndexes.length > 0) {
-                    // Делаем отступ после текста
+                    // Add spacing after text
                     if (text) {
                         y += 15;
                     }
@@ -3718,33 +3718,33 @@
                         const index = selectedImageIndexes[i];
                         const file = state.optimizedFiles[index];
                         
-                        // Преобразуем File в data URL
+                        // Convert File to data URL
                         const dataUrl = await new Promise(resolve => {
                             const reader = new FileReader();
                             reader.onload = () => resolve(reader.result);
                             reader.readAsDataURL(file);
                         });
                         
-                        // Получаем размеры изображения
+                        // Get image dimensions
                         const img = new Image();
                         img.src = dataUrl;
                         await new Promise(resolve => { img.onload = resolve; });
                         
                         const imgHeight = (img.height * imageWidth) / img.width;
                         
-                        // Проверяем, поместится ли изображение на текущей странице
+                        // Check if image fits on current page
                         if (y + imgHeight > doc.internal.pageSize.getHeight() - margin) {
                             doc.addPage();
                             y = margin;
                         }
                         
-                        // Определяем формат для jsPDF
-                        let format = 'JPEG'; // по умолчанию
+                        // Determine format for jsPDF
+                        let format = 'JPEG'; // default
                         if (file.type === 'image/png') {
                             format = 'PNG';
                         }
                         
-                        // Добавляем изображение (центрируем по горизонтали)
+                        // Add image (center horizontally)
                         doc.addImage(
                             dataUrl,
                             format,
@@ -3754,7 +3754,7 @@
                             imgHeight
                         );
                         
-                        // Добавляем подпись под изображением
+                        // Add caption under image
                         y += imgHeight + 5;
                         if (y < doc.internal.pageSize.getHeight() - margin - 10) {
                             doc.setFontSize(10);
@@ -3763,17 +3763,17 @@
                             y += 10;
                         }
                         
-                        // Добавляем отступ после изображения
+                        // Add spacing after image
                         y += 10;
                     }
                 }
                 
-                // Сохраняем PDF
+                // Save PDF
                 doc.save("imageopt-document.pdf");
                 elements.pdfModal.classList.remove('active');
-                showToast('PDF успішно створено!');
+                showToast('PDF created successfully!');
             } else {
-                showToast('Помилка: Бібліотека PDF не завантажилась. Спробуйте оновити сторінку.');
+                showToast('Error: PDF library not loaded. Please refresh page.');
             }
         }
 
