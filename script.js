@@ -245,17 +245,45 @@ function applyCrop() {
     const canvas = state.cropper.getCroppedCanvas();
     if (!canvas) return;
     
-    // Создаем новое изображение с результатом обрезки
-    const croppedImage = new Image();
-    croppedImage.src = canvas.toDataURL();
-    
-    // Обновляем превью
-    elements.previewImage.src = croppedImage.src;
-    
-    // Закрываем режим обрезки
-    destroyCropper();
-    
-    showEditNotification('Crop applied!');
+    canvas.toBlob(blob => {
+        const originalFile = state.originalFiles[state.currentFileIndex];
+        const newFile = new File([blob], originalFile.name, {
+            type: originalFile.type || 'image/jpeg'
+        });
+        
+        // Заменяем оригинальный файл
+        state.originalFiles[state.currentFileIndex] = newFile;
+        
+        // Обновляем превью в редакторе
+        elements.previewImage.src = URL.createObjectURL(newFile);
+        
+        // Обновляем превью в списке файлов
+        updateSingleFilePreview(state.currentFileIndex);
+        
+        // Закрываем режим обрезки
+        destroyCropper();
+        
+        showEditNotification('Crop applied!');
+    }, 'image/jpeg', 0.95);
+}
+
+// Обновить превью одного файла в списке
+function updateSingleFilePreview(index) {
+    const previews = elements.filePreviews.querySelectorAll('.file-preview');
+    if (index >= previews.length) return;
+
+    const preview = previews[index];
+    const file = state.originalFiles[index];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const img = preview.querySelector('img');
+        const fileNameDiv = preview.querySelector('.file-name');
+        if (img) img.src = e.target.result;
+        if (fileNameDiv) fileNameDiv.textContent = file.name;
+    };
+
+    reader.readAsDataURL(file);
 }
 
 // Cancel crop
@@ -873,6 +901,7 @@ function renderFilePreviews() {
                     state.currentFileIndex = index;
                     highlightSelectedPreview();
                     updatePreviewImage();
+                    resetEditState();
                 }
             });
             
@@ -1191,14 +1220,16 @@ async function processImages() {
 
     // Process files sequentially
     for (let i = 0; i < state.originalFiles.length; i++) {
-        const file = state.originalFiles[i];
+        const applyEdits = state.batchEditMode === 'all' || 
+                          (state.batchEditMode === 'single' && i === state.currentFileIndex);
+
         try {
             const optimizedFile = await optimizeImage(
-                file, 
+                state.originalFiles[i], 
                 quality, 
                 format, 
                 maxWidth, 
-                i === state.currentFileIndex,
+                applyEdits,
                 i
             );
             state.optimizedFiles[i] = optimizedFile;
@@ -1212,7 +1243,7 @@ async function processImages() {
             await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
             console.error('Error processing file:', error);
-            showToast(`Error processing ${file.name}: ${error.message || error}`, 5000);
+            showToast(`Error processing ${state.originalFiles[i].name}: ${error.message || error}`, 5000);
         }
     }
 
@@ -1241,61 +1272,83 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits, index) {
         img.onload = async () => {
             let { width, height } = img;
             
-            // APPLY CROP - только если есть данные обрезки
-            if (applyEdits && state.cropper && index === state.currentFileIndex) {
-                const croppedCanvas = state.cropper.getCroppedCanvas();
-                width = croppedCanvas.width;
-                height = croppedCanvas.height;
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(croppedCanvas, 0, 0);
-            } else {
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
+            // Step 1: Draw the image on canvas (without any transformations)
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Step 2: Apply edits if needed
+            if (applyEdits) {
+                // Apply rotation and flip
+                if (state.rotation !== 0 || state.flipHorizontal) {
+                    // Clear the canvas and redraw with transformations
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // For rotation, adjust canvas size if needed
+                    if (state.rotation === 90 || state.rotation === 270) {
+                        [width, height] = [height, width];
+                    }
+                    
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    
+                    // Apply transformations
+                    tempCtx.translate(width / 2, height / 2);
+                    tempCtx.rotate(state.rotation * Math.PI / 180);
+                    if (state.flipHorizontal) {
+                        tempCtx.scale(-1, 1);
+                    }
+                    tempCtx.translate(-img.width / 2, -img.height / 2);
+                    tempCtx.drawImage(img, 0, 0);
+                    
+                    // Copy back to the main canvas
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(tempCanvas, 0, 0);
+                }
+
+                // Apply adjustments (brightness, contrast, etc.)
+                if (state.adjustments.brightness !== 0 || 
+                    state.adjustments.contrast !== 0 || 
+                    state.adjustments.saturation !== 0 ||
+                    state.adjustments.sharpness !== 0 ||
+                    state.adjustments.temperature !== 0) {
+                    
+                    // Create temporary canvas for applying filters
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
+                    
+                    // Apply filters
+                    tempCtx.filter = `
+                        brightness(${100 + state.adjustments.brightness}%)
+                        contrast(${100 + state.adjustments.contrast}%)
+                        saturate(${100 + state.adjustments.saturation}%)
+                        blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
+                    `;
+                    
+                    // Apply temperature
+                    if (state.adjustments.temperature !== 0) {
+                        const tempValue = state.adjustments.temperature / 100;
+                        tempCtx.filter += ` sepia(${Math.abs(tempValue)*30}%) hue-rotate(${-tempValue*30}deg)`;
+                    }
+                    
+                    tempCtx.drawImage(canvas, 0, 0);
+                    
+                    // Copy back
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(tempCanvas, 0, 0);
+                }
+
+                // Apply watermark if enabled
+                if (state.watermark.enabled) {
+                    applyWatermark(ctx, canvas);
+                }
             }
 
-            // Apply rotation if needed
-            if (applyEdits && state.rotation !== 0) {
-                // Swap dimensions for 90/270 degree rotations
-                if (state.rotation === 90 || state.rotation === 270) {
-                    [width, height] = [height, width];
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                // Rotate and draw
-                ctx.translate(width / 2, height / 2);
-                ctx.rotate(state.rotation * Math.PI / 180);
-                ctx.translate(-img.width / 2, -img.height / 2);
-                
-                // Flip if needed
-                if (applyEdits && state.flipHorizontal) {
-                    ctx.scale(-1, 1);
-                    ctx.translate(-img.width, 0);
-                }
-                
-                ctx.drawImage(img, 0, 0);
-                
-                // Reset transformations
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-            } else {
-                // Apply flip only
-                if (applyEdits && state.flipHorizontal) {
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.translate(width, 0);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(img, 0, 0, width, height);
-                } else {
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                }
-            }
-            
-            // Resize if needed
+            // Step 3: Resize if needed
             if (maxWidth && canvas.width > maxWidth) {
                 const newHeight = (canvas.height * maxWidth) / canvas.width;
                 const tempCanvas = document.createElement('canvas');
@@ -1309,47 +1362,8 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits, index) {
                 canvas.height = newHeight;
                 ctx.drawImage(tempCanvas, 0, 0);
             }
-            
-            // Apply adjustments if any
-            if (applyEdits && (
-                state.adjustments.brightness !== 0 || 
-                state.adjustments.contrast !== 0 || 
-                state.adjustments.saturation !== 0 ||
-                state.adjustments.sharpness !== 0 ||
-                state.adjustments.temperature !== 0
-            )) {
-                // Create temporary canvas for applying filters
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                
-                // Apply filters
-                tempCtx.filter = `
-                    brightness(${100 + state.adjustments.brightness}%)
-                    contrast(${100 + state.adjustments.contrast}%)
-                    saturate(${100 + state.adjustments.saturation}%)
-                    blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
-                `;
-                
-                // Apply temperature
-                if (state.adjustments.temperature !== 0) {
-                    const tempValue = state.adjustments.temperature / 100;
-                    tempCtx.filter += ` sepia(${Math.abs(tempValue)*30}%) hue-rotate(${-tempValue*30}deg)`;
-                }
-                
-                tempCtx.drawImage(canvas, 0, 0);
-                
-                // Copy back
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(tempCanvas, 0, 0);
-            }
 
-            // Apply watermark if enabled
-            if (state.watermark.enabled) {
-                applyWatermark(ctx, canvas);
-            }
-
+            // Step 4: Format conversion
             // For HEIC format
             if (format === 'heic') {
                 try {
