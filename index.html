@@ -829,59 +829,8 @@
         }
         
         /* Premium tooltip styles */
-        .premium-tooltip {
-            position: absolute;
-            background: var(--card-bg);
-            color: var(--text-dark);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 300px;
-            z-index: 1000;
-            top: 70px;
-            right: 20px;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            text-align: left;
-        }
+        /* УДАЛЕНО */
         
-        .premium-tooltip.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
-        }
-        
-        .premium-tooltip h4 {
-            margin-bottom: 15px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .premium-tooltip ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        
-        .premium-tooltip li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .premium-tooltip li:last-child {
-            border-bottom: none;
-        }
-        
-        .premium-tooltip li i {
-            color: var(--accent);
-        }
-
         /* Daily counter */
         .daily-counter {
             background: rgba(255,255,255,0.15);
@@ -1380,6 +1329,13 @@
         .settings-toggle-btn {
             display: none;
         }
+        /* Custom changes for toast */
+        .toast {
+            background: #20bf6b !important;
+            color: white !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -1412,18 +1368,6 @@
                     <button id="upgradeBtn" class="btn-premium">
                         <i class="fas fa-crown"></i> Premium
                     </button>
-                    <!-- Premium benefits tooltip -->
-                    <div class="premium-tooltip" id="premiumTooltip">
-                        <h4><i class="fas fa-crown"></i> Premium Benefits</h4>
-                        <ul>
-                            <li><i class="fas fa-check-circle"></i> Unlimited images</li>
-                            <li><i class="fas fa-check-circle"></i> File size up to 50MB</li>
-                            <li><i class="fas fa-check-circle"></i> AVIF format</li>
-                            <li><i class="fas fa-check-circle"></i> Batch processing up to 50 files</li>
-                            <li><i class="fas fa-check-circle"></i> Save processing history</li>
-                            <li><i class="fas fa-check-circle"></i> Priority processing</li>
-                        </ul>
-                    </div>
                 </div>
                 <span id="userEmail" style="margin: 0 10px; color: white;"></span>
                 <button id="logoutBtn" class="btn-logout">
@@ -1950,7 +1894,6 @@
             premiumStatus: document.getElementById('premiumStatus'),
             upgradeBtn: document.getElementById('upgradeBtn'),
             logoutBtn: document.getElementById('logoutBtn'),
-            premiumTooltip: document.getElementById('premiumTooltip'),
             dailyCounter: document.getElementById('dailyCounter'),
             dailyCount: document.getElementById('dailyCount'),
             dailyLimit: document.getElementById('dailyLimit'),
@@ -2212,22 +2155,6 @@
                 if (e.ctrlKey && e.key === 'z') {
                     resetEditState();
                     showToast('Changes canceled!');
-                }
-            });
-            
-            // Premium tooltip
-            elements.upgradeBtn.addEventListener('mouseenter', () => {
-                elements.premiumTooltip.classList.add('show');
-            });
-            
-            elements.upgradeBtn.addEventListener('mouseleave', () => {
-                elements.premiumTooltip.classList.remove('show');
-            });
-            
-            // For mobile devices
-            elements.upgradeBtn.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    elements.premiumTooltip.classList.toggle('show');
                 }
             });
             
