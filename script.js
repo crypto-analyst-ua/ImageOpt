@@ -13,7 +13,7 @@ const FREE_LIMITS = {
     DAILY: 15,         // 15 images per day
     PER_BATCH: 5,       // 5 files at once
     MAX_SIZE: 7 * 1024 * 1024, // 7 MB
-    FORMATS: ['jpeg', 'png', 'webp'] // available formats
+    FORMATS: ['jpeg', 'png', 'webp', 'heic', 'avif', 'tiff'] // Добавили HEIC, AVIF, TIFF
 };
 
 // State management
@@ -29,6 +29,8 @@ const state = {
     cropRatio: 'free',
     cropBox: null,
     avifSupported: true,
+    heicSupported: false, // Добавлено: поддержка HEIC
+    tiffSupported: true, // Добавлено: поддержка TIFF
     isPremium: localStorage.getItem('premiumUser') === 'true',
     user: null,
     cropMode: false,
@@ -171,6 +173,12 @@ async function init() {
     state.dailyCount = parseInt(localStorage.getItem('dailyCount')) || 0;
     state.lastProcessDate = localStorage.getItem('lastProcessDate');
     updateDailyCounter();
+    
+    // Проверяем поддержку HEIC
+    state.heicSupported = typeof heic2any !== 'undefined';
+    if (!state.heicSupported) {
+        console.warn("HEIC conversion requires heic2any library");
+    }
     
     try {
         // Initialize Firebase
@@ -567,13 +575,25 @@ function updatePremiumUI() {
         // Enable AVIF for premium users
         const avifOption = document.querySelector('#format option[value="avif"]');
         if (avifOption) avifOption.disabled = false;
+        
+        // Enable HEIC for premium users if supported
+        const heicOption = document.querySelector('#format option[value="heic"]');
+        if (heicOption) {
+            heicOption.disabled = !state.heicSupported;
+        }
     } else {
         elements.premiumStatus.style.background = '#a5b1c2';
         elements.upgradeBtn.style.display = 'block';
         
-        // Disable AVIF for free users
+        // Разрешить все форматы в бесплатной версии
         const avifOption = document.querySelector('#format option[value="avif"]');
-        if (avifOption) avifOption.disabled = true;
+        if (avifOption) avifOption.disabled = false;
+        
+        const heicOption = document.querySelector('#format option[value="heic"]');
+        if (heicOption) heicOption.disabled = false;
+        
+        const tiffOption = document.querySelector('#format option[value="tiff"]');
+        if (tiffOption) tiffOption.disabled = false;
     }
     
     updateDailyCounter();
@@ -593,7 +613,15 @@ function handleDragLeave(e) {
 function handleDrop(e) {
     e.preventDefault();
     elements.uploadArea.classList.remove('dragover');
-    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+    const files = Array.from(e.dataTransfer.files).filter(file => 
+        file.type.startsWith('image/') || 
+        file.type === 'image/heic' || 
+        file.name.toLowerCase().endsWith('.heic') ||
+        file.type === 'image/tiff' ||
+        file.name.toLowerCase().match(/\.tiff?$/i) ||
+        file.type === 'image/avif' ||
+        file.name.toLowerCase().endsWith('.avif')
+    );
     if (files.length > 0) {
         addFiles(files);
         if (elements.autoOptimizeCheckbox.checked) {
@@ -603,10 +631,10 @@ function handleDrop(e) {
 }
 
 // File selection handler
-function handleFileSelect(e) {
+async function handleFileSelect(e) {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-        addFiles(files);
+        await addFiles(files);
         if (elements.autoOptimizeCheckbox.checked) {
             processImages();
         }
@@ -614,7 +642,7 @@ function handleFileSelect(e) {
 }
 
 // Add files to the state and preview
-function addFiles(files) {
+async function addFiles(files) {
     // Free user limitations
     if (!state.isPremium) {
         // Max files per batch
@@ -627,8 +655,71 @@ function addFiles(files) {
         files = files.filter(file => file.size <= FREE_LIMITS.MAX_SIZE);
     }
     
-    // Filter out non-image files
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    // Filter and convert HEIC/TIFF files
+    const imageFiles = [];
+    for (let file of files) {
+        // Convert HEIC to JPEG
+        if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+            try {
+                if (!state.heicSupported) {
+                    showToast("HEIC conversion requires heic2any library", 3000);
+                    continue;
+                }
+                
+                const conversionResult = await heic2any({
+                    blob: file,
+                    toType: 'image/jpeg',
+                    quality: 0.8
+                });
+                
+                const newFile = new File(
+                    [conversionResult],
+                    file.name.replace(/\.heic$/i, '.jpg'),
+                    { type: 'image/jpeg' }
+                );
+                imageFiles.push(newFile);
+            } catch (error) {
+                console.error("HEIC conversion error:", error);
+                showToast(`Error converting ${file.name}: ${error.message}`);
+            }
+        } 
+        // Convert TIFF to PNG
+        else if (file.type === 'image/tiff' || file.name.toLowerCase().match(/\.tiff?$/i)) {
+            try {
+                // Create image from TIFF
+                const img = await createImageBitmap(file);
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                // Convert to PNG
+                const blob = await new Promise(resolve => 
+                    canvas.toBlob(resolve, 'image/png')
+                );
+                
+                const newFile = new File(
+                    [blob],
+                    file.name.replace(/\.tiff?$/i, '.png'),
+                    { type: 'image/png' }
+                );
+                imageFiles.push(newFile);
+            } catch (error) {
+                console.error("TIFF conversion error:", error);
+                showToast(`Error converting ${file.name}: ${error.message}`);
+                // Добавляем оригинальный файл как есть
+                imageFiles.push(file);
+            }
+        }
+        // Handle AVIF files
+        else if (file.type === 'image/avif' || file.name.toLowerCase().endsWith('.avif')) {
+            imageFiles.push(file);
+        }
+        else if (file.type.startsWith('image/')) {
+            imageFiles.push(file);
+        }
+    }
     
     // Add to state
     state.originalFiles = [...state.originalFiles, ...imageFiles];
@@ -1303,7 +1394,7 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
         const ctx = canvas.getContext('2d');
         const img = new Image();
 
-        img.onload = () => {
+        img.onload = async () => {
             let { width, height } = img;
             
             // Apply rotation if needed
@@ -1424,8 +1515,76 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
                 applyWatermark(ctx, canvas);
             }
 
-            // Convert to selected format with iOS fix
-            setTimeout(() => {
+            // For HEIC format
+            if (format === 'heic') {
+                try {
+                    if (!state.heicSupported) {
+                        throw new Error("HEIC conversion not supported");
+                    }
+                    
+                    // Get JPEG blob first
+                    const jpegBlob = await new Promise(resolve => 
+                        canvas.toBlob(resolve, 'image/jpeg', quality)
+                    );
+                    
+                    // Convert JPEG to HEIC
+                    const heicBlob = await heic2any({
+                        blob: jpegBlob,
+                        toType: 'image/heic',
+                        quality: quality
+                    });
+                    
+                    const optimizedFile = new File(
+                        [heicBlob],
+                        file.name.replace(/\.[^/.]+$/, '.heic'),
+                        { type: 'image/heic' }
+                    );
+                    resolve(optimizedFile);
+                } catch (error) {
+                    reject(error);
+                }
+            } 
+            // For AVIF format
+            else if (format === 'avif') {
+                try {
+                    // Try to create AVIF blob
+                    const blob = await new Promise(resolve => 
+                        canvas.toBlob(resolve, 'image/avif', quality)
+                    );
+                    
+                    if (!blob) {
+                        throw new Error("Failed to create AVIF image");
+                    }
+                    
+                    const optimizedFile = new File(
+                        [blob],
+                        file.name.replace(/\.[^/.]+$/, '.avif'),
+                        { type: 'image/avif' }
+                    );
+                    resolve(optimizedFile);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+            // For TIFF format
+            else if (format === 'tiff') {
+                try {
+                    if (typeof Tiff === 'undefined') {
+                        throw new Error("TIFF conversion requires libtiff.js");
+                    }
+                    const tiffBlob = await convertToTiff(canvas);
+                    const optimizedFile = new File(
+                        [tiffBlob],
+                        file.name.replace(/\.[^/.]+$/, '.tiff'),
+                        { type: 'image/tiff' }
+                    );
+                    resolve(optimizedFile);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+            // For other formats
+            else {
                 try {
                     // For progressive JPEG
                     const jpegOptions = {};
@@ -1447,7 +1606,7 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
                 } catch (e) {
                     reject(e);
                 }
-            }, 100);
+            }
         };
 
         img.onerror = () => {
@@ -1456,6 +1615,21 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
 
         img.src = URL.createObjectURL(file);
     });
+}
+
+// Convert canvas to TIFF using libtiff.js
+async function convertToTiff(canvas) {
+    if (typeof Tiff === 'undefined') {
+        throw new Error("TIFF library not loaded");
+    }
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const tiff = new Tiff({
+        width: canvas.width,
+        height: canvas.height
+    });
+    tiff.setRGBAImage(imageData.data);
+    return new Blob([tiff.toArrayBuffer()], { type: 'image/tiff' });
 }
 
 // Apply watermark
