@@ -1,15 +1,15 @@
-// Initialize on page load
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', initAuth);
 
 function initAuth() {
-  // Check authentication state
+  // Проверка состояния аутентификации
   firebase.auth().onAuthStateChanged(user => {
     if (user && user.uid !== "guest") {
       window.location.href = "index.html";
     }
   });
 
-  // Enter key handlers
+  // Обработчики Enter
   document.getElementById("email")?.addEventListener("keypress", e => {
     if (e.key === "Enter") signIn();
   });
@@ -23,13 +23,13 @@ async function signUp() {
   const email = sanitizeInput(document.getElementById("email").value);
   const password = document.getElementById("password").value;
   
-  // Validation
+  // Валидация
   if (!validateEmail(email)) {
-    return showMessage("Invalid email format", "error");
+    return showMessage("Некоректний email", "error");
   }
   
   if (password.length < 6) {
-    return showMessage("Password must be at least 6 characters", "error");
+    return showMessage("Пароль повинен містити принаймні 6 символів", "error");
   }
   
   const btn = document.querySelector('button[onclick="signUp()"]');
@@ -38,14 +38,14 @@ async function signUp() {
   try {
     const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
     
-    // Create user record in Firestore
+    // Создаем запись пользователя в Firestore
     await firebase.firestore().collection("users").doc(userCredential.user.uid).set({ 
       premium: false,
       email: email,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     
-    showMessage("Registration successful! Redirecting...", "success");
+    showMessage("Реєстрація успішна! Перенаправляємо...", "success");
     setTimeout(() => window.location.href = "pay.html", 1500);
   } catch (error) {
     handleAuthError(error, "signup");
@@ -64,7 +64,7 @@ async function signIn() {
   try {
     const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
     
-    // Get user data
+    // Получаем данные пользователя
     const userDoc = await firebase.firestore()
       .collection('users')
       .doc(userCredential.user.uid)
@@ -72,12 +72,12 @@ async function signIn() {
 
     const userData = userDoc.data() || { premium: false };
     
-    // Save data to localStorage
+    // Сохраняем данные в localStorage
     localStorage.setItem('premiumUser', userData.premium);
     localStorage.setItem('userId', userCredential.user.uid);
     localStorage.setItem('userEmail', userData.email || email);
     
-    showMessage("Login successful! Redirecting...", "success");
+    showMessage("Вхід виконано! Перенаправляємо...", "success");
     setTimeout(() => window.location.href = "index.html", 1000);
   } catch (error) {
     handleAuthError(error, "signin");
@@ -90,25 +90,25 @@ function resetPassword() {
   let email = sanitizeInput(document.getElementById("email").value);
   
   if (!email) {
-    email = prompt("Enter your email to reset password:");
+    email = prompt("Введіть ваш email для відновлення пароля:");
     if (!email) return;
   }
   
   if (!validateEmail(email)) {
-    return showMessage("Please enter a valid email", "error");
+    return showMessage("Будь ласка, введіть коректний email", "error");
   }
   
   firebase.auth().sendPasswordResetEmail(email)
     .then(() => {
-      showMessage("Password reset email sent to your address!", "success");
+      showMessage("Лист для відновлення пароля відправлено на вашу пошту!", "success");
     })
     .catch(error => {
-      console.error("Reset error:", error);
-      showMessage(`Error: ${error.message}`, "error");
+      console.error("Помилка відновлення:", error);
+      showMessage(`Помилка: ${error.message}`, "error");
     });
 }
 
-// Helper functions
+// Вспомогательные функции
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -131,7 +131,7 @@ function toggleButtonState(btn, isLoading) {
   
   if (isLoading) {
     btn.dataset.originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Завантаження...';
     btn.disabled = true;
   } else {
     btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
@@ -142,17 +142,17 @@ function toggleButtonState(btn, isLoading) {
 function handleAuthError(error, context) {
   const errorMap = {
     'signup': {
-      'auth/email-already-in-use': "Email already in use",
-      'auth/invalid-email': "Invalid email format",
-      'auth/weak-password': "Password is too weak",
-      'default': "Registration error"
+      'auth/email-already-in-use': "Цей email вже використовується",
+      'auth/invalid-email': "Некоректний email",
+      'auth/weak-password': "Пароль занадто слабкий",
+      'default': "Помилка реєстрації"
     },
     'signin': {
-      'auth/user-not-found': "User not found",
-      'auth/wrong-password': "Incorrect password",
-      'auth/invalid-email': "Invalid email format",
-      'auth/user-disabled': "Account disabled",
-      'default': "Login error"
+      'auth/user-not-found': "Користувача не знайдено",
+      'auth/wrong-password': "Невірний пароль",
+      'auth/invalid-email': "Некоректний email",
+      'auth/user-disabled': "Акаунт вимкнено",
+      'default': "Помилка входу"
     }
   };
   
@@ -163,10 +163,9 @@ function handleAuthError(error, context) {
   showMessage(message, "error");
 }
 
-// Enhanced XSS protection using DOMPurify
+// Защита от XSS
 function sanitizeInput(input) {
-  return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: [], // Disallow all HTML tags
-    ALLOWED_ATTR: []  // Disallow all attributes
-  });
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
 }

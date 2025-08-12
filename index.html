@@ -828,6 +828,9 @@
             color: var(--danger);
         }
         
+        /* Premium tooltip styles */
+        /* УДАЛЕНО */
+        
         /* Daily counter */
         .daily-counter {
             background: rgba(255,255,255,0.15);
@@ -1779,8 +1782,15 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Firebase configuration (base64 encoded)
-        const firebaseConfig = JSON.parse(atob("eyJhcGlLZXkiOiJBSXphU3lCa1lmYVhWa0dnWXFaUnpvYkxWd3lVVDg4bDVGSGtYWVkiLCJhdXRoRG9tYWluIjoiaW1hZ2VvcHQtcHJvLmZpcmViYXNlYXBwLmNvbSIsInByb2plY3RJZCI6ImltYWdlb3B0LXBybyIsInN0b3JhZ2VCdWNrZXQiOiJpbWFnZW9wdC1wcm8uYXBwc3BvdC5jb20iLCJtZXNzYWdpbmdTZW5kZXJJZCI6IjEzNTYxOTE2NDg2NyIsImFwcElkIjoiMToxMzU2MTkxNjQ4Njc6d2ViOjIwYWJlNmY5OWFiOWQ0NjhlYWMwNzYifQ=="));
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
+            authDomain: "imageopt-pro.firebaseapp.com",
+            projectId: "imageopt-pro",
+            storageBucket: "imageopt-pro.appspot.com",
+            messagingSenderId: "135619164867",
+            appId: "1:135619164867:web:20abe6f99ab9d468eac076"
+        };
 
         // Free version limits
         const FREE_LIMITS = {
@@ -2063,18 +2073,15 @@
             elements.resetAdjustBtn.addEventListener('click', resetAdjustments);
         }
 
-        // Update daily usage counter with UTC
+        // Update daily usage counter
         function updateDailyCounter() {
-            const now = new Date();
-            const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-            const todayString = todayUTC.toISOString().split('T')[0];
-            
+            const today = new Date().toDateString();
             // Reset counter if new day
-            if (state.lastProcessDate !== todayString) {
+            if (state.lastProcessDate !== today) {
                 state.dailyCount = 0;
-                localStorage.setItem('dailyCount', '0');
-                localStorage.setItem('lastProcessDate', todayString);
-                state.lastProcessDate = todayString;
+                localStorage.setItem('dailyCount', 0);
+                localStorage.setItem('lastProcessDate', today);
+                state.lastProcessDate = today;
             }
 
             // Update UI
@@ -2325,22 +2332,6 @@
                     state.isPremium = doc.data().premium || false;
                     localStorage.setItem('premiumUser', state.isPremium);
                     updatePremiumUI();
-                    
-                    // Add real-time listener for premium status updates
-                    state.db.collection('users').doc(state.user.uid)
-                        .onSnapshot(doc => {
-                            if (doc.exists) {
-                                const newPremiumStatus = doc.data().premium || false;
-                                if (newPremiumStatus !== state.isPremium) {
-                                    state.isPremium = newPremiumStatus;
-                                    localStorage.setItem('premiumUser', newPremiumStatus);
-                                    updatePremiumUI();
-                                    showToast(newPremiumStatus ? 
-                                        "Premium активирован!" : 
-                                        "Premium деактивирован");
-                                }
-                            }
-                        });
                 }
             }).catch(error => {
                 console.error("Error getting premium status:", error);
@@ -2983,14 +2974,11 @@
 
             // Free user limitations
             if (!state.isPremium) {
-                const now = new Date();
-                const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-                const todayString = todayUTC.toISOString().split('T')[0];
-                
+                const today = new Date().toDateString();
                 // Reset daily counter if new day
-                if (state.lastProcessDate !== todayString) {
+                if (state.lastProcessDate !== today) {
                     state.dailyCount = 0;
-                    state.lastProcessDate = todayString;
+                    state.lastProcessDate = today;
                 }
 
                 // Check daily limit
@@ -3081,7 +3069,7 @@
             if (!state.isPremium) {
                 state.dailyCount += state.originalFiles.length;
                 localStorage.setItem('dailyCount', state.dailyCount);
-                localStorage.setItem('lastProcessDate', state.lastProcessDate);
+                localStorage.setItem('lastProcessDate', new Date().toDateString());
                 updateDailyCounter();
             }
 
@@ -3254,11 +3242,14 @@
             });
         }
 
-        // Apply watermark with background
+        // Apply watermark
         function applyWatermark(ctx, canvas) {
             ctx.save();
             ctx.globalAlpha = state.watermark.opacity / 100;
             ctx.font = `bold ${state.watermark.size}px Arial`;
+            ctx.fillStyle = state.watermark.color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
             
             const text = state.watermark.text;
             const textMetrics = ctx.measureText(text);
@@ -3290,15 +3281,11 @@
                     break;
             }
             
-            // Add background for better visibility
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x - textWidth/2 - 5, y - textHeight/2 - 2, textWidth + 10, textHeight + 4);
-            
-            ctx.fillStyle = state.watermark.color;
-            
             // Add shadow for better readability
             ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 3;
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
             
             ctx.fillText(text, x, y);
             ctx.restore();
@@ -3439,14 +3426,13 @@
             elements.progressText.textContent = '0%';
         }
 
-        // Save to history with timestamp
+        // Save to history
         function saveToHistory() {
             if (state.originalFiles.length === 0) return;
             
             const historyItem = {
                 id: Date.now(),
                 date: new Date().toLocaleString(),
-                timestamp: Date.now(), // Add timestamp in milliseconds
                 fileCount: state.originalFiles.length,
                 originalSize: state.originalFiles.reduce((sum, file) => sum + file.size, 0),
                 optimizedSize: state.optimizedFiles.reduce((sum, file) => sum + file.size, 0),
@@ -3482,7 +3468,7 @@
             renderHistory();
         }
 
-        // Render history with freshness indicator
+        // Render history
         function renderHistory() {
             elements.historyList.innerHTML = '';
             
@@ -3491,23 +3477,18 @@
                 return;
             }
             
-            const now = Date.now();
-            const oneDay = 24 * 60 * 60 * 1000;
-            
             state.history.forEach(item => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 historyItem.dataset.id = item.id;
                 
                 const savings = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
-                const isRecent = (now - item.timestamp) < oneDay;
                 
                 historyItem.innerHTML = `
                     <h4>Processing <span>${item.date}</span></h4>
                     <div class="history-stats">
                         <div>Files: ${item.fileCount}</div>
                         <div>Savings: ${savings}%</div>
-                        <div>${isRecent ? 'Today' : 'Earlier'}</div>
                     </div>
                 `;
                 
@@ -3578,7 +3559,7 @@
             });
         }
 
-        // Create PDF with image support and memory cleanup
+        // Create PDF with image support
         async function createPDF() {
             const text = elements.pdfText.value.trim();
             const imageWidthPercent = parseInt(elements.imageWidthPercent.value) || 80;
@@ -3681,9 +3662,6 @@
                         
                         // Add spacing after image
                         y += 10;
-                        
-                        // Free memory
-                        URL.revokeObjectURL(dataUrl);
                     }
                 }
                 

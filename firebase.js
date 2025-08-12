@@ -1,5 +1,12 @@
-// Конфигурация Firebase в base64
-const firebaseConfig = JSON.parse(atob("Y29uc3QgY29uZmlnID0gewogIGFwaUtleTogIkFJemFTeUJrWWZhWFZrR2dZcVpSem9iTFZveVVUODhsNUZIa1hZWSIsCiAgYXV0aERvbWFpbjogImltYWdlb3B0LXByby5maXJlYmFzZWFwcC5jb20iLAogIHByb2plY3RJZDogImltYWdlb3B0LXBybyIsCiAgc3RvcmFnZUJ1Y2tldDogImltYWdlb3B0LXByby5hcHBzcG90LmNvbSIsCiAgbWVzc2FnaW5nU2VuZGVySWQ6ICIxMzU2MTkxNjQ4NjciLAogIGFwcElkOiAiMToxMzU2MTkxNjQ4Njc6d2ViOjIwYWJlNmY5OWFiOWQ0NjhlYWMwNzYiCn07CgpidG9hKEpTT04uc3RyaW5naWZ5KGNvbmZpZykp"));
+// Конфигурация Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBkYfaXVkGgYqZRzobLVoyUT88l5FHkXYY",
+  authDomain: "imageopt-pro.firebaseapp.com",
+  projectId: "imageopt-pro",
+  storageBucket: "imageopt-pro.appspot.com",
+  messagingSenderId: "135619164867",
+  appId: "1:135619164867:web:20abe6f99ab9d468eac076"
+};
 
 // Проверка инициализации Firebase
 let app;

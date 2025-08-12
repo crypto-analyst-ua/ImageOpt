@@ -442,7 +442,7 @@
       <div class="user-info">
         <span>
           <i class="fas fa-user"></i>
-          <span id="userEmail"></span>
+          <span id="userEmail">testuser@example.com</span>
         </span>
         <button class="logout-btn" id="logoutBtn">
           <i class="fas fa-sign-out-alt"></i> Logout
@@ -614,34 +614,23 @@
               }, 3000);
             } catch (error) {
               console.error('Error updating status:', error);
-              showPaymentError('Account update error', error);
+              showPaymentError('Account update error');
             }
           });
         },
         onError: function(err) {
           console.error('PayPal error:', err);
-          showPaymentError('Payment error. Please try again', err);
+          showPaymentError('Payment error. Please try again');
         }
       }).render('#paypalContainer');
     }
 
-    // Show payment error with detailed error information
-    function showPaymentError(message, error) {
-      let errorDetails = '';
-      if (error) {
-        errorDetails = `
-          <p style="margin: 10px 0; color: rgba(255, 255, 255, 0.8);">
-            Error: ${error.message || 'Unknown error'}
-          </p>
-          ${error.code ? `<p style="margin: 5px 0; color: rgba(255, 255, 255, 0.7);">Code: ${error.code}</p>` : ''}
-        `;
-      }
-      
+    // Show payment error
+    function showPaymentError(message) {
       document.getElementById('paypalContainer').innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff4d4d; margin-bottom: 15px;"></i>
+        <div style="text-align: center; padding: 20px; color: #ff4d4d;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px;"></i>
           <h3 style="color: #fff; margin-bottom: 15px;">${message || 'Payment error'}</h3>
-          ${errorDetails}
           <button class="retry-btn" onclick="initPayPal(auth.currentUser)">
             <i class="fas fa-redo"></i> Try Again
           </button>
@@ -674,9 +663,8 @@
           document.getElementById('userEmail').textContent = user.email;
           initPayPal(user);
         } else {
-          // Show login prompt and set guest status
+          // Show login prompt
           showLoginPrompt();
-          document.getElementById('userEmail').textContent = "Guest";
           document.getElementById('logoutBtn').style.display = 'none';
         }
       });
