@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - ImageOpt Pro</title>
+  <title>Авторизація</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="auth.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -32,7 +34,6 @@
       border-radius: 20px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
       overflow: hidden;
-      position: relative;
     }
     
     .header {
@@ -40,26 +41,6 @@
       color: white;
       padding: 30px;
       text-align: center;
-      position: relative;
-    }
-    
-    .logo {
-      width: 80px;
-      height: 80px;
-      background: white;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    .logo i {
-      font-size: 40px;
-      background: linear-gradient(135deg, #6a5af9, #d66efd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
     
     .header h1 {
@@ -73,7 +54,6 @@
     
     .form-group {
       margin-bottom: 20px;
-      position: relative;
     }
     
     label {
@@ -85,7 +65,7 @@
     
     input {
       width: 100%;
-      padding: 14px 14px 14px 45px;
+      padding: 14px;
       border: 2px solid #e0e4ff;
       border-radius: 10px;
       font-size: 1rem;
@@ -96,27 +76,6 @@
       border-color: #6a5af9;
       outline: none;
       box-shadow: 0 0 0 3px rgba(106, 90, 249, 0.2);
-    }
-    
-    .input-icon {
-      position: absolute;
-      left: 15px;
-      top: 40px;
-      color: #6a5af9;
-      font-size: 18px;
-    }
-    
-    .password-toggle {
-      position: absolute;
-      right: 15px;
-      top: 40px;
-      color: #a5b1c2;
-      cursor: pointer;
-      font-size: 18px;
-    }
-    
-    .password-toggle:hover {
-      color: #6a5af9;
     }
     
     .btn-group {
@@ -207,254 +166,45 @@
       color: #4b3df7;
       text-decoration: underline;
     }
-    
-    .security-info {
-      background: #f9f9ff;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: #666;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .security-info i {
-      color: #6a5af9;
-      font-size: 1.2rem;
-    }
-    
-    @media (max-width: 480px) {
-      .container {
-        max-width: 100%;
-      }
-      
-      .btn-group {
-        grid-template-columns: 1fr;
-      }
-      
-      .header {
-        padding: 20px;
-      }
-      
-      .form {
-        padding: 20px;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">
-        <i class="fas fa-images"></i>
-      </div>
       <h1>ImageOpt Pro</h1>
-      <p>Login or create an account</p>
+      <p>Увійдіть або зареєструйтесь</p>
     </div>
     
     <div class="form">
       <div class="form-group">
         <label for="email">Email</label>
-        <div class="input-icon">
-          <i class="fas fa-envelope"></i>
-        </div>
-        <input type="email" id="email" placeholder="Your email" autocomplete="email">
+        <input type="email" id="email" placeholder="Ваш email" autocomplete="email">
       </div>
       
       <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-icon">
-          <i class="fas fa-lock"></i>
-        </div>
-        <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
-        <div class="password-toggle" onclick="togglePassword()">
-          <i class="fas fa-eye"></i>
-        </div>
-      </div>
-      
-      <div class="security-info">
-        <i class="fas fa-shield-alt"></i>
-        <div>Your data is protected with encryption and Firebase security technologies</div>
+        <label for="password">Пароль</label>
+        <input type="password" id="password" placeholder="Ваш пароль" autocomplete="current-password">
       </div>
       
       <div class="btn-group">
         <button class="btn-secondary" onclick="signUp()">
-          <i class="fas fa-user-plus"></i> Register
+          <i class="fas fa-user-plus"></i> Реєстрація
         </button>
         <button class="btn-primary" onclick="signIn()">
-          <i class="fas fa-sign-in-alt"></i> Login
+          <i class="fas fa-sign-in-alt"></i> Вхід
         </button>
       </div>
       
       <div class="reset-link">
-        <a onclick="resetPassword()">Forgot password?</a>
+        <a onclick="resetPassword()">Забули пароль?</a>
       </div>
       
       <div id="message"></div>
     </div>
     
     <div class="footer">
-      <p>© 2025 ImageOpt Pro. All rights reserved.</p>
+      <p>© 2025 ImageOpt Pro. Усі права захищено.</p>
     </div>
   </div>
-
-  <script>
-    // Firebase Configuration (replace with your own)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDEXAMPLEEXAMPLEEXAMPLEEXAMPLE",
-      authDomain: "imageopt-pro-example.firebaseapp.com",
-      projectId: "imageopt-pro-example",
-      storageBucket: "imageopt-pro-example.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abcd1234abcd1234abcd12"
-    };
-    
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    
-    // Function to show messages
-    function showMessage(message, isSuccess) {
-      const messageDiv = document.getElementById('message');
-      // XSS protection using DOMPurify
-      messageDiv.innerHTML = DOMPurify.sanitize(message);
-      messageDiv.className = isSuccess ? 'success' : 'error';
-      messageDiv.style.display = 'block';
-      
-      // Automatically hide after 5 seconds
-      setTimeout(() => {
-        messageDiv.style.display = 'none';
-      }, 5000);
-    }
-    
-    // Registration function
-    function signUp() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        showMessage('Please enter a valid email address.', false);
-        return;
-      }
-      
-      // Password length validation
-      if (password.length < 6) {
-        showMessage('Password must be at least 6 characters long.', false);
-        return;
-      }
-      
-      // User registration
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          showMessage('Registration successful! Welcome to ImageOpt Pro.', true);
-          
-          // Redirect to dashboard after 2 seconds
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 2000);
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-          
-          // Secure error handling
-          if (error.code === 'auth/email-already-in-use') {
-            showMessage('This email is already in use.', false);
-          } else if (error.code === 'auth/invalid-email') {
-            showMessage('Invalid email format.', false);
-          } else {
-            showMessage(`Registration error: ${errorMessage}`, false);
-          }
-        });
-    }
-    
-    // Login function
-    function signIn() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      // Check required fields
-      if (!email || !password) {
-        showMessage('Please fill in all fields.', false);
-        return;
-      }
-      
-      // User login
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          showMessage('Login successful! Redirecting...', true);
-          
-          // Redirect to dashboard after 1 second
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1000);
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-          
-          // Secure error handling
-          if (error.code === 'auth/user-not-found') {
-            showMessage('No user found with this email.', false);
-          } else if (error.code === 'auth/wrong-password') {
-            showMessage('Incorrect password.', false);
-          } else {
-            showMessage(`Login error: ${errorMessage}`, false);
-          }
-        });
-    }
-    
-    // Password reset function
-    function resetPassword() {
-      const email = document.getElementById('email').value;
-      
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        showMessage('Please enter a valid email to reset your password.', false);
-        return;
-      }
-      
-      // Send password reset email
-      auth.sendPasswordResetEmail(email)
-        .then(() => {
-          showMessage('Password reset email sent. Please check your inbox.', true);
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-          
-          // Secure error handling
-          if (error.code === 'auth/user-not-found') {
-            showMessage('No user found with this email.', false);
-          } else {
-            showMessage(`Error: ${errorMessage}`, false);
-          }
-        });
-    }
-    
-    // Toggle password visibility
-    function togglePassword() {
-      const passwordInput = document.getElementById('password');
-      const toggleIcon = document.querySelector('.password-toggle i');
-      
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleIcon.className = 'fas fa-eye-slash';
-      } else {
-        passwordInput.type = 'password';
-        toggleIcon.className = 'fas fa-eye';
-      }
-    }
-    
-    // Check authentication state on page load
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        // Redirect if user is already authenticated
-        window.location.href = 'dashboard.html';
-      }
-    });
-  </script>
 </body>
 </html>
