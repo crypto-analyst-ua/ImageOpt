@@ -64,22 +64,6 @@
         }
 
         :root {
-            --primary: #6a5af9;
-            --primary-dark: #4b3df7;
-            --secondary: #d66efd;
-            --accent: #00cfc8;
-            --light: #f8f9ff;
-            --dark: #2c2c54;
-            --gray: #a5b1c2;
-            --success: #20bf6b;
-            --warning: #fa8231;
-            --danger: #eb3b5a;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-dark: #333;
-            --text-light: #f1f2f6;
-        }
-
-        [data-theme="dark"] {
             --primary: #7d6af9;
             --primary-dark: #5d4af7;
             --secondary: #d97efd;
@@ -87,6 +71,9 @@
             --light: #2c2c54;
             --dark: #f1f2f6;
             --gray: #718093;
+            --success: #20bf6b;
+            --warning: #fa8231;
+            --danger: #eb3b5a;
             --card-bg: rgba(44, 44, 84, 0.95);
             --text-dark: #f1f2f6;
             --text-light: #333;
@@ -97,7 +84,6 @@
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             min-height: 100vh;
             color: var(--text-dark);
-            transition: background 0.3s ease;
             padding: 20px;
             display: flex;
             justify-content: center;
@@ -156,7 +142,7 @@
             gap: 15px;
         }
 
-        .theme-toggle, .history-toggle, .pdf-toggle {
+        .history-toggle, .pdf-toggle {
             background: rgba(255,255,255,0.15);
             border: none;
             width: 40px;
@@ -171,7 +157,7 @@
             font-size: 18px;
         }
 
-        .theme-toggle:hover, .history-toggle:hover, .pdf-toggle:hover {
+        .history-toggle:hover, .pdf-toggle:hover {
             background: rgba(255,255,255,0.25);
             transform: scale(1.1);
         }
@@ -670,7 +656,7 @@
         
         .crop-preview {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr));
             gap: 10px;
             margin-top: 15px;
         }
@@ -973,11 +959,11 @@
         
         /* Стили для расширенных настроек */
         .advanced-settings {
+            display: none;
             margin-top: 20px;
             padding: 15px;
             background: rgba(248,249,255,0.3);
             border-radius: 12px;
-            display: none;
         }
         
         .settings-toggle {
@@ -1381,6 +1367,19 @@
             font-size: 14px;
             margin-right: 8px;
         }
+        
+        /* Custom changes */
+        body {
+            background: #000 !important;
+        }
+
+        .advanced-settings {
+            display: block !important;
+        }
+
+        .settings-toggle-btn {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -1396,9 +1395,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="theme-toggle" id="themeToggle" title="Change theme">
-                    <i class="fas fa-moon"></i>
-                </button>
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
@@ -1869,7 +1865,6 @@
             flipHorizontal: false,
             crop: null,
             history: JSON.parse(localStorage.getItem('imageopt-history')) || [],
-            darkMode: localStorage.getItem('imageopt-darkmode') === 'true',
             editingMode: false,
             cropRatio: 'free',
             cropBox: null,
@@ -1929,7 +1924,6 @@
             downloadBtn: document.getElementById('downloadBtn'),
             resetBtn: document.getElementById('resetBtn'),
             processBtn: document.getElementById('processBtn'),
-            themeToggle: document.getElementById('themeToggle'),
             historyToggle: document.getElementById('historyToggle'),
             historyPanel: document.getElementById('historyPanel'),
             closeHistory: document.getElementById('closeHistory'),
@@ -2014,12 +2008,6 @@
 
         // Initialize application
         async function init() {
-            // Set theme
-            if (state.darkMode) {
-                document.body.setAttribute('data-theme', 'dark');
-                elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            }
-            
             // Initialize counter
             state.dailyCount = parseInt(localStorage.getItem('dailyCount')) || 0;
             state.lastProcessDate = localStorage.getItem('lastProcessDate');
@@ -2196,9 +2184,6 @@
             // Download and reset buttons
             elements.downloadBtn.addEventListener('click', downloadOptimized);
             elements.resetBtn.addEventListener('click', reset);
-            
-            // Theme toggle
-            elements.themeToggle.addEventListener('click', toggleTheme);
             
             // History panel
             elements.historyToggle.addEventListener('click', () => elements.historyPanel.classList.add('active'));
@@ -3512,21 +3497,6 @@
             resetEditState();
             elements.progressBar.style.width = '0%';
             elements.progressText.textContent = '0%';
-        }
-
-        // Toggle theme
-        function toggleTheme() {
-            state.darkMode = !state.darkMode;
-            
-            if (state.darkMode) {
-                document.body.setAttribute('data-theme', 'dark');
-                elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.body.removeAttribute('data-theme');
-                elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            }
-            
-            localStorage.setItem('imageopt-darkmode', state.darkMode);
         }
 
         // Save to history
