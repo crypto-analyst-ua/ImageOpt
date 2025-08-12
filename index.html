@@ -48,6 +48,8 @@
     
     <title>ImageOpt Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cropper.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -199,22 +201,44 @@
                         </div>
                     </div>
                     
-                    <!-- Crop controls -->
+                    <!-- Crop controls (обновленная версия) -->
                     <div class="crop-controls" id="cropControls">
-                        <button class="btn" id="applyCropBtn">
-                            <i class="fas fa-check"></i> Apply
-                        </button>
-                        <button class="btn btn-secondary" id="cancelCropBtn">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
+                        <div class="crop-header">
+                            <h3><i class="fas fa-crop-alt"></i> Crop Image</h3>
+                            <div class="crop-actions">
+                                <button class="btn" id="applyCropBtn">
+                                    <i class="fas fa-check"></i> Apply
+                                </button>
+                                <button class="btn btn-secondary" id="cancelCropBtn">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
                         
-                        <div class="crop-preview">
-                            <div class="crop-ratio active" data-ratio="free">Free</div>
-                            <div class="crop-ratio" data-ratio="1:1">1:1</div>
-                            <div class="crop-ratio" data-ratio="4:3">4:3</div>
-                            <div class="crop-ratio" data-ratio="16:9">16:9</div>
-                            <div class="crop-ratio" data-ratio="9:16">9:16</div>
-                            <div class="crop-ratio" data-ratio="5:7">5:7</div>
+                        <div class="crop-ratios">
+                            <div class="crop-ratio active" data-ratio="free">
+                                <i class="fas fa-vector-square"></i> Free
+                            </div>
+                            <div class="crop-ratio" data-ratio="1:1">
+                                <i class="fas fa-square"></i> 1:1
+                            </div>
+                            <div class="crop-ratio" data-ratio="4:3">
+                                <i class="fas fa-rectangle-portrait"></i> 4:3
+                            </div>
+                            <div class="crop-ratio" data-ratio="16:9">
+                                <i class="fas fa-desktop"></i> 16:9
+                            </div>
+                            <div class="crop-ratio" data-ratio="9:16">
+                                <i class="fas fa-mobile-alt"></i> 9:16
+                            </div>
+                            <div class="crop-ratio" data-ratio="5:7">
+                                <i class="fas fa-camera"></i> 5:7
+                            </div>
+                        </div>
+                        
+                        <div class="crop-tips">
+                            <i class="fas fa-info-circle"></i>
+                            Drag to move, drag corners to resize, scroll to zoom
                         </div>
                     </div>
                     
@@ -496,6 +520,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>

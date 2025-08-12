@@ -13,7 +13,7 @@ const FREE_LIMITS = {
     DAILY: 15,         // 15 images per day
     PER_BATCH: 5,       // 5 files at once
     MAX_SIZE: 7 * 1024 * 1024, // 7 MB
-    FORMATS: ['jpeg', 'png', 'webp', 'heic', 'avif', 'tiff'] // Добавили HEIC, AVIF, TIFF
+    FORMATS: ['jpeg', 'png', 'webp', 'heic', 'avif', 'tiff'] 
 };
 
 // State management
@@ -29,8 +29,8 @@ const state = {
     cropRatio: 'free',
     cropBox: null,
     avifSupported: true,
-    heicSupported: false, // Добавлено: поддержка HEIC
-    tiffSupported: true, // Добавлено: поддержка TIFF
+    heicSupported: false,
+    tiffSupported: true,
     isPremium: localStorage.getItem('premiumUser') === 'true',
     user: null,
     cropMode: false,
@@ -45,8 +45,7 @@ const state = {
     resizeHandle: null,
     dailyCount: 0,
     lastProcessDate: null,
-    // New properties for enhancements
-    batchEditMode: 'all', // 'single' or 'all'
+    batchEditMode: 'all',
     watermark: {
         enabled: false,
         text: 'ImageOpt Pro',
@@ -59,19 +58,18 @@ const state = {
     removeMetadata: true,
     pngCompression: 'auto',
     savedProfiles: JSON.parse(localStorage.getItem('savedProfiles')) || [],
-    // Image adjustments
     adjustments: {
         brightness: 0,
         contrast: 0,
         saturation: 0,
         sharpness: 0,
         temperature: 0
-    }
+    },
+    cropper: null // Для хранения экземпляра Cropper
 };
 
 // DOM Elements
 const elements = {
-    // Basic elements
     uploadArea: document.getElementById('uploadArea'),
     fileInput: document.getElementById('fileInput'),
     filePreviews: document.getElementById('filePreviews'),
@@ -115,8 +113,6 @@ const elements = {
     dailyCounter: document.getElementById('dailyCounter'),
     dailyCount: document.getElementById('dailyCount'),
     dailyLimit: document.getElementById('dailyLimit'),
-    
-    // New elements for enhancements
     editSingleBtn: document.getElementById('editSingleBtn'),
     editAllBtn: document.getElementById('editAllBtn'),
     batchEditNotice: document.getElementById('batchEditNotice'),
@@ -141,8 +137,6 @@ const elements = {
     touchFlipH: document.getElementById('touchFlipH'),
     touchCrop: document.getElementById('touchCrop'),
     touchAdjust: document.getElementById('touchAdjust'),
-    
-    // Adjustment elements
     brightnessRange: document.getElementById('brightnessRange'),
     contrastRange: document.getElementById('contrastRange'),
     saturationRange: document.getElementById('saturationRange'),
@@ -156,8 +150,6 @@ const elements = {
     applyAdjustBtn: document.getElementById('applyAdjustBtn'),
     resetAdjustBtn: document.getElementById('resetAdjustBtn'),
     adjustControls: document.getElementById('adjustControls'),
-    
-    // PDF elements
     pdfToggle: document.getElementById('pdfToggle'),
     pdfModal: document.getElementById('pdfModal'),
     pdfCancelBtn: document.getElementById('pdfCancelBtn'),
@@ -166,6 +158,111 @@ const elements = {
     pdfImagesContainer: document.getElementById('pdfImagesContainer'),
     imageWidthPercent: document.getElementById('imageWidthPercent')
 };
+
+// Инициализация Cropper
+function initCropper() {
+    state.cropper = null;
+}
+
+// Toggle crop mode
+function toggleCropMode() {
+    if (state.cropMode && state.cropper) {
+        destroyCropper();
+        elements.cropControls.style.display = 'none';
+        state.cropMode = false;
+        return;
+    }
+    
+    // Активировать режим обрезки
+    state.cropMode = true;
+    elements.cropControls.style.display = 'grid';
+    initCrop();
+}
+
+// Инициализация обрезки
+function initCrop() {
+    const image = elements.previewImage;
+    if (!image.src) return;
+    
+    // Создаем клон изображения для Cropper
+    const clone = image.cloneNode(true);
+    clone.id = "cropper-image";
+    clone.style.maxWidth = "100%";
+    clone.style.maxHeight = "80vh";
+    
+    elements.cropOverlay.innerHTML = '';
+    elements.cropOverlay.appendChild(clone);
+    elements.cropOverlay.style.display = 'block'; // Отображаем overlay
+    
+    // Инициализация Cropper.js
+    state.cropper = new Cropper(clone, {
+        aspectRatio: getAspectRatio(),
+        viewMode: 1,
+        autoCropArea: 1,
+        movable: true,
+        zoomable: true,
+        rotatable: false,
+        scalable: false,
+        toggleDragModeOnDblclick: false,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        guides: true,
+        center: true,
+        highlight: true,
+        background: true,
+        responsive: true,
+        restore: true,
+        checkCrossOrigin: false,
+        checkOrientation: false,
+        modal: true,
+    });
+}
+
+// Получение соотношения сторон
+function getAspectRatio() {
+    if (state.cropRatio === 'free') return NaN;
+    const [width, height] = state.cropRatio.split(':').map(Number);
+    return width / height;
+}
+
+// Уничтожение Cropper
+function destroyCropper() {
+    if (state.cropper) {
+        state.cropper.destroy();
+        state.cropper = null;
+    }
+    elements.cropControls.style.display = 'none';
+    elements.cropOverlay.innerHTML = '';
+    elements.cropOverlay.style.display = 'none'; // Скрываем overlay
+    state.cropMode = false;
+}
+
+// Apply crop
+function applyCrop() {
+    if (!state.cropper) return;
+    
+    // Получаем данные обрезки
+    const canvas = state.cropper.getCroppedCanvas();
+    if (!canvas) return;
+    
+    // Создаем новое изображение с результатом обрезки
+    const croppedImage = new Image();
+    croppedImage.src = canvas.toDataURL();
+    
+    // Обновляем превью
+    elements.previewImage.src = croppedImage.src;
+    
+    // Закрываем режим обрезки
+    destroyCropper();
+    
+    showEditNotification('Crop applied!');
+}
+
+// Cancel crop
+function cancelCrop() {
+    destroyCropper();
+    showEditNotification('Crop canceled!');
+}
 
 // Initialize application
 async function init() {
@@ -223,6 +320,9 @@ async function init() {
     
     // Check AVIF support
     await checkAvifSupport();
+    
+    // Инициализация Cropper
+    initCropper();
     
     setupEventListeners();
     initEnhancements();
@@ -371,6 +471,11 @@ function setupEventListeners() {
             elements.cropRatios.forEach(r => r.classList.remove('active'));
             ratio.classList.add('active');
             state.cropRatio = ratio.dataset.ratio;
+            
+            // Обновляем соотношение в Cropper
+            if (state.cropper) {
+                state.cropper.setAspectRatio(getAspectRatio());
+            }
         });
     });
     
@@ -885,6 +990,9 @@ function resetEditState() {
     document.querySelector('.crop-ratio[data-ratio="free"]').classList.add('active');
     state.cropRatio = 'free';
     
+    // Сбрасываем обрезку
+    destroyCropper();
+    
     // Reset adjustments
     resetAdjustments();
     
@@ -914,271 +1022,6 @@ function showEditNotification(message) {
     setTimeout(() => {
         elements.editNotification.style.display = 'none';
     }, 3000);
-}
-
-// Toggle crop mode
-function toggleCropMode() {
-    if (elements.cropControls.style.display === 'grid') {
-        elements.cropControls.style.display = 'none';
-        elements.cropOverlay.innerHTML = '';
-        elements.cropOverlay.style.display = 'none';
-        state.cropMode = false;
-        return;
-    }
-    
-    state.cropMode = true;
-    elements.cropControls.style.display = 'grid';
-    elements.cropOverlay.style.display = 'block';
-    
-    // Initialize cropping
-    initCrop();
-    showEditNotification('Crop mode activated');
-}
-
-// Initialize cropping
-function initCrop() {
-    // Create crop element
-    const cropBox = document.createElement('div');
-    cropBox.className = 'crop-box';
-    cropBox.style.display = 'block';
-    cropBox.style.position = 'absolute';
-    cropBox.style.border = '2px solid var(--accent)';
-    cropBox.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
-    cropBox.style.cursor = 'move';
-    cropBox.style.width = '200px';
-    cropBox.style.height = '200px';
-    cropBox.style.left = '50%';
-    cropBox.style.top = '50%';
-    cropBox.style.transform = 'translate(-50%, -50%)';
-    
-    // Add resize handles
-    const handles = ['nw', 'ne', 'sw', 'se'];
-    handles.forEach(pos => {
-        const handle = document.createElement('div');
-        handle.className = `crop-handle handle-${pos}`;
-        cropBox.appendChild(handle);
-    });
-    
-    elements.cropOverlay.innerHTML = '';
-    elements.cropOverlay.appendChild(cropBox);
-    
-    // Save reference to element
-    state.cropBox = cropBox;
-    
-    // Add event handlers
-    cropBox.addEventListener('mousedown', startCrop);
-    cropBox.addEventListener('touchstart', startCrop, { passive: false });
-    
-    // Add event handlers for resize handles
-    const handleElements = cropBox.querySelectorAll('.crop-handle');
-    handleElements.forEach(handle => {
-        handle.addEventListener('mousedown', startResize);
-        handle.addEventListener('touchstart', startResize, { passive: false });
-    });
-}
-
-// Start cropping (universal)
-function startCrop(e) {
-    e.preventDefault();
-    if (!state.cropMode) return;
-    
-    // Determine event type (mouse or touch)
-    const isTouch = e.type === 'touchstart';
-    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-    
-    state.cropping = true;
-    state.cropStartX = clientX;
-    state.cropStartY = clientY;
-    
-    // Crop element position
-    const rect = state.cropBox.getBoundingClientRect();
-    state.cropBoxX = rect.left;
-    state.cropBoxY = rect.top;
-    state.cropBoxWidth = rect.width;
-    state.cropBoxHeight = rect.height;
-    
-    // Add move handlers
-    document.addEventListener('mousemove', cropMove);
-    document.addEventListener('touchmove', cropMove, { passive: false });
-    
-    // Add end handlers
-    document.addEventListener('mouseup', endCrop);
-    document.addEventListener('touchend', endCrop);
-}
-
-// Crop move (universal)
-function cropMove(e) {
-    if (!state.cropMode || !state.cropping) return;
-    e.preventDefault();
-    
-    // Determine event type
-    const isTouch = e.type === 'touchmove';
-    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-    
-    // Calculate offset
-    const dx = clientX - state.cropStartX;
-    const dy = clientY - state.cropStartY;
-    
-    // Update crop element position
-    state.cropBox.style.left = `${state.cropBoxX + dx}px`;
-    state.cropBox.style.top = `${state.cropBoxY + dy}px`;
-}
-
-// End crop (universal)
-function endCrop() {
-    if (!state.cropMode || !state.cropping) return;
-    
-    state.cropping = false;
-    
-    // Remove handlers
-    document.removeEventListener('mousemove', cropMove);
-    document.removeEventListener('touchmove', cropMove);
-    document.removeEventListener('mouseup', endCrop);
-    document.removeEventListener('touchend', endCrop);
-}
-
-// Start resize (universal)
-function startResize(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!state.cropMode) return;
-    
-    // Determine event type
-    const isTouch = e.type === 'touchstart';
-    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-    
-    state.resizing = true;
-    state.cropStartX = clientX;
-    state.cropStartY = clientY;
-    
-    // Determine handle type
-    state.resizeHandle = e.target.classList[1].split('-')[1]; // e.g. 'se'
-    
-    // Save current crop area parameters
-    const rect = state.cropBox.getBoundingClientRect();
-    state.cropBoxX = rect.left;
-    state.cropBoxY = rect.top;
-    state.cropBoxWidth = rect.width;
-    state.cropBoxHeight = rect.height;
-    
-    // Add move handlers
-    document.addEventListener('mousemove', resizeMove);
-    document.addEventListener('touchmove', resizeMove, { passive: false });
-    
-    // Add end handlers
-    document.addEventListener('mouseup', endResize);
-    document.addEventListener('touchend', endResize);
-}
-
-// Resize move (universal)
-function resizeMove(e) {
-    if (!state.cropMode || !state.resizing) return;
-    e.preventDefault();
-    
-    // Determine event type
-    const isTouch = e.type === 'touchmove';
-    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-    
-    // Calculate offset
-    const dx = clientX - state.cropStartX;
-    const dy = clientY - state.cropStartY;
-    
-    // Calculate new dimensions based on handle type
-    let newWidth = state.cropBoxWidth;
-    let newHeight = state.cropBoxHeight;
-    let newLeft = state.cropBoxX;
-    let newTop = state.cropBoxY;
-    
-    const minSize = 50; // Minimum area size
-    
-    switch(state.resizeHandle) {
-        case 'se': // Bottom-right corner
-            newWidth = Math.max(minSize, state.cropBoxWidth + dx);
-            newHeight = Math.max(minSize, state.cropBoxHeight + dy);
-            break;
-            
-        case 'sw': // Bottom-left corner
-            newWidth = Math.max(minSize, state.cropBoxWidth - dx);
-            newHeight = Math.max(minSize, state.cropBoxHeight + dy);
-            newLeft = state.cropBoxX + dx;
-            break;
-            
-        case 'ne': // Top-right corner
-            newWidth = Math.max(minSize, state.cropBoxWidth + dx);
-            newHeight = Math.max(minSize, state.cropBoxHeight - dy);
-            newTop = state.cropBoxY + dy;
-            break;
-            
-        case 'nw': // Top-left corner
-            newWidth = Math.max(minSize, state.cropBoxWidth - dx);
-            newHeight = Math.max(minSize, state.cropBoxHeight - dy);
-            newLeft = state.cropBoxX + dx;
-            newTop = state.cropBoxY + dy;
-            break;
-    }
-    
-    // Ensure crop area doesn't go beyond image
-    newLeft = Math.max(0, newLeft);
-    newTop = Math.max(0, newTop);
-    newWidth = Math.min(newWidth, elements.cropOverlay.offsetWidth - newLeft);
-    newHeight = Math.min(newHeight, elements.cropOverlay.offsetHeight - newTop);
-    
-    // Apply changes
-    state.cropBox.style.width = `${newWidth}px`;
-    state.cropBox.style.height = `${newHeight}px`;
-    state.cropBox.style.left = `${newLeft}px`;
-    state.cropBox.style.top = `${newTop}px`;
-}
-
-// End resize (universal)
-function endResize() {
-    if (!state.cropMode || !state.resizing) return;
-    
-    state.resizing = false;
-    
-    // Remove handlers
-    document.removeEventListener('mousemove', resizeMove);
-    document.removeEventListener('touchmove', resizeMove);
-    document.removeEventListener('mouseup', endResize);
-    document.removeEventListener('touchend', endResize);
-}
-
-// Apply crop
-function applyCrop() {
-    // Calculate relative crop coordinates
-    const imgRect = elements.previewImage.getBoundingClientRect();
-    const cropRect = state.cropBox.getBoundingClientRect();
-    
-    // Scaling (natural size to displayed ratio)
-    const scaleX = elements.previewImage.naturalWidth / imgRect.width;
-    const scaleY = elements.previewImage.naturalHeight / imgRect.height;
-    
-    // Calculate coordinates relative to original image
-    state.crop = {
-        x: (cropRect.left - imgRect.left) * scaleX,
-        y: (cropRect.top - imgRect.top) * scaleY,
-        width: cropRect.width * scaleX,
-        height: cropRect.height * scaleY
-    };
-
-    elements.cropControls.style.display = 'none';
-    elements.cropOverlay.style.display = 'none';
-    state.cropMode = false;
-    
-    showEditNotification('Crop applied!');
-}
-
-// Cancel crop
-function cancelCrop() {
-    elements.cropControls.style.display = 'none';
-    elements.cropOverlay.style.display = 'none';
-    state.cropMode = false;
-    state.crop = null;
 }
 
 // Toggle adjust panel
@@ -1355,7 +1198,8 @@ async function processImages() {
                 quality, 
                 format, 
                 maxWidth, 
-                i === state.currentFileIndex
+                i === state.currentFileIndex,
+                i
             );
             state.optimizedFiles[i] = optimizedFile;
             
@@ -1388,7 +1232,7 @@ async function processImages() {
 }
 
 // Optimize image
-function optimizeImage(file, quality, format, maxWidth, applyEdits) {
+function optimizeImage(file, quality, format, maxWidth, applyEdits, index) {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -1397,6 +1241,20 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
         img.onload = async () => {
             let { width, height } = img;
             
+            // APPLY CROP - только если есть данные обрезки
+            if (applyEdits && state.cropper && index === state.currentFileIndex) {
+                const croppedCanvas = state.cropper.getCroppedCanvas();
+                width = croppedCanvas.width;
+                height = croppedCanvas.height;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(croppedCanvas, 0, 0);
+            } else {
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+            }
+
             // Apply rotation if needed
             if (applyEdits && state.rotation !== 0) {
                 // Swap dimensions for 90/270 degree rotations
@@ -1435,29 +1293,6 @@ function optimizeImage(file, quality, format, maxWidth, applyEdits) {
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                 }
-            }
-            
-            // APPLY CROP
-            if (applyEdits && state.crop) {
-                const {x, y, width: cropWidth, height: cropHeight} = state.crop;
-                
-                // Create temporary canvas for cropped image
-                const croppedCanvas = document.createElement('canvas');
-                croppedCanvas.width = cropWidth;
-                croppedCanvas.height = cropHeight;
-                const croppedCtx = croppedCanvas.getContext('2d');
-                
-                // Crop the required area
-                croppedCtx.drawImage(
-                    canvas, 
-                    x, y, cropWidth, cropHeight,
-                    0, 0, cropWidth, cropHeight
-                );
-                
-                // Replace main canvas
-                canvas.width = cropWidth;
-                canvas.height = cropHeight;
-                ctx.drawImage(croppedCanvas, 0, 0);
             }
             
             // Resize if needed
