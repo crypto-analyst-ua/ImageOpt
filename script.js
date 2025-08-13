@@ -72,9 +72,6 @@ const state = {
     cropper: null // Для хранения экземпляра Cropper
 };
 
-// Установка премиум-статуса в localStorage
-localStorage.setItem('premiumUser', 'true');
-
 // DOM Elements
 const elements = {
     uploadArea: document.getElementById('uploadArea'),
