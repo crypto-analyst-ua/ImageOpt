@@ -150,13 +150,8 @@ const elements = {
     applyAdjustBtn: document.getElementById('applyAdjustBtn'),
     resetAdjustBtn: document.getElementById('resetAdjustBtn'),
     adjustControls: document.getElementById('adjustControls'),
-    pdfToggle: document.getElementById('pdfToggle'),
-    pdfModal: document.getElementById('pdfModal'),
-    pdfCancelBtn: document.getElementById('pdfCancelBtn'),
-    pdfCreateBtn: document.getElementById('pdfCreateBtn'),
-    pdfText: document.getElementById('pdfText'),
-    pdfImagesContainer: document.getElementById('pdfImagesContainer'),
-    imageWidthPercent: document.getElementById('imageWidthPercent')
+    autoAdjustBtn: document.getElementById('autoAdjustBtn'),
+    touchAutoAdjust: document.getElementById('touchAutoAdjust')
 };
 
 // Инициализация Cropper
@@ -374,6 +369,9 @@ function initEnhancements() {
     elements.pngCompression.value = state.pngCompression;
     elements.enableWatermark.checked = state.watermark.enabled;
     
+    // Initialize adjustments
+    applyAdjustmentsToControls();
+    
     // Event handlers for new elements
     setupEnhancementEventListeners();
 }
@@ -423,6 +421,56 @@ function setupEnhancementEventListeners() {
     elements.temperatureRange.addEventListener('input', updateTemperatureValue);
     elements.applyAdjustBtn.addEventListener('click', applyAdjustments);
     elements.resetAdjustBtn.addEventListener('click', resetAdjustments);
+    
+    // Auto adjust buttons
+    elements.autoAdjustBtn.addEventListener('click', autoAdjustImage);
+    elements.touchAutoAdjust.addEventListener('click', autoAdjustImage);
+}
+
+// Auto adjust image
+function autoAdjustImage() {
+    // Оптимальные значения для автонастройки
+    const autoSettings = {
+        brightness: 15,
+        contrast: 20,
+        saturation: 25,
+        sharpness: 30,
+        temperature: 10
+    };
+
+    // Применяем автонастройки
+    state.adjustments = {...autoSettings};
+    
+    // Обновляем UI
+    elements.brightnessRange.value = autoSettings.brightness;
+    elements.contrastRange.value = autoSettings.contrast;
+    elements.saturationRange.value = autoSettings.saturation;
+    elements.sharpnessRange.value = autoSettings.sharpness;
+    elements.temperatureRange.value = autoSettings.temperature;
+    
+    elements.brightnessValue.textContent = `${autoSettings.brightness}%`;
+    elements.contrastValue.textContent = `${autoSettings.contrast}%`;
+    elements.saturationValue.textContent = `${autoSettings.saturation}%`;
+    elements.sharpnessValue.textContent = `${autoSettings.sharpness}%`;
+    elements.temperatureValue.textContent = `${autoSettings.temperature}%`;
+    
+    applyPreviewAdjustments();
+    showEditNotification('Auto adjustments applied!');
+}
+
+// Apply adjustments to controls
+function applyAdjustmentsToControls() {
+    elements.brightnessRange.value = state.adjustments.brightness;
+    elements.contrastRange.value = state.adjustments.contrast;
+    elements.saturationRange.value = state.adjustments.saturation;
+    elements.sharpnessRange.value = state.adjustments.sharpness;
+    elements.temperatureRange.value = state.adjustments.temperature;
+    
+    updateBrightnessValue();
+    updateContrastValue();
+    updateSaturationValue();
+    updateSharpnessValue();
+    updateTemperatureValue();
 }
 
 // Update daily usage counter
@@ -538,24 +586,6 @@ function setupEventListeners() {
             window.location.href = 'index.html';
         }
     });
-    
-    // PDF functionality
-    elements.pdfToggle.addEventListener('click', () => {
-        elements.pdfModal.classList.add('active');
-        renderPdfImageList();
-    });
-    
-    elements.pdfCancelBtn.addEventListener('click', () => {
-        elements.pdfModal.classList.remove('active');
-    });
-    
-    elements.pdfModal.addEventListener('click', (e) => {
-        if (e.target === elements.pdfModal) {
-            elements.pdfModal.classList.remove('active');
-        }
-    });
-    
-    elements.pdfCreateBtn.addEventListener('click', createPDF);
 }
 
 // Set batch edit mode
@@ -655,7 +685,8 @@ function saveProfile() {
             watermark: state.watermark,
             progressiveJpeg: state.progressiveJpeg,
             removeMetadata: state.removeMetadata,
-            pngCompression: state.pngCompression
+            pngCompression: state.pngCompression,
+            adjustments: state.adjustments
         }
     };
     
@@ -1678,7 +1709,8 @@ function saveToHistory() {
         settings: {
             quality: elements.qualityRange.value,
             format: elements.formatSelect.value,
-            maxWidth: elements.maxWidthSelect.value
+            maxWidth: elements.maxWidthSelect.value,
+            adjustments: state.adjustments
         }
     };
     
@@ -1747,170 +1779,17 @@ function loadFromHistory(id) {
     elements.formatSelect.value = item.settings.format;
     elements.maxWidthSelect.value = item.settings.maxWidth;
     
+    // Apply adjustments if available
+    if (item.settings.adjustments) {
+        state.adjustments = {...item.settings.adjustments};
+        applyAdjustmentsToControls();
+    }
+    
     // Close history panel
     elements.historyPanel.classList.remove('active');
     
     // Show notification
     showToast(`Settings from ${item.date} applied!`);
-}
-
-// Render image list for PDF modal
-function renderPdfImageList() {
-    const container = elements.pdfImagesContainer;
-    container.innerHTML = '';
-    
-    if (state.optimizedFiles.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">No optimized images available. Optimize images first.</p>';
-        return;
-    }
-    
-    state.optimizedFiles.forEach((file, index) => {
-        const item = document.createElement('div');
-        item.className = 'pdf-image-item';
-        
-        const img = document.createElement('img');
-        img.className = 'pdf-image-preview';
-        img.src = URL.createObjectURL(file);
-        
-        const info = document.createElement('div');
-        info.className = 'pdf-image-info';
-        
-        const name = document.createElement('div');
-        name.className = 'pdf-image-name';
-        name.textContent = file.name;
-        
-        const size = document.createElement('div');
-        size.className = 'pdf-image-size';
-        size.textContent = formatFileSize(file.size);
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.dataset.index = index;
-        checkbox.style.marginLeft = '10px';
-        
-        info.appendChild(name);
-        info.appendChild(size);
-        
-        item.appendChild(img);
-        item.appendChild(info);
-        item.appendChild(checkbox);
-        container.appendChild(item);
-    });
-}
-
-// Create PDF with image support
-async function createPDF() {
-    const text = elements.pdfText.value.trim();
-    const imageWidthPercent = parseInt(elements.imageWidthPercent.value) || 80;
-    const selectedImageIndexes = [];
-    
-    // Collect selected images
-    document.querySelectorAll('#pdfImagesContainer input[type="checkbox"]:checked').forEach(checkbox => {
-        selectedImageIndexes.push(parseInt(checkbox.dataset.index));
-    });
-
-    if (!text && selectedImageIndexes.length === 0) {
-        showToast('Please enter text or select images.');
-        return;
-    }
-
-    // Check if library is loaded
-    if (typeof jspdf !== 'undefined') {
-        const doc = new jspdf.jsPDF();
-        
-        // Document settings
-        const fontSize = 12;
-        const lineHeight = fontSize * 1.2;
-        const margin = 20;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const maxWidth = pageWidth - margin * 2;
-        const imageWidth = (pageWidth - margin * 2) * (imageWidthPercent / 100);
-        
-        let y = margin;
-        
-        // Add text
-        if (text) {
-            const lines = doc.splitTextToSize(text, maxWidth);
-            
-            for (let i = 0; i < lines.length; i++) {
-                if (y > doc.internal.pageSize.getHeight() - margin) {
-                    doc.addPage();
-                    y = margin;
-                }
-                
-                doc.text(lines[i], margin, y);
-                y += lineHeight;
-            }
-        }
-        
-        // Add images
-        if (selectedImageIndexes.length > 0) {
-            // Add spacing after text
-            if (text) {
-                y += 15;
-            }
-            
-            for (let i = 0; i < selectedImageIndexes.length; i++) {
-                const index = selectedImageIndexes[i];
-                const file = state.optimizedFiles[index];
-                
-                // Convert File to data URL
-                const dataUrl = await new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(file);
-                });
-                
-                // Get image dimensions
-                const img = new Image();
-                img.src = dataUrl;
-                await new Promise(resolve => { img.onload = resolve; });
-                
-                const imgHeight = (img.height * imageWidth) / img.width;
-                
-                // Check if image fits on current page
-                if (y + imgHeight > doc.internal.pageSize.getHeight() - margin) {
-                    doc.addPage();
-                    y = margin;
-                }
-                
-                // Determine format for jsPDF
-                let format = 'JPEG'; // default
-                if (file.type === 'image/png') {
-                    format = 'PNG';
-                }
-                
-                // Add image (center horizontally)
-                doc.addImage(
-                    dataUrl,
-                    format,
-                    margin + (maxWidth - imageWidth) / 2,
-                    y,
-                    imageWidth,
-                    imgHeight
-                );
-                
-                // Add caption under image
-                y += imgHeight + 5;
-                if (y < doc.internal.pageSize.getHeight() - margin - 10) {
-                    doc.setFontSize(10);
-                    doc.text(file.name, margin, y);
-                    doc.setFontSize(fontSize);
-                    y += 10;
-                }
-                
-                // Add spacing after image
-                y += 10;
-            }
-        }
-        
-        // Save PDF
-        doc.save("imageopt-document.pdf");
-        elements.pdfModal.classList.remove('active');
-        showToast('PDF created successfully!');
-    } else {
-        showToast('Error: PDF library not loaded. Please refresh page.');
-    }
 }
 
 // Initialize app when DOM is loaded

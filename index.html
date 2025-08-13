@@ -68,9 +68,6 @@
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
-                <button class="pdf-toggle" id="pdfToggle" title="Create PDF">
-                    <i class="fas fa-file-pdf"></i>
-                </button>
             </div>
             <div class="user-info">
                 <div id="premiumStatus" class="premium-badge">Basic</div>
@@ -176,6 +173,11 @@
                             <i class="fas fa-adjust"></i>
                             <span>Adjust</span>
                         </div>
+                        <!-- Добавленная кнопка Auto -->
+                        <div class="editor-btn" id="autoAdjustBtn">
+                            <i class="fas fa-magic"></i>
+                            <span>Auto</span>
+                        </div>
                         <div class="editor-btn" id="resetEditBtn">
                             <i class="fas fa-times"></i>
                             <span>Reset</span>
@@ -198,6 +200,10 @@
                         </div>
                         <div class="touch-btn" id="touchAdjust">
                             <i class="fas fa-adjust"></i>
+                        </div>
+                        <!-- Добавленная кнопка Auto для мобильных -->
+                        <div class="touch-btn" id="touchAutoAdjust">
+                            <i class="fas fa-magic"></i>
                         </div>
                     </div>
                     
@@ -490,32 +496,6 @@
         </div>
     </div>
 
-    <!-- PDF Modal -->
-    <div class="pdf-modal" id="pdfModal">
-        <div class="pdf-modal-content">
-            <h3><i class="fas fa-file-pdf"></i> Create PDF</h3>
-            <textarea id="pdfText" placeholder="Enter text for PDF..."></textarea>
-            
-            <!-- Image section -->
-            <h4><i class="fas fa-images"></i> Add Images</h4>
-            <div class="pdf-images-container" id="pdfImagesContainer">
-                <p style="text-align: center; padding: 20px; color: var(--gray);">
-                    No optimized images available. Optimize images first.
-                </p>
-            </div>
-            
-            <div class="image-width-control">
-                <label for="imageWidthPercent">Image width (% of page width):</label>
-                <input type="number" id="imageWidthPercent" min="10" max="100" value="80">
-            </div>
-            
-            <div class="pdf-modal-buttons">
-                <button class="btn btn-secondary" id="pdfCancelBtn">Cancel</button>
-                <button class="btn" id="pdfCreateBtn">Create</button>
-            </div>
-        </div>
-    </div>
-
     <div class="toast" id="toast"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -526,8 +506,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Added PDF library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Добавлена библиотека для работы с HEIC -->
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
     <!-- Добавлена библиотека для работы с TIFF -->
