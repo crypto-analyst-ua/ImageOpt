@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced PDF Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            color: #ffcc00;
+        }
+        
+        .logo h1 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+        
+        .logo span {
+            color: #ffcc00;
+            font-weight: 800;
+        }
+        
+        .main-content {
+            display: flex;
+            height: calc(100vh - 180px);
+        }
+        
+        /* Toolbar Styles */
+        .toolbar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            overflow-y: auto;
+        }
+        
+        .toolbar-group {
+            border-bottom: 1px solid #3d5168;
+            padding-bottom: 20px;
+        }
+        
+        .toolbar-group:last-child {
+            border-bottom: none;
+        }
+        
+        .toolbar h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            color: #ffcc00;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toolbar-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .toolbar-btn i {
+            font-size: 1.2rem;
+            min-width: 25px;
+        }
+        
+        .toolbar-btn:hover {
+            background: #34495e;
+        }
+        
+        .toolbar-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px;
+        }
+        
+        .color-item {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-item.active {
+            border-color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ecf0f1;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #bdc3c7;
+        }
+        
+        .editor-header h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .editor-header h2 i {
+            color: #e74c3c;
+        }
+        
+        .page-thumbnails {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 5px;
+        }
+        
+        .page-thumbnail {
+            width: 80px;
+            height: 100px;
+            background: white;
+            border: 2px solid #95a5a6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-thumbnail:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .page-thumbnail.active {
+            border-color: #3498db;
+            color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #7f8c8d;
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        #pdf-canvas-container {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        #pdf-canvas {
+            border: 1px solid #bdc3c7;
+        }
+        
+        /* Properties Panel */
+        #properties-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 280px;
+            z-index: 100;
+        }
+        
+        .panel-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .form-group select, 
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .toolbar {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .toolbar-group {
+                border-bottom: none;
+                padding: 0;
+                flex: 1;
+                min-width: 200px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .toolbar-group {
+                min-width: 150px;
+            }
+            
+            .editor-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-file-pdf logo-icon"></i>
+                <h1>Advanced <span>PDF</span> Editor</h1>
+            </div>
+            <div class="header-info">
+                <p>Create, edit, and export PDF documents with ease</p>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Left Toolbar -->
+            <div class="toolbar">
+                <!-- File Operations -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-folder-open"></i> File</h3>
+                    <button id="new-pdf-btn" class="toolbar-btn">
+                        <i class="fas fa-file"></i>
+                        <span>New PDF</span>
+                    </button>
+                    <button id="open-pdf-btn" class="toolbar-btn">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Open PDF</span>
+                    </button>
+                    <button id="save-pdf-btn" class="toolbar-btn">
+                        <i class="fas fa-save"></i>
+                        <span>Save PDF</span>
+                    </button>
+                    <button id="export-pdf-btn" class="toolbar-btn">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export PDF</span>
+                    </button>
+                </div>
+
+                <!-- Editing Tools -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-pencil-alt"></i> Tools</h3>
+                    <button id="text-tool" class="toolbar-btn active">
+                        <i class="fas fa-font"></i>
+                        <span>Text</span>
+                    </button>
+                    <button id="image-tool" class="toolbar-btn">
+                        <i class="fas fa-image"></i>
+                        <span>Image</span>
+                    </button>
+                    <button id="rectangle-tool" class="toolbar-btn">
+                        <i class="fas fa-square"></i>
+                        <span>Rectangle</span>
+                    </button>
+                    <button id="circle-tool" class="toolbar-btn">
+                        <i class="fas fa-circle"></i>
+                        <span>Circle</span>
+                    </button>
+                    <button id="line-tool" class="toolbar-btn">
+                        <i class="fas fa-grip-lines"></i>
+                        <span>Line</span>
+                    </button>
+                    <button id="signature-tool" class="toolbar-btn">
+                        <i class="fas fa-signature"></i>
+                        <span>Signature</span>
+                    </button>
+                </div>
+
+                <!-- Page Management -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-copy"></i> Pages</h3>
+                    <button id="add-page-btn" class="toolbar-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Page</span>
+                    </button>
+                    <button id="delete-page-btn" class="toolbar-btn">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Page</span>
+                    </button>
+                    <button id="duplicate-page-btn" class="toolbar-btn">
+                        <i class="fas fa-copy"></i>
+                        <span>Duplicate Page</span>
+                    </button>
+                </div>
+
+                <!-- History Controls -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-history"></i> History</h3>
+                    <button id="undo-btn" class="toolbar-btn">
+                        <i class="fas fa-undo"></i>
+                        <span>Undo</span>
+                    </button>
+                    <button id="redo-btn" class="toolbar-btn">
+                        <i class="fas fa-redo"></i>
+                        <span>Redo</span>
+                    </button>
+                    <button id="delete-btn" class="toolbar-btn">
+                        <i class="fas fa-eraser"></i>
+                        <span>Delete</span>
+                    </button>
+                </div>
+
+                <!-- Zoom Controls -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-search"></i> Zoom</h3>
+                    <button id="zoom-in-btn" class="toolbar-btn">
+                        <i class="fas fa-search-plus"></i>
+                        <span>Zoom In</span>
+                    </button>
+                    <button id="zoom-out-btn" class="toolbar-btn">
+                        <i class="fas fa-search-minus"></i>
+                        <span>Zoom Out</span>
+                    </button>
+                </div>
+
+                <!-- Color Picker -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-palette"></i> Colors</h3>
+                    <div class="color-picker">
+                        <div class="color-item active" data-color="#000000" style="background-color: #000000"></div>
+                        <div class="color-item" data-color="#ff0000" style="background-color: #ff0000"></div>
+                        <div class="color-item" data-color="#00ff00" style="background-color: #00ff00"></div>
+                        <div class="color-item" data-color="#0000ff" style="background-color: #0000ff"></div>
+                        <div class="color-item" data-color="#ffff00" style="background-color: #ffff00"></div>
+                        <div class="color-item" data-color="#ff00ff" style="background-color: #ff00ff"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="editor-area">
+                <div class="editor-header">
+                    <h2><i class="fas fa-edit"></i> PDF Editor Canvas</h2>
+                    <div class="page-controls">
+                        <h3>Pages</h3>
+                        <div class="page-thumbnails" id="page-thumbnails">
+                            <!-- Page thumbnails will be generated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <div id="pdf-canvas-container">
+                        <canvas id="pdf-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Properties Panel (initially hidden) -->
+            <div id="properties-panel" style="display: none;">
+                <div class="panel-header">Text Properties</div>
+                <div class="form-group">
+                    <label for="font-family">Font Family</label>
+                    <select id="font-family">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="font-size">Font Size</label>
+                    <input type="number" id="font-size" min="8" max="72" value="16">
+                </div>
+                <div class="form-group">
+                    <label for="font-color">Text Color</label>
+                    <input type="color" id="font-color" value="#000000">
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Advanced PDF Editor &copy; 2025 | Created with HTML, CSS, and JavaScript</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <button id="download-btn" style="display: none;"></button>
+
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                currentTool: 'text',
+                currentColor: '#000000',
+                currentPage: 0,
+                pages: [],
+                canvas: null,
+                zoomLevel: 1.0,
+                history: [],
+                currentHistoryIndex: -1,
+                isDrawing: false,
+                drawingObject: null,
+                originalPdfBytes: null
+            };
+
+            const elements = {
+                pdfCanvasContainer: document.getElementById('pdf-canvas-container'),
+                pdfCanvas: document.getElementById('pdf-canvas'),
+                pageThumbnails: document.getElementById('page-thumbnails'),
+                toast: document.getElementById('toast'),
+                propertiesPanel: document.getElementById('properties-panel'),
+                fontFamily: document.getElementById('font-family'),
+                fontSize: document.getElementById('font-size'),
+                fontColor: document.getElementById('font-color')
+            };
+
+            function initCanvas() {
+                state.canvas = new fabric.Canvas('pdf-canvas', {
+                    width: 800,
+                    height: 1000,
+                    backgroundColor: '#ffffff',
+                    selection: true,
+                    preserveObjectStacking: true
+                });
+
+                state.canvas.on('object:selected', handleObjectSelected);
+                state.canvas.on('selection:cleared', handleSelectionCleared);
+                state.canvas.on('object:modified', saveState);
+                state.canvas.on('object:added', saveState);
+                
+                // Add drawing handlers
+                state.canvas.on('mouse:down', startDrawing);
+                state.canvas.on('mouse:move', continueDrawing);
+                state.canvas.on('mouse:up', stopDrawing);
+            }
+
+            function startDrawing(options) {
+                if (state.currentTool !== 'signature') return;
+                
+                state.isDrawing = true;
+                const pointer = state.canvas.getPointer(options.e);
+                state.drawingObject = new fabric.Path(`M ${pointer.x} ${pointer.y}`, {
+                    stroke: state.currentColor,
+                    strokeWidth: 2,
+                    fill: '',
+                    strokeLineCap: 'round',
+                    strokeLineJoin: 'round'
+                });
+                state.canvas.add(state.drawingObject);
+            }
+
+            function continueDrawing(options) {
+                if (!state.isDrawing || !state.drawingObject) return;
+                
+                const pointer = state.canvas.getPointer(options.e);
+                state.drawingObject.path.push(['L', pointer.x, pointer.y]);
+                state.drawingObject.set('dirty', true);
+                state.canvas.requestRenderAll();
+            }
+
+            function stopDrawing() {
+                state.isDrawing = false;
+                state.drawingObject = null;
+                saveState();
+            }
+
+            function setupToolSelection() {
+                const tools = ['text-tool', 'image-tool', 'rectangle-tool', 'circle-tool', 'line-tool', 'signature-tool'];
+                
+                tools.forEach(tool => {
+                    document.getElementById(tool).addEventListener('click', () => {
+                        tools.forEach(t => {
+                            document.getElementById(t).classList.remove('active');
+                        });
+                        
+                        document.getElementById(tool).classList.add('active');
+                        state.currentTool = tool.split('-')[0];
+                        
+                        state.canvas.discardActiveObject().renderAll();
+                        elements.propertiesPanel.style.display = 'block';
+                    });
+                });
+            }
+
+            function setupColorSelection() {
+                document.querySelectorAll('.color-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.color-item').forEach(c => {
+                            c.classList.remove('active');
+                        });
+                        
+                        item.classList.add('active');
+                        state.currentColor = item.dataset.color;
+                    });
+                });
+            }
+
+            function setupCanvasTools() {
+                // Text tool
+                state.canvas.on('mouse:down', (options) => {
+                    if (state.currentTool === 'text' && !options.target) {
+                        const text = new fabric.Textbox('Type here...', {
+                            left: options.pointer.x,
+                            top: options.pointer.y,
+                            fontSize: parseInt(elements.fontSize.value),
+                            fontFamily: elements.fontFamily.value,
+                            fill: state.currentColor,
+                            width: 200,
+                            padding: 5,
+                            editable: true
+                        });
+                        
+                        state.canvas.add(text);
+                        state.canvas.setActiveObject(text);
+                        text.enterEditing();
+                    }
+                });
+
+                // Rectangle tool
+                state.canvas.on('mouse:down', (options) => {
+                    if (state.currentTool === 'rectangle' && !options.target) {
+                        const rect = new fabric.Rect({
+                            left: options.pointer.x,
+                            top: options.pointer.y,
+                            width: 100,
+                            height: 50,
+                            fill: 'rgba(255, 255, 255, 0.3)',
+                            stroke: state.currentColor,
+                            strokeWidth: 2
+                        });
+                        
+                        state.canvas.add(rect);
+                    }
+                });
+
+                // Circle tool
+                state.canvas.on('mouse:down', (options) => {
+                    if (state.currentTool === 'circle' && !options.target) {
+                        const circle = new fabric.Circle({
+                            left: options.pointer.x,
+                            top: options.pointer.y,
+                            radius: 30,
+                            fill: 'rgba(255, 255, 255, 0.3)',
+                            stroke: state.currentColor,
+                            strokeWidth: 2
+                        });
+                        
+                        state.canvas.add(circle);
+                    }
+                });
+
+                // Line tool
+                state.canvas.on('mouse:down', (options) => {
+                    if (state.currentTool === 'line' && !options.target) {
+                        const line = new fabric.Line([options.pointer.x, options.pointer.y, options.pointer.x + 100, options.pointer.y], {
+                            stroke: state.currentColor,
+                            strokeWidth: 2
+                        });
+                        
+                        state.canvas.add(line);
+                    }
+                });
+
+                // Image tool
+                state.canvas.on('mouse:down', (options) => {
+                    if (state.currentTool === 'image' && !options.target) {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                    fabric.Image.fromURL(event.target.result, (img) => {
+                                        img.set({
+                                            left: options.pointer.x,
+                                            top: options.pointer.y,
+                                            scaleX: 0.5,
+                                            scaleY: 0.5
+                                        });
+                                        state.canvas.add(img);
+                                        saveState();
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        };
+                        input.click();
+                    }
+                });
+            }
+
+            function handleObjectSelected(e) {
+                const obj = e.target;
+                elements.propertiesPanel.style.display = 'block';
+                
+                if (obj.type === 'textbox') {
+                    elements.fontFamily.value = obj.fontFamily;
+                    elements.fontSize.value = obj.fontSize;
+                    elements.fontColor.value = obj.fill;
+                }
+            }
+
+            function handleSelectionCleared() {
+                elements.propertiesPanel.style.display = 'none';
+            }
+
+            function setupPropertyListeners() {
+                elements.fontFamily.addEventListener('change', () => {
+                    const obj = state.canvas.getActiveObject();
+                    if (obj && obj.type === 'textbox') {
+                        obj.set('fontFamily', elements.fontFamily.value);
+                        state.canvas.renderAll();
+                        saveState();
+                    }
+                });
+
+                elements.fontSize.addEventListener('change', () => {
+                    const obj = state.canvas.getActiveObject();
+                    if (obj && obj.type === 'textbox') {
+                        obj.set('fontSize', parseInt(elements.fontSize.value));
+                        state.canvas.renderAll();
+                        saveState();
+                    }
+                });
+
+                elements.fontColor.addEventListener('change', () => {
+                    const obj = state.canvas.getActiveObject();
+                    if (obj && obj.type === 'textbox') {
+                        obj.set('fill', elements.fontColor.value);
+                        state.canvas.renderAll();
+                        saveState();
+                    }
+                });
+            }
+
+            function setupPageManagement() {
+                // Initialize with one page
+                state.pages.push(JSON.stringify({
+                    objects: [],
+                    background: '#ffffff',
+                    width: 800,
+                    height: 1000
+                }));
+                renderPageThumbnails();
+                showPage(0);
+                
+                document.getElementById('add-page-btn').addEventListener('click', () => {
+                    state.pages.push(JSON.stringify({
+                        objects: [],
+                        background: '#ffffff',
+                        width: 800,
+                        height: 1000
+                    }));
+                    renderPageThumbnails();
+                    showPage(state.pages.length - 1);
+                });
+                
+                document.getElementById('delete-page-btn').addEventListener('click', () => {
+                    if (state.pages.length > 1) {
+                        const currentIndex = state.currentPage;
+                        state.pages.splice(currentIndex, 1);
+                        
+                        const newIndex = currentIndex === 0 ? 0 : currentIndex - 1;
+                        renderPageThumbnails();
+                        showPage(newIndex);
+                    } else {
+                        showToast('Cannot delete the only page!');
+                    }
+                });
+                
+                document.getElementById('duplicate-page-btn').addEventListener('click', () => {
+                    const currentPageData = JSON.parse(state.pages[state.currentPage]);
+                    state.pages.push(JSON.stringify(currentPageData));
+                    renderPageThumbnails();
+                    showPage(state.pages.length - 1);
+                });
+            }
+
+            function showPage(index) {
+                // Save current state before switching
+                if (state.currentPage !== index) {
+                    saveCurrentPage();
+                }
+                
+                state.currentPage = index;
+                const pageData = JSON.parse(state.pages[index]);
+                
+                state.canvas.clear();
+                
+                // Load background if exists
+                if (pageData.background && typeof pageData.background === 'string') {
+                    fabric.Image.fromURL(pageData.background, (img) => {
+                        // Scale image to fit canvas
+                        const scaleX = state.canvas.width / img.width;
+                        const scaleY = state.canvas.height / img.height;
+                        const scale = Math.min(scaleX, scaleY);
+                        
+                        img.set({
+                            scaleX: scale,
+                            scaleY: scale,
+                            left: state.canvas.width / 2,
+                            top: state.canvas.height / 2,
+                            originX: 'center',
+                            originY: 'center',
+                            selectable: false,
+                            evented: false
+                        });
+                        
+                        state.canvas.setBackgroundImage(img, () => {
+                            state.canvas.loadFromJSON(pageData, () => {
+                                state.canvas.renderAll();
+                                updateActiveThumbnail();
+                            });
+                        });
+                    });
+                } else {
+                    state.canvas.loadFromJSON(pageData, () => {
+                        state.canvas.renderAll();
+                        updateActiveThumbnail();
+                    });
+                }
+            }
+
+            function saveCurrentPage() {
+                const canvasData = state.canvas.toJSON();
+                
+                // Save background if exists
+                if (state.canvas.backgroundImage) {
+                    canvasData.background = state.canvas.backgroundImage.toDataURL({
+                        format: 'jpeg',
+                        quality: 0.8
+                    });
+                }
+                
+                // Save dimensions
+                canvasData.width = 800;
+                canvasData.height = 1000;
+                
+                state.pages[state.currentPage] = JSON.stringify(canvasData);
+            }
+
+            function renderPageThumbnails() {
+                elements.pageThumbnails.innerHTML = '';
+                
+                state.pages.forEach((_, index) => {
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = 'page-thumbnail';
+                    if (index === state.currentPage) {
+                        thumbnail.classList.add('active');
+                    }
+                    
+                    thumbnail.innerHTML = `<span>${index + 1}</span>`;
+                    thumbnail.addEventListener('click', () => showPage(index));
+                    
+                    elements.pageThumbnails.appendChild(thumbnail);
+                });
+            }
+
+            function updateActiveThumbnail() {
+                document.querySelectorAll('.page-thumbnail').forEach((thumb, index) => {
+                    if (index === state.currentPage) {
+                        thumb.classList.add('active');
+                    } else {
+                        thumb.classList.remove('active');
+                    }
+                });
+            }
+
+            function setupZoomControls() {
+                document.getElementById('zoom-in-btn').addEventListener('click', () => {
+                    state.zoomLevel = Math.min(2.0, state.zoomLevel + 0.1);
+                    applyZoom();
+                });
+                
+                document.getElementById('zoom-out-btn').addEventListener('click', () => {
+                    state.zoomLevel = Math.max(0.5, state.zoomLevel - 0.1);
+                    applyZoom();
+                });
+            }
+
+            function applyZoom() {
+                elements.pdfCanvasContainer.style.transform = `scale(${state.zoomLevel})`;
+                elements.pdfCanvasContainer.style.transformOrigin = 'top left';
+            }
+
+            function saveState() {
+                // Keep only last 50 states
+                if (state.history.length > 50) {
+                    state.history.shift();
+                }
+                
+                // Save current state
+                const currentState = JSON.stringify(state.canvas.toJSON());
+                state.history.push(currentState);
+                state.currentHistoryIndex = state.history.length - 1;
+                
+                // Save to current page
+                saveCurrentPage();
+            }
+
+            function setupUndoRedo() {
+                document.getElementById('undo-btn').addEventListener('click', () => {
+                    if (state.currentHistoryIndex > 0) {
+                        state.currentHistoryIndex--;
+                        const historyState = JSON.parse(state.history[state.currentHistoryIndex]);
+                        state.canvas.loadFromJSON(historyState, () => {
+                            state.canvas.renderAll();
+                            saveCurrentPage();
+                        });
+                    }
+                });
+                
+                document.getElementById('redo-btn').addEventListener('click', () => {
+                    if (state.currentHistoryIndex < state.history.length - 1) {
+                        state.currentHistoryIndex++;
+                        const historyState = JSON.parse(state.history[state.currentHistoryIndex]);
+                        state.canvas.loadFromJSON(historyState, () => {
+                            state.canvas.renderAll();
+                            saveCurrentPage();
+                        });
+                    }
+                });
+            }
+
+            function setupDeleteButton() {
+                document.getElementById('delete-btn').addEventListener('click', () => {
+                    const activeObject = state.canvas.getActiveObject();
+                    if (activeObject) {
+                        state.canvas.remove(activeObject);
+                        saveState();
+                    }
+                });
+            }
+
+            async function openPdf(file) {
+                try {
+                    showToast('Opening PDF...');
+                    
+                    // Read file
+                    const arrayBuffer = await file.arrayBuffer();
+                    state.originalPdfBytes = new Uint8Array(arrayBuffer);
+                    
+                    // Load PDF with pdf.js
+                    const pdfDoc = await pdfjsLib.getDocument({ data: state.originalPdfBytes }).promise;
+                    const numPages = pdfDoc.numPages;
+                    
+                    // Clear current pages
+                    state.pages = [];
+                    
+                    // Render each page
+                    for (let i = 1; i <= numPages; i++) {
+                        const page = await pdfDoc.getPage(i);
+                        const viewport = page.getViewport({ scale: 1.5 });
+                        
+                        // Create canvas for rendering
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        
+                        await page.render({ canvasContext: context, viewport }).promise;
+                        
+                        // Save as data URL
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                        
+                        // Add to state
+                        state.pages.push(JSON.stringify({
+                            objects: [],
+                            background: dataUrl,
+                            width: viewport.width,
+                            height: viewport.height
+                        }));
+                    }
+                    
+                    // Show first page
+                    state.currentPage = 0;
+                    renderPageThumbnails();
+                    showPage(0);
+                    showToast('PDF opened successfully!');
+                } catch (error) {
+                    console.error('Error opening PDF:', error);
+                    showToast('Error opening PDF!');
+                }
+            }
+
+            async function savePdf() {
+                if (!state.originalPdfBytes && state.pages.length === 0) {
+                    showToast('No document to save!');
+                    return;
+                }
+                
+                try {
+                    showToast('Saving PDF...');
+                    let pdfDoc;
+                    let pages = [];
+
+                    if (state.originalPdfBytes) {
+                        pdfDoc = await PDFLib.PDFDocument.load(state.originalPdfBytes);
+                        pages = pdfDoc.getPages();
+                    } else {
+                        pdfDoc = await PDFLib.PDFDocument.create();
+                    }
+
+                    // Process all pages
+                    for (let i = 0; i < state.pages.length; i++) {
+                        const pageData = JSON.parse(state.pages[i]);
+                        
+                        // If we run out of pages in the original PDF
+                        if (i >= pages.length) {
+                            const newPage = pdfDoc.addPage([pageData.width || 800, pageData.height || 1000]);
+                            pages.push(newPage);
+                        }
+                        
+                        // Create temporary canvas
+                        const tempCanvas = new fabric.StaticCanvas(null, {
+                            width: 800,
+                            height: 1000
+                        });
+                        
+                        // Add background if exists
+                        if (pageData.background) {
+                            await new Promise(resolve => {
+                                fabric.Image.fromURL(pageData.background, img => {
+                                    // Scale image to fit
+                                    const scale = Math.min(800 / img.width, 1000 / img.height);
+                                    tempCanvas.setBackgroundImage(img, () => {
+                                        tempCanvas.renderAll();
+                                        resolve();
+                                    }, {
+                                        scaleX: scale,
+                                        scaleY: scale,
+                                        left: 400,
+                                        top: 500,
+                                        originX: 'center',
+                                        originY: 'center'
+                                    });
+                                });
+                            });
+                        }
+                        
+                        // Add objects
+                        await new Promise(resolve => {
+                            tempCanvas.loadFromJSON(pageData, () => {
+                                tempCanvas.renderAll();
+                                resolve();
+                            });
+                        });
+                        
+                        // Convert to image
+                        const dataUrl = tempCanvas.toDataURL({
+                            format: 'jpeg',
+                            quality: 0.95
+                        });
+                        
+                        // Add to PDF page
+                        const page = pages[i];
+                        const jpgImage = await pdfDoc.embedJpg(dataUrl);
+                        page.drawImage(jpgImage, {
+                            x: 0,
+                            y: 0,
+                            width: page.getWidth(),
+                            height: page.getHeight()
+                        });
+                    }
+                    
+                    // Save modified PDF
+                    const modifiedPdf = await pdfDoc.save();
+                    downloadFile(modifiedPdf, 'edited-document.pdf');
+                    showToast('PDF saved successfully!');
+                } catch (error) {
+                    console.error('Error saving PDF:', error);
+                    showToast('Error saving PDF!');
+                }
+            }
+
+            function downloadFile(data, filename) {
+                const blob = new Blob([data], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+            }
+
+            async function exportPdf() {
+                showToast('Generating PDF...');
+                
+                try {
+                    // Save current page
+                    saveCurrentPage();
+                    
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF();
+                    
+                    for (let i = 0; i < state.pages.length; i++) {
+                        if (i > 0) pdf.addPage();
+                        
+                        const pageData = JSON.parse(state.pages[i]);
+                        const tempCanvas = new fabric.StaticCanvas(null, {
+                            width: 800,
+                            height: 1000
+                        });
+                        
+                        // Add background if exists
+                        if (pageData.background) {
+                            await new Promise(resolve => {
+                                fabric.Image.fromURL(pageData.background, img => {
+                                    img.scaleToWidth(800);
+                                    tempCanvas.setBackgroundImage(img, resolve);
+                                });
+                            });
+                        }
+                        
+                        // Add objects
+                        await new Promise(resolve => {
+                            tempCanvas.loadFromJSON(pageData, () => {
+                                tempCanvas.renderAll();
+                                resolve();
+                            });
+                        });
+                        
+                        const dataUrl = tempCanvas.toDataURL({
+                            format: 'jpeg',
+                            quality: 0.95
+                        });
+                        
+                        const imgProps = pdf.getImageProperties(dataUrl);
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                        
+                        pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                    }
+                    
+                    pdf.save('exported-document.pdf');
+                    showToast('PDF exported successfully!');
+                } catch (error) {
+                    console.error('Error generating PDF:', error);
+                    showToast('Error generating PDF!');
+                }
+            }
+
+            function showToast(message, duration = 3000) {
+                elements.toast.textContent = message;
+                elements.toast.classList.add('show');
+                
+                setTimeout(() => {
+                    elements.toast.classList.remove('show');
+                }, duration);
+            }
+
+            function setupFileOperations() {
+                document.getElementById('new-pdf-btn').addEventListener('click', () => {
+                    state.originalPdfBytes = null;
+                    state.pages = [JSON.stringify({
+                        objects: [],
+                        background: '#ffffff',
+                        width: 800,
+                        height: 1000
+                    })];
+                    state.currentPage = 0;
+                    renderPageThumbnails();
+                    showPage(0);
+                    showToast('New PDF created');
+                });
+
+                document.getElementById('open-pdf-btn').addEventListener('click', () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'application/pdf';
+                    input.onchange = (e) => {
+                        if (e.target.files[0]) {
+                            openPdf(e.target.files[0]);
+                        }
+                    };
+                    input.click();
+                });
+
+                document.getElementById('save-pdf-btn').addEventListener('click', savePdf);
+
+                document.getElementById('export-pdf-btn').addEventListener('click', exportPdf);
+            }
+
+            function init() {
+                initCanvas();
+                setupToolSelection();
+                setupColorSelection();
+                setupCanvasTools();
+                setupPropertyListeners();
+                setupPageManagement();
+                setupZoomControls();
+                setupUndoRedo();
+                setupDeleteButton();
+                setupFileOperations();
+                
+                elements.propertiesPanel.style.display = 'none';
+                
+                // Initialize with a sample page
+                state.pages = [JSON.stringify({
+                    objects: [],
+                    background: '#ffffff',
+                    width: 800,
+                    height: 1000
+                })];
+                renderPageThumbnails();
+                showPage(0);
+                
+                // Add a welcome text
+                setTimeout(() => {
+                    const welcomeText = new fabric.Textbox('Welcome to PDF Editor!\nAdd text, shapes, and images\nusing the toolbar on the left.', {
+                        left: 400,
+                        top: 500,
+                        fontSize: 28,
+                        fontFamily: 'Arial',
+                        fill: '#1a2a6c',
+                        width: 600,
+                        textAlign: 'center',
+                        originX: 'center',
+                        originY: 'center'
+                    });
+                    state.canvas.add(welcomeText);
+                    saveState();
+                }, 1000);
+            }
+
+            init();
+        });
+    </script>
+</body>
+</html>

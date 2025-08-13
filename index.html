@@ -5,23 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO-теги -->
-    <meta name="description" content="ImageOpt Pro - online image optimization and compression. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Free photo compression tool.">
-    <meta name="keywords" content="image optimization, photo compression, reduce image size, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
+    <meta name="description" content="ImageOpt Pro - online image optimization, PDF creation and editing. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files with our free tools.">
+    <meta name="keywords" content="image optimization, photo compression, reduce image size, pdf editor, pdf creator, pdf tools, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
     <meta name="author" content="ImageOpt Pro Team">
     
     <link rel="canonical" href="https://imageopt-pro.com/">
     
     <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="ImageOpt Pro - Online Image Optimizer">
-    <meta property="og:description" content="Free tool for compressing and optimizing images. Reduce file sizes without quality loss!">
+    <meta property="og:title" content="ImageOpt Pro - Online Image Optimizer & PDF Editor">
+    <meta property="og:description" content="Free tool for compressing and optimizing images, creating and editing PDF documents. Reduce file sizes without quality loss!">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://imageopt-pro.com/">
     <meta property="og:image" content="https://imageopt-pro.com/preview.jpg">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ImageOpt Pro - Image Optimizer">
-    <meta name="twitter:description" content="Optimize images online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
+    <meta name="twitter:title" content="ImageOpt Pro - Image Optimizer & PDF Editor">
+    <meta name="twitter:description" content="Optimize images and edit PDFs online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
     <meta name="twitter:image" content="https://imageopt-pro.com/twitter-preview.jpg">
     
     <!-- Structured Data -->
@@ -30,7 +30,7 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "ImageOpt Pro",
-        "description": "Free online tool for image optimization and compression",
+        "description": "Free online tool for image optimization, compression and PDF editing",
         "applicationCategory": "Multimedia",
         "operatingSystem": "Windows, macOS, Linux, Android, iOS",
         "offers": {
@@ -46,11 +46,43 @@
     }
     </script>
     
-    <title>ImageOpt Pro</title>
+    <title>ImageOpt Pro - Image Optimizer & PDF Editor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Cropper.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .pdf-tag {
+            font-size: 0.6em;
+            background: linear-gradient(135deg, #4a6bff, #8a2be2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            vertical-align: super;
+            margin-left: 5px;
+        }
+        
+        /* Добавленные стили для футера */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            flex: 1;
+            padding-bottom: 20px;
+        }
+        
+        footer {
+            width: 100%;
+            padding: 15px 0;
+            background: var(--dark-bg);
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -60,11 +92,15 @@
                     <i class="fas fa-image"></i>
                 </div>
                 <div class="header-text">
-                    <h1>ImageOpt Pro</h1>
-                    <div class="subtitle">Advanced Image Optimization</div>
+                    <h1>ImageOpt Pro <span class="pdf-tag">+ PDF Editor</span></h1>
+                    <div class="subtitle">Advanced Image Optimization & PDF Tools</div>
                 </div>
             </div>
             <div class="header-actions">
+                <!-- Added PDF button -->
+                <button class="history-toggle" id="createPdfBtn" title="Create PDF">
+                    <i class="fas fa-file-pdf"></i>
+                </button>
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
@@ -527,6 +563,11 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- Исправленный футер -->
+    <footer>
+      <img id="page-views" alt="Page Views" />
+    </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- Cropper.js -->
@@ -540,5 +581,32 @@
     <!-- Добавлена библиотека для работы с TIFF -->
     <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
     <script src="script.js"></script>
+    
+    <!-- Добавленный обработчик для кнопки PDF -->
+    <script>
+        document.getElementById('createPdfBtn').addEventListener('click', function() {
+            window.location.href = 'PDF.html';
+        });
+    </script>
+    
+    <!-- Скрипт для счетчика просмотров -->
+    <script>
+        // Создаем параметры для счетчика
+        const params = new URLSearchParams({
+            style: 'flat-square',
+            label: 'Views',
+            color: 'blue',
+            logo: 'firebase'
+        });
+        
+        // Получаем текущий путь страницы
+        const currentPath = window.location.pathname;
+        
+        // Формируем URL для счетчика
+        const counterURL = `https://hits.sh/imageopt-pro.web.app${currentPath}.svg?${params.toString()}`;
+        
+        // Устанавливаем источник для изображения
+        document.getElementById('page-views').src = counterURL;
+    </script>
 </body>
 </html>
