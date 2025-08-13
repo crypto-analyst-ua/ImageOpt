@@ -48,11 +48,15 @@ const state = {
     batchEditMode: 'all',
     watermark: {
         enabled: false,
+        type: 'text', // 'text' или 'image'
         text: 'ImageOpt Pro',
         size: 24,
         opacity: 70,
         color: '#ffffff',
-        position: 'bottom-right'
+        position: 'bottom-right',
+        image: null, // для хранения файла изображения
+        imageUrl: null, // для хранения Data URL
+        scale: 20 // масштаб изображения в %
     },
     progressiveJpeg: false,
     removeMetadata: true,
@@ -151,7 +155,12 @@ const elements = {
     resetAdjustBtn: document.getElementById('resetAdjustBtn'),
     adjustControls: document.getElementById('adjustControls'),
     autoAdjustBtn: document.getElementById('autoAdjustBtn'),
-    touchAutoAdjust: document.getElementById('touchAutoAdjust')
+    touchAutoAdjust: document.getElementById('touchAutoAdjust'),
+    watermarkTextSection: document.querySelector('.watermark-text-section'),
+    watermarkImageSection: document.querySelector('.watermark-image-section'),
+    watermarkImagePreview: document.getElementById('watermarkImagePreview'),
+    watermarkImageInput: document.getElementById('watermarkImageInput'),
+    watermarkImageScale: document.getElementById('watermarkImageScale')
 };
 
 // Инициализация Cropper
@@ -361,6 +370,28 @@ function initEnhancements() {
     elements.watermarkOpacityValue.textContent = `${state.watermark.opacity}%`;
     elements.watermarkColor.value = state.watermark.color;
     elements.watermarkPosition.value = state.watermark.position;
+    
+    // Инициализация элементов управления водяным знаком
+    elements.watermarkTextSection = document.querySelector('.watermark-text-section');
+    elements.watermarkImageSection = document.querySelector('.watermark-image-section');
+    elements.watermarkImagePreview = document.getElementById('watermarkImagePreview');
+    elements.watermarkImageInput = document.getElementById('watermarkImageInput');
+    elements.watermarkImageScale = document.getElementById('watermarkImageScale');
+    
+    // Устанавливаем начальное состояние
+    state.watermark.type = 'text'; // по умолчанию текст
+    elements.watermarkImageSection.style.display = 'none'; // скрываем секцию изображения
+    elements.watermarkImagePreview.style.display = 'none'; // скрываем предпросмотр изображения
+
+    // Устанавливаем обработчик для кнопок переключения типа
+    document.querySelectorAll('.watermark-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === state.watermark.type);
+    });
+
+    // Устанавливаем значение масштаба
+    elements.watermarkImageScale.value = state.watermark.scale;
+    document.getElementById('watermarkImageScaleValue').textContent = `${state.watermark.scale}%`;
+    
     updateWatermarkPreview();
     
     // Initialize advanced settings
@@ -384,11 +415,58 @@ function setupEnhancementEventListeners() {
     
     // Watermarks
     elements.enableWatermark.addEventListener('change', toggleWatermarkControls);
+    
+    // Переключение между текстом и изображением
+    document.querySelectorAll('.watermark-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.watermark-type-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            state.watermark.type = this.dataset.type;
+            
+            if (state.watermark.type === 'text') {
+                elements.watermarkTextSection.style.display = 'block';
+                elements.watermarkImageSection.style.display = 'none';
+                elements.watermarkPreview.style.display = 'block';
+                elements.watermarkImagePreview.style.display = 'none';
+            } else {
+                elements.watermarkTextSection.style.display = 'none';
+                elements.watermarkImageSection.style.display = 'block';
+                elements.watermarkPreview.style.display = 'none';
+                elements.watermarkImagePreview.style.display = 'block';
+            }
+            
+            updateWatermarkPreview();
+        });
+    });
+    
     elements.watermarkText.addEventListener('input', updateWatermarkPreview);
     elements.watermarkSize.addEventListener('input', updateWatermarkSize);
     elements.watermarkOpacity.addEventListener('input', updateWatermarkOpacity);
     elements.watermarkColor.addEventListener('input', updateWatermarkPreview);
     elements.watermarkPosition.addEventListener('change', updateWatermarkPreview);
+    
+    // Загрузка изображения для водяного знака
+    elements.watermarkImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                state.watermark.image = file;
+                state.watermark.imageUrl = event.target.result;
+                elements.watermarkImagePreview.src = event.target.result;
+                updateWatermarkPreview();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Масштаб изображения
+    elements.watermarkImageScale.addEventListener('input', function() {
+        state.watermark.scale = parseInt(this.value);
+        document.getElementById('watermarkImageScaleValue').textContent = `${state.watermark.scale}%`;
+        updateWatermarkPreview();
+    });
     
     // Advanced settings
     elements.toggleAdvancedSettings.addEventListener('click', toggleAdvancedSettings);
@@ -609,36 +687,54 @@ function updateWatermarkPreview() {
     state.watermark.color = elements.watermarkColor.value;
     state.watermark.position = elements.watermarkPosition.value;
     
-    elements.watermarkPreview.textContent = state.watermark.text;
-    elements.watermarkPreview.style.fontSize = `${state.watermark.size}px`;
-    elements.watermarkPreview.style.color = state.watermark.color;
-    elements.watermarkPreview.style.opacity = state.watermark.opacity / 100;
+    if (state.watermark.type === 'text') {
+        elements.watermarkPreview.textContent = state.watermark.text;
+        elements.watermarkPreview.style.fontSize = `${state.watermark.size}px`;
+        elements.watermarkPreview.style.color = state.watermark.color;
+        elements.watermarkPreview.style.opacity = state.watermark.opacity / 100;
+    } else if (state.watermark.imageUrl) {
+        elements.watermarkImagePreview.src = state.watermark.imageUrl;
+        elements.watermarkImagePreview.style.opacity = state.watermark.opacity / 100;
+    }
     
     // Positioning
     elements.watermarkPreview.style.position = 'absolute';
     elements.watermarkPreview.style.margin = '10px';
+    elements.watermarkImagePreview.style.position = 'absolute';
+    elements.watermarkImagePreview.style.margin = '10px';
     
     switch(state.watermark.position) {
         case 'bottom-right':
             elements.watermarkPreview.style.bottom = '0';
             elements.watermarkPreview.style.right = '0';
+            elements.watermarkImagePreview.style.bottom = '0';
+            elements.watermarkImagePreview.style.right = '0';
             break;
         case 'bottom-left':
             elements.watermarkPreview.style.bottom = '0';
             elements.watermarkPreview.style.left = '0';
+            elements.watermarkImagePreview.style.bottom = '0';
+            elements.watermarkImagePreview.style.left = '0';
             break;
         case 'top-right':
             elements.watermarkPreview.style.top = '0';
             elements.watermarkPreview.style.right = '0';
+            elements.watermarkImagePreview.style.top = '0';
+            elements.watermarkImagePreview.style.right = '0';
             break;
         case 'top-left':
             elements.watermarkPreview.style.top = '0';
             elements.watermarkPreview.style.left = '0';
+            elements.watermarkImagePreview.style.top = '0';
+            elements.watermarkImagePreview.style.left = '0';
             break;
         case 'center':
             elements.watermarkPreview.style.top = '50%';
             elements.watermarkPreview.style.left = '50%';
             elements.watermarkPreview.style.transform = 'translate(-50%, -50%)';
+            elements.watermarkImagePreview.style.top = '50%';
+            elements.watermarkImagePreview.style.left = '50%';
+            elements.watermarkImagePreview.style.transform = 'translate(-50%, -50%)';
             break;
     }
 }
@@ -1516,48 +1612,87 @@ async function convertToTiff(canvas) {
 function applyWatermark(ctx, canvas) {
     ctx.save();
     ctx.globalAlpha = state.watermark.opacity / 100;
-    ctx.font = `bold ${state.watermark.size}px Arial`;
-    ctx.fillStyle = state.watermark.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     
-    const text = state.watermark.text;
-    const textMetrics = ctx.measureText(text);
-    const textWidth = textMetrics.width;
-    const textHeight = state.watermark.size;
-    
-    let x, y;
-    
-    switch(state.watermark.position) {
-        case 'bottom-right':
-            x = canvas.width - textWidth / 2 - 20;
-            y = canvas.height - textHeight / 2 - 20;
-            break;
-        case 'bottom-left':
-            x = textWidth / 2 + 20;
-            y = canvas.height - textHeight / 2 - 20;
-            break;
-        case 'top-right':
-            x = canvas.width - textWidth / 2 - 20;
-            y = textHeight / 2 + 20;
-            break;
-        case 'top-left':
-            x = textWidth / 2 + 20;
-            y = textHeight / 2 + 20;
-            break;
-        case 'center':
-            x = canvas.width / 2;
-            y = canvas.height / 2;
-            break;
+    if (state.watermark.type === 'text') {
+        ctx.font = `bold ${state.watermark.size}px Arial`;
+        ctx.fillStyle = state.watermark.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const text = state.watermark.text;
+        const textMetrics = ctx.measureText(text);
+        const textWidth = textMetrics.width;
+        const textHeight = state.watermark.size;
+        
+        let x, y;
+        
+        switch(state.watermark.position) {
+            case 'bottom-right':
+                x = canvas.width - textWidth / 2 - 20;
+                y = canvas.height - textHeight / 2 - 20;
+                break;
+            case 'bottom-left':
+                x = textWidth / 2 + 20;
+                y = canvas.height - textHeight / 2 - 20;
+                break;
+            case 'top-right':
+                x = canvas.width - textWidth / 2 - 20;
+                y = textHeight / 2 + 20;
+                break;
+            case 'top-left':
+                x = textWidth / 2 + 20;
+                y = textHeight / 2 + 20;
+                break;
+            case 'center':
+                x = canvas.width / 2;
+                y = canvas.height / 2;
+                break;
+        }
+        
+        // Add shadow for better readability
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        ctx.fillText(text, x, y);
+    } else if (state.watermark.imageUrl) {
+        const img = new Image();
+        img.src = state.watermark.imageUrl;
+        
+        // Рассчитываем размеры с учетом масштаба
+        const scale = state.watermark.scale / 100;
+        const width = canvas.width * scale;
+        const height = (img.height / img.width) * width;
+        
+        let x, y;
+        
+        switch(state.watermark.position) {
+            case 'bottom-right':
+                x = canvas.width - width - 20;
+                y = canvas.height - height - 20;
+                break;
+            case 'bottom-left':
+                x = 20;
+                y = canvas.height - height - 20;
+                break;
+            case 'top-right':
+                x = canvas.width - width - 20;
+                y = 20;
+                break;
+            case 'top-left':
+                x = 20;
+                y = 20;
+                break;
+            case 'center':
+                x = (canvas.width - width) / 2;
+                y = (canvas.height - height) / 2;
+                break;
+        }
+        
+        ctx.drawImage(img, x, y, width, height);
     }
     
-    // Add shadow for better readability
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    
-    ctx.fillText(text, x, y);
     ctx.restore();
 }
 

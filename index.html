@@ -289,21 +289,42 @@
                     </div>
                 </div>
                 
-                <!-- Watermarks -->
+                <!-- Watermarks - ОБНОВЛЕННЫЙ БЛОК -->
                 <div class="watermark-controls" id="watermarkControls">
                     <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
                     
-                    <div class="watermark-row">
-                        <input type="text" id="watermarkText" placeholder="Watermark text">
-                        <input type="color" id="watermarkColor" value="#ffffff">
+                    <!-- Переключатель типа -->
+                    <div class="watermark-type-toggle">
+                        <button class="watermark-type-btn active" data-type="text">Text</button>
+                        <button class="watermark-type-btn" data-type="image">Image</button>
                     </div>
                     
-                    <div class="watermark-row">
-                        <label>Size:</label>
-                        <input type="range" id="watermarkSize" min="10" max="50" value="24">
-                        <span id="watermarkSizeValue">24px</span>
+                    <!-- Текстовый водяной знак -->
+                    <div class="watermark-text-section">
+                        <div class="watermark-row">
+                            <input type="text" id="watermarkText" placeholder="Watermark text">
+                            <input type="color" id="watermarkColor" value="#ffffff">
+                        </div>
+                        <div class="watermark-row">
+                            <label>Size:</label>
+                            <input type="range" id="watermarkSize" min="10" max="50" value="24">
+                            <span id="watermarkSizeValue">24px</span>
+                        </div>
                     </div>
                     
+                    <!-- Изображение водяного знака -->
+                    <div class="watermark-image-section" style="display: none;">
+                        <div class="watermark-row">
+                            <input type="file" id="watermarkImageInput" accept="image/*">
+                        </div>
+                        <div class="watermark-row">
+                            <label>Scale (%):</label>
+                            <input type="range" id="watermarkImageScale" min="5" max="50" value="20">
+                            <span id="watermarkImageScaleValue">20%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Общие настройки -->
                     <div class="watermark-row">
                         <label>Opacity:</label>
                         <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
@@ -323,6 +344,7 @@
                     
                     <div class="watermark-preview">
                         <span id="watermarkPreview">Watermark Preview</span>
+                        <img id="watermarkImagePreview" style="display: none; max-width: 100%; max-height: 100px;">
                     </div>
                 </div>
                 
