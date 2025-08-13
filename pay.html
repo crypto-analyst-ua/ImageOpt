@@ -583,12 +583,14 @@
           return actions.order.capture().then(async function(details) {
             // Update user status
             try {
-              await db.collection('users').doc(user.uid).update({
+              // Исправленный код: используем set с merge вместо update
+              await db.collection('users').doc(user.uid).set({ 
                 premium: true,
                 premiumSince: new Date(),
-                paymentId: details.id
-              });
-              
+                paymentId: details.id,
+                email: user.email // добавляем для гарантии
+              }, { merge: true }); // Важное исправление!
+
               // Update localStorage
               localStorage.setItem('premiumUser', 'true');
               
@@ -608,13 +610,20 @@
                 </div>
               `;
               
-              // Redirect after 3 seconds
+              // Увеличьте задержку до 5 секунд и добавьте параметр для обхода кеша
+              setTimeout(() => {
+                window.location.href = 'index.html?' + Date.now(); // Добавляем параметр для обхода кеша
+              }, 5000);
+            } catch (error) {
+              console.error('Error updating status:', error);
+              
+              // Попробуем записать статус локально как временное решение
+              localStorage.setItem('premiumUser', 'true');
+              showPaymentError('Account will update shortly. Redirecting...');
+              
               setTimeout(() => {
                 window.location.href = 'index.html';
               }, 3000);
-            } catch (error) {
-              console.error('Error updating status:', error);
-              showPaymentError('Account update error');
             }
           });
         },

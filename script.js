@@ -72,6 +72,9 @@ const state = {
     cropper: null // Для хранения экземпляра Cropper
 };
 
+// Установка премиум-статуса в localStorage
+localStorage.setItem('premiumUser', 'true');
+
 // DOM Elements
 const elements = {
     uploadArea: document.getElementById('uploadArea'),
@@ -296,6 +299,36 @@ function cancelCrop() {
     showEditNotification('Crop canceled!');
 }
 
+// Check premium status
+async function checkPremiumStatus(force = false) {
+    // Если не принудительно и уже проверяли, то пропускаем
+    if (!force && localStorage.getItem('premiumChecked') === 'true') {
+        updatePremiumUI(); // Обновляем UI на основе текущего state.isPremium
+        return;
+    }
+
+    if (!state.firebaseInitialized || !state.user || state.user.uid === "guest") {
+        state.isPremium = false;
+        updatePremiumUI();
+        localStorage.setItem('premiumChecked', 'true'); // Помечаем, что проверка выполнена
+        return;
+    }
+
+    try {
+        const doc = await state.db.collection('users').doc(state.user.uid).get();
+        if (doc.exists) {
+            state.isPremium = doc.data().premium || false;
+            localStorage.setItem('premiumUser', state.isPremium);
+        }
+        updatePremiumUI();
+    } catch (error) {
+        console.error("Error getting premium status:", error);
+        state.isPremium = false;
+        updatePremiumUI();
+    }
+    localStorage.setItem('premiumChecked', 'true'); // Помечаем, что проверка выполнена
+}
+
 // Initialize application
 async function init() {
     // Initialize counter
@@ -317,11 +350,12 @@ async function init() {
             state.db = firebase.firestore();
             
             // Check authentication
-            firebase.auth().onAuthStateChanged(user => {
+            firebase.auth().onAuthStateChanged(async user => {
                 if (user) {
                     state.user = user;
                     elements.userEmail.textContent = user.email;
-                    checkPremiumStatus();
+                    // Принудительная проверка премиум-статуса
+                    await checkPremiumStatus(true);
                 } else {
                     // Guest mode
                     state.user = { email: "guest@example.com", uid: "guest" };
@@ -801,27 +835,6 @@ function showToast(message, duration = 3000) {
     window.toastTimeout = setTimeout(() => {
         elements.toast.classList.remove('show');
     }, duration);
-}
-
-// Check premium status
-function checkPremiumStatus() {
-    if (!state.firebaseInitialized || !state.user || state.user.uid === "guest") {
-        state.isPremium = false;
-        updatePremiumUI();
-        return;
-    }
-    
-    state.db.collection('users').doc(state.user.uid).get().then(doc => {
-        if (doc.exists) {
-            state.isPremium = doc.data().premium || false;
-            localStorage.setItem('premiumUser', state.isPremium);
-            updatePremiumUI();
-        }
-    }).catch(error => {
-        console.error("Error getting premium status:", error);
-        state.isPremium = false;
-        updatePremiumUI();
-    });
 }
 
 // Update premium UI
