@@ -509,11 +509,11 @@ function setupEnhancementEventListeners() {
 function autoAdjustImage() {
     // Оптимальные значения для автонастройки
     const autoSettings = {
-        brightness: 15,
-        contrast: 20,
-        saturation: 25,
-        sharpness: 30,
-        temperature: 10
+        brightness: 0,    // Яркость - без изменений
+        contrast: 10,     // Умеренное увеличение контраста
+        saturation: 15,   // Легкое увеличение насыщенности
+        sharpness: 50,    // Значение для УВЕЛИЧЕНИЯ резкости
+        temperature: 0    // Без коррекции температуры
     };
 
     // Применяем автонастройки
@@ -1223,18 +1223,15 @@ function updateTemperatureValue() {
 
 // Apply adjustments to preview
 function applyPreviewAdjustments() {
+    // Инвертируем значение резкости: больше sharpness = меньше размытия
+    const sharpnessValue = (100 - state.adjustments.sharpness) / 100;
+    
     let filter = `
         brightness(${100 + state.adjustments.brightness}%)
         contrast(${100 + state.adjustments.contrast}%)
         saturate(${100 + state.adjustments.saturation}%)
-        blur(${Math.max(0, 0.5 - state.adjustments.sharpness/200)}px)
+        blur(${Math.max(0, sharpnessValue * 0.5)}px)
     `;
-    
-    // Apply temperature (warm/cool)
-    if (state.adjustments.temperature !== 0) {
-        const tempValue = state.adjustments.temperature / 100;
-        filter += ` sepia(${Math.abs(tempValue)*30}%) hue-rotate(${-tempValue*30}deg)`;
-    }
     
     elements.previewImage.style.filter = filter;
 }
