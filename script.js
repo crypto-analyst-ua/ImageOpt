@@ -298,16 +298,10 @@ function cancelCrop() {
 
 // Check premium status
 async function checkPremiumStatus(force = false) {
-    // Если не принудительно и уже проверяли, то пропускаем
-    if (!force && localStorage.getItem('premiumChecked') === 'true') {
-        updatePremiumUI(); // Обновляем UI на основе текущего state.isPremium
-        return;
-    }
-
+    // Всегда проверяем статус принудительно после оплаты
     if (!state.firebaseInitialized || !state.user || state.user.uid === "guest") {
         state.isPremium = false;
         updatePremiumUI();
-        localStorage.setItem('premiumChecked', 'true'); // Помечаем, что проверка выполнена
         return;
     }
 
@@ -315,7 +309,7 @@ async function checkPremiumStatus(force = false) {
         const doc = await state.db.collection('users').doc(state.user.uid).get();
         if (doc.exists) {
             state.isPremium = doc.data().premium || false;
-            localStorage.setItem('premiumUser', state.isPremium);
+            localStorage.setItem('premiumUser', state.isPremium.toString());
         }
         updatePremiumUI();
     } catch (error) {
@@ -323,7 +317,6 @@ async function checkPremiumStatus(force = false) {
         state.isPremium = false;
         updatePremiumUI();
     }
-    localStorage.setItem('premiumChecked', 'true'); // Помечаем, что проверка выполнена
 }
 
 // Initialize application
@@ -340,9 +333,11 @@ async function init() {
     }
     
     try {
-        // Initialize Firebase
-        if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
-            firebase.initializeApp(firebaseConfig);
+        // Модифицированная инициализация Firebase
+        if (typeof firebase !== 'undefined') {
+            if (firebase.apps.length === 0) {
+                firebase.initializeApp(firebaseConfig);
+            }
             state.firebaseInitialized = true;
             state.db = firebase.firestore();
             
@@ -1939,4 +1934,3 @@ if (document.readyState !== 'loading') {
     init();
 } else {
     document.addEventListener('DOMContentLoaded', init);
-}

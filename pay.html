@@ -583,13 +583,13 @@
           return actions.order.capture().then(async function(details) {
             // Update user status
             try {
-              // Исправленный код: используем set с merge вместо update
+              // Используем set с merge вместо update
               await db.collection('users').doc(user.uid).set({ 
                 premium: true,
-                premiumSince: new Date(),
+                premiumSince: firebase.firestore.Timestamp.now(),
                 paymentId: details.id,
-                email: user.email // добавляем для гарантии
-              }, { merge: true }); // Важное исправление!
+                email: user.email
+              }, { merge: true });
 
               // Update localStorage
               localStorage.setItem('premiumUser', 'true');
@@ -610,19 +610,29 @@
                 </div>
               `;
               
-              // Увеличьте задержку до 5 секунд и добавьте параметр для обхода кеша
+              // Увеличиваем задержку до 5 секунд для гарантии обновления
               setTimeout(() => {
-                window.location.href = 'index.html?' + Date.now(); // Добавляем параметр для обхода кеша
+                window.location.href = 'index.html?t=' + Date.now();
               }, 5000);
             } catch (error) {
               console.error('Error updating status:', error);
               
-              // Попробуем записать статус локально как временное решение
+              // Записываем статус локально как временное решение
               localStorage.setItem('premiumUser', 'true');
-              showPaymentError('Account will update shortly. Redirecting...');
+              
+              // Показываем сообщение об ошибке
+              document.getElementById('paypalContainer').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #ffd700;">
+                  <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                  <h3 style="color: #fff; margin-bottom: 15px;">
+                    Account will update shortly. Redirecting...
+                  </h3>
+                  <div class="loader"></div>
+                </div>
+              `;
               
               setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html?t=' + Date.now();
               }, 3000);
             }
           });
