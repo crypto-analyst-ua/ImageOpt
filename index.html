@@ -563,9 +563,66 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Исправленный футер -->
-    <footer>
-      <img id="page-views" alt="Page Views" />
+    <!-- Новый футер -->
+    <footer style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); color: #fff; padding: 45px 15px 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; font-size: 12px;">
+      <!-- Градиентная линия сверху -->
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #ffcc00, #ff9900);"></div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
+        
+        <!-- About Us -->
+        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">About Us</h3>
+          <p style="line-height: 1.5; color: #e6e6e6;">ImageOpt Pro is an online service for fast and high-quality image optimization. Created by an independent developer from Ukraine.</p>
+        </div>
+        
+        <!-- Payment -->
+        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Payment</h3>
+          <p style="line-height: 1.5; color: #e6e6e6;">We accept payments via PayPal — fast, convenient, and secure. Pay with your bank card or PayPal balance.</p>
+        </div>
+        
+        <!-- Privacy Policy -->
+        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Privacy</h3>
+          <p style="line-height: 1.5; color: #e6e6e6;">We respect your privacy. Uploaded images are not stored after processing. We use cookies for settings and analytics.</p>
+        </div>
+        
+      </div>
+      
+      <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, #444, transparent); margin: 30px auto 15px; max-width: 1100px;">
+      
+      <!-- Contacts & Social -->
+      <div style="text-align: center; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
+        <div style="display: inline-flex; align-items: center; background: rgba(40,40,40,0.6); padding: 8px 18px; border-radius: 25px; margin-bottom: 12px; backdrop-filter: blur(5px);">
+          <svg style="width: 16px; height: 16px; margin-right: 6px; fill: #ffcc00;" viewBox="0 0 24 24">
+            <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
+          </svg>
+          <a href="mailto:korovinkonstantin0@gmail.com" style="color:#ffcc00; text-decoration: none; font-weight: 500;">korovinkonstantin0@gmail.com</a>
+        </div>
+        
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-bottom: 15px; font-size: 12px;">
+          <a href="https://x.com/KKorovin71519" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
+            <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1DA1F2;" viewBox="0 0 24 24">
+              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+            </svg>
+            X.com
+          </a>
+          <a href="https://m.facebook.com/konstantin.korovin.433091/" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
+            <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1877F2;" viewBox="0 0 24 24">
+              <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+            </svg>
+            Facebook
+          </a>
+        </div>
+        
+        <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 ImageOpt Pro. All rights reserved.</p>
+        <!-- Счетчик просмотров -->
+        <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
+      </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
