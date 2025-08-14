@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Images from PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        /* Все стили остаются без изменений */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+        }
+
+        .file-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .controls {
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: none;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .control-group input[type="range"] {
+            width: 150px;
+        }
+
+        .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .extract-button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .extract-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .extract-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-count {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .download-all-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-all-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .image-item {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .image-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .image-item:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .image-info {
+            padding: 15px;
+        }
+
+        .image-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .image-details {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .download-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .preview-button {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .preview-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(23, 162, 184, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            width: 90%;
+            height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .upload-section {
+                padding: 20px;
+            }
+
+            .controls {
+                padding: 15px 20px;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .results-section {
+                padding: 20px;
+            }
+
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ Extract Images from PDF</h1>
+            <p>Quickly and easily extract images from PDF documents</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="pdfFile" class="file-input" accept=".pdf" />
+                <label for="pdfFile" class="file-button">
+                    📁 Choose PDF File
+                </label>
+            </div>
+            <div id="fileInfo" class="file-info"></div>
+            
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressText" class="progress-text">Loading...</div>
+            </div>
+        </div>
+
+        <div id="controls" class="controls">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label for="quality">Quality:</label>
+                    <input type="range" id="quality" min="0.1" max="3.0" step="0.1" value="1.5">
+                    <span id="qualityValue">1.5x</span>
+                </div>
+                <div class="control-group">
+                    <label for="format">Format:</label>
+                    <select id="format">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPEG</option>
+                    </select>
+                </div>
+                <button id="extractButton" class="extract-button">🚀 Extract Images</button>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="results-section">
+            <div class="results-header">
+                <div id="resultsCount" class="results-count">Found images: 0</div>
+                <button id="downloadAllButton" class="download-all-button">📦 Download All</button>
+            </div>
+            <div id="imagesGrid" class="images-grid"></div>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="Preview" />
+        </div>
+    </div>
+
+    <script>
+        // Configure PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        class PDFImageExtractor {
+            constructor() {
+                this.pdfDoc = null;
+                this.extractedImages = [];
+                this.currentPage = 0;
+                this.totalPages = 0;
+                
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const pdfFileInput = document.getElementById('pdfFile');
+                const extractButton = document.getElementById('extractButton');
+                const qualitySlider = document.getElementById('quality');
+                const downloadAllButton = document.getElementById('downloadAllButton');
+                const modal = document.getElementById('imageModal');
+                const closeModal = document.querySelector('.close');
+
+                pdfFileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                extractButton.addEventListener('click', () => this.extractImages());
+                qualitySlider.addEventListener('input', (e) => {
+                    document.getElementById('qualityValue').textContent = e.target.value + 'x';
+                });
+                downloadAllButton.addEventListener('click', () => this.downloadAllImages());
+                
+                closeModal.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+                
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+
+            async handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const fileInfo = document.getElementById('fileInfo');
+                const controls = document.getElementById('controls');
+                const progressContainer = document.getElementById('progressContainer');
+
+                fileInfo.innerHTML = `
+                    <strong>📄 ${file.name}</strong><br>
+                    Size: ${(file.size / 1024 / 1024).toFixed(2)} MB
+                `;
+                fileInfo.style.display = 'block';
+
+                try {
+                    progressContainer.style.display = 'block';
+                    this.updateProgress(0, 'Loading PDF...');
+
+                    const arrayBuffer = await file.arrayBuffer();
+                    this.pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+                    this.totalPages = this.pdfDoc.numPages;
+
+                    progressContainer.style.display = 'none';
+                    controls.style.display = 'block';
+
+                    console.log(`PDF loaded: ${this.totalPages} pages`);
+                } catch (error) {
+                    console.error('Error loading PDF:', error);
+                    alert('Error loading PDF file. Please check the file.');
+                    progressContainer.style.display = 'none';
+                }
+            }
+
+            updateProgress(percentage, text) {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = text;
+            }
+
+            async extractImages() {
+                if (!this.pdfDoc) return;
+
+                const extractButton = document.getElementById('extractButton');
+                const progressContainer = document.getElementById('progressContainer');
+                const resultsSection = document.getElementById('resultsSection');
+                
+                extractButton.disabled = true;
+                progressContainer.style.display = 'block';
+                this.extractedImages = [];
+                
+                const quality = parseFloat(document.getElementById('quality').value);
+                const format = document.getElementById('format').value;
+
+                try {
+                    for (let pageNum = 1; pageNum <= this.totalPages; pageNum++) {
+                        this.currentPage = pageNum;
+                        const progress = (pageNum / this.totalPages) * 100;
+                        this.updateProgress(progress, `Processing page ${pageNum} of ${this.totalPages}...`);
+
+                        await this.extractImagesFromPage(pageNum, quality, format);
+                    }
+
+                    progressContainer.style.display = 'none';
+                    this.displayResults();
+                    resultsSection.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error extracting images:', error);
+                    alert('Error extracting images.');
+                } finally {
+                    extractButton.disabled = false;
+                }
+            }
+
+            async extractImagesFromPage(pageNum, quality, format) {
+                try {
+                    const page = await this.pdfDoc.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: quality });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+
+                    await page.render(renderContext).promise;
+
+                    // Convert canvas to image
+                    const imageData = canvas.toDataURL(`image/${format}`, 0.9);
+                    const dimensions = `${canvas.width}x${canvas.height}`;
+                    const fileSize = Math.round((imageData.length * 3) / 4 / 1024); // Approximate size in KB
+
+                    this.extractedImages.push({
+                        page: pageNum,
+                        dataUrl: imageData,
+                        format: format.toUpperCase(),
+                        dimensions: dimensions,
+                        size: fileSize,
+                        filename: `page_${pageNum}.${format}`
+                    });
+
+                    // Try to find embedded images
+                    const operatorList = await page.getOperatorList();
+                    const imagePromises = [];
+
+                    for (let i = 0; i < operatorList.fnArray.length; i++) {
+                        if (operatorList.fnArray[i] === pdfjsLib.OPS.paintImageXObject) {
+                            const objName = operatorList.argsArray[i][0];
+                            imagePromises.push(this.extractEmbeddedImage(page, objName, pageNum, format));
+                        }
+                    }
+
+                    const embeddedImages = await Promise.all(imagePromises);
+                    this.extractedImages.push(...embeddedImages.filter(img => img !== null));
+
+                } catch (error) {
+                    console.error(`Error processing page ${pageNum}:`, error);
+                }
+            }
+
+            async extractEmbeddedImage(page, objName, pageNum, format) {
+                try {
+                    const commonObjs = page.commonObjs;
+                    const objs = page.objs;
+
+                    return new Promise((resolve) => {
+                        const checkObject = (objsCollection, name) => {
+                            if (objsCollection.has(name)) {
+                                const obj = objsCollection.get(name);
+                                if (obj && obj.data) {
+                                    const canvas = document.createElement('canvas');
+                                    const ctx = canvas.getContext('2d');
+                                    
+                                    canvas.width = obj.width || 100;
+                                    canvas.height = obj.height || 100;
+                                    
+                                    const imageData = ctx.createImageData(canvas.width, canvas.height);
+                                    imageData.data.set(obj.data);
+                                    ctx.putImageData(imageData, 0, 0);
+                                    
+                                    const dataUrl = canvas.toDataURL(`image/${format}`, 0.9);
+                                    const fileSize = Math.round((dataUrl.length * 3) / 4 / 1024);
+                                    
+                                    resolve({
+                                        page: pageNum,
+                                        dataUrl: dataUrl,
+                                        format: format.toUpperCase(),
+                                        dimensions: `${canvas.width}x${canvas.height}`,
+                                        size: fileSize,
+                                        filename: `embedded_page_${pageNum}_${name}.${format}`,
+                                        type: 'embedded'
+                                    });
+                                    return;
+                                }
+                            }
+                            resolve(null);
+                        };
+
+                        checkObject(commonObjs, objName);
+                        checkObject(objs, objName);
+                    });
+                } catch (error) {
+                    console.error('Error extracting embedded image:', error);
+                    return null;
+                }
+            }
+
+            displayResults() {
+                const resultsCount = document.getElementById('resultsCount');
+                const imagesGrid = document.getElementById('imagesGrid');
+                const downloadAllButton = document.getElementById('downloadAllButton');
+
+                resultsCount.textContent = `Found images: ${this.extractedImages.length}`;
+                downloadAllButton.style.display = this.extractedImages.length > 0 ? 'block' : 'none';
+
+                imagesGrid.innerHTML = '';
+
+                this.extractedImages.forEach((image, index) => {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
+                    
+                    const typeIcon = image.type === 'embedded' ? '🖼️' : '📄';
+                    
+                    imageItem.innerHTML = `
+                        <div class="image-container">
+                            <img src="${image.dataUrl}" alt="Image from page ${image.page}" loading="lazy" />
+                        </div>
+                        <div class="image-info">
+                            <div class="image-title">${typeIcon} Page ${image.page}</div>
+                            <div class="image-details">
+                                ${image.format} • ${image.dimensions} • ${image.size} KB
+                            </div>
+                            <div class="image-actions">
+                                <button class="action-button download-button" onclick="extractor.downloadImage(${index})">
+                                    💾 Download
+                                </button>
+                                <button class="action-button preview-button" onclick="extractor.previewImage(${index})">
+                                    👁️ Preview
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    imagesGrid.appendChild(imageItem);
+                });
+            }
+
+            downloadImage(index) {
+                const image = this.extractedImages[index];
+                if (!image) return;
+
+                const link = document.createElement('a');
+                link.href = image.dataUrl;
+                link.download = image.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            previewImage(index) {
+                const image = this.extractedImages[index];
+                if (!image) return;
+
+                const modal = document.getElementById('imageModal');
+                const modalImage = document.getElementById('modalImage');
+                
+                modalImage.src = image.dataUrl;
+                modalImage.alt = `Image from page ${image.page}`;
+                modal.style.display = 'block';
+            }
+
+            async downloadAllImages() {
+                if (this.extractedImages.length === 0) return;
+
+                // Create ZIP file (simple implementation without library)
+                for (let i = 0; i < this.extractedImages.length; i++) {
+                    setTimeout(() => {
+                        this.downloadImage(i);
+                    }, i * 500); // Delay between downloads
+                }
+            }
+        }
+
+        // Initialize application
+        const extractor = new PDFImageExtractor();
+
+        // Prevent default drag & drop behavior
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Add drag & drop support
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragenter', highlight);
+        uploadSection.addEventListener('dragover', highlight);
+        uploadSection.addEventListener('dragleave', unhighlight);
+        uploadSection.addEventListener('drop', handleDrop);
+
+        function highlight(e) {
+            uploadSection.style.backgroundColor = '#e3f2fd';
+            uploadSection.style.borderColor = '#2196f3';
+        }
+
+        function unhighlight(e) {
+            uploadSection.style.backgroundColor = '';
+            uploadSection.style.borderColor = '';
+        }
+
+        function handleDrop(e) {
+            unhighlight(e);
+            
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                const pdfFileInput = document.getElementById('pdfFile');
+                pdfFileInput.files = files;
+                
+                const event = new Event('change', { bubbles: true });
+                pdfFileInput.dispatchEvent(event);
+            }
+        }
+    </script>
+</body>
+</html>

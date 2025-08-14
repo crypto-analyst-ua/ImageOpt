@@ -82,6 +82,12 @@
             text-align: center;
             margin-top: auto;
         }
+        
+        /* Добавленные стили для кнопок в шапке */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -100,6 +106,10 @@
                 <!-- Added PDF button -->
                 <button class="history-toggle" id="createPdfBtn" title="Create PDF">
                     <i class="fas fa-file-pdf"></i>
+                </button>
+                <!-- New button for extracting images -->
+                <button class="history-toggle" id="extractPdfImagesBtn" title="Extract Images from PDF">
+                    <i class="fas fa-file-image"></i>
                 </button>
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
@@ -639,10 +649,15 @@
     <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
     <script src="script.js"></script>
     
-    <!-- Добавленный обработчик для кнопки PDF -->
+    <!-- Добавленный обработчик для кнопок PDF -->
     <script>
         document.getElementById('createPdfBtn').addEventListener('click', function() {
             window.location.href = 'PDF.html';
+        });
+        
+        // New handler for extract images button
+        document.getElementById('extractPdfImagesBtn').addEventListener('click', function() {
+            window.location.href = 'PDF2.html';
         });
     </script>
     
