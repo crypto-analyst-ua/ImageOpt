@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extract Images from PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Все стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -51,6 +52,7 @@
             padding: 40px;
             text-align: center;
             border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
         }
 
         .file-input-wrapper {
@@ -206,11 +208,21 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .download-all-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+        }
+
+        .download-all-button:disabled {
+            background: #6c757d;
+            cursor: wait;
+            transform: none;
+            box-shadow: none;
         }
 
         .images-grid {
@@ -343,6 +355,22 @@
 
         .close:hover {
             color: #fff;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -666,6 +694,7 @@
 
                 resultsCount.textContent = `Found images: ${this.extractedImages.length}`;
                 downloadAllButton.style.display = this.extractedImages.length > 0 ? 'block' : 'none';
+                this.updateDownloadAllButton(false);
 
                 imagesGrid.innerHTML = '';
 
@@ -726,12 +755,34 @@
             async downloadAllImages() {
                 if (this.extractedImages.length === 0) return;
 
-                // Create ZIP file (simple implementation without library)
-                for (let i = 0; i < this.extractedImages.length; i++) {
-                    setTimeout(() => {
-                        this.downloadImage(i);
-                    }, i * 500); // Delay between downloads
+                try {
+                    this.updateDownloadAllButton(true);
+                    
+                    const zip = new JSZip();
+                    const folder = zip.folder("extracted_images");
+                    
+                    for (const image of this.extractedImages) {
+                        const base64Data = image.dataUrl.split(',')[1];
+                        folder.file(image.filename, base64Data, { base64: true });
+                    }
+
+                    const content = await zip.generateAsync({ type: "blob" });
+                    saveAs(content, "extracted_images.zip");
+                    
+                } catch (error) {
+                    console.error('Error creating ZIP file:', error);
+                    alert('Error creating ZIP archive. Please try again.');
+                } finally {
+                    this.updateDownloadAllButton(false);
                 }
+            }
+
+            updateDownloadAllButton(isLoading) {
+                const button = document.getElementById('downloadAllButton');
+                button.disabled = isLoading;
+                button.innerHTML = isLoading ? 
+                    '<span class="spinner"></span> Creating ZIP...' : 
+                    '📦 Download All';
             }
         }
 
@@ -758,12 +809,10 @@
 
         function highlight(e) {
             uploadSection.style.backgroundColor = '#e3f2fd';
-            uploadSection.style.borderColor = '#2196f3';
         }
 
         function unhighlight(e) {
             uploadSection.style.backgroundColor = '';
-            uploadSection.style.borderColor = '';
         }
 
         function handleDrop(e) {
@@ -782,4 +831,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
