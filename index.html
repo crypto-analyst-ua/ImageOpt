@@ -84,10 +84,42 @@
             margin-top: auto;
         }
         
-        /* Добавленные стили для кнопок в шапке */
-        .header-actions {
+        /* Обновленные стили для кнопок PDF */
+        .pdf-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 8px;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            padding: 8px 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            height: 40px;
+            gap: 8px;
+        }
+
+        .pdf-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* Адаптация для мобильных */
+        @media (max-width: 768px) {
+            .pdf-btn span {
+                display: none;
+            }
+            .pdf-btn {
+                padding: 10px;
+                width: 40px;
+                justify-content: center;
+            }
+        }
+
+        /* Увеличим отступы между кнопками */
+        .header-actions {
+            gap: 12px;
         }
     </style>
 </head>
@@ -104,13 +136,24 @@
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Added PDF button -->
-                <button class="history-toggle" id="createPdfBtn" title="Create PDF">
+                <!-- Обновленные кнопки PDF -->
+                <button class="pdf-btn" id="createPdfBtn" title="Create PDF">
                     <i class="fas fa-file-pdf"></i>
+                    <span>Create PDF</span>
                 </button>
-                <!-- New button for extracting images -->
-                <button class="history-toggle" id="extractPdfImagesBtn" title="Extract Images from PDF">
+                <button class="pdf-btn" id="extractPdfImagesBtn" title="Extract Images from PDF">
                     <i class="fas fa-file-image"></i>
+                    <span>Extract Images</span>
+                </button>
+                <!-- Новая кнопка PDF Compressor -->
+                <button class="pdf-btn" id="pdfCompressorBtn" title="PDF Compressor">
+                    <i class="fas fa-file-contract"></i>
+                    <span>Compress PDF</span>
+                </button>
+                <!-- Новая кнопка PDF Merger -->
+                <button class="pdf-btn" id="pdfMergerBtn" title="PDF Merger">
+                    <i class="fas fa-file-medical"></i>
+                    <span>Merge PDF</span>
                 </button>
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
@@ -659,6 +702,18 @@
         // New handler for extract images button
         document.getElementById('extractPdfImagesBtn').addEventListener('click', function() {
             window.location.href = 'PDF2.html';
+        });
+    </script>
+    
+    <!-- Обработчики для новых кнопок -->
+    <script>
+        // Обработчики для новых кнопок
+        document.getElementById('pdfCompressorBtn').addEventListener('click', function() {
+            window.location.href = 'PDF Compressor.html';
+        });
+        
+        document.getElementById('pdfMergerBtn').addEventListener('click', function() {
+            window.location.href = 'PDF Merger.html';
         });
     </script>
     
