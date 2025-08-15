@@ -354,6 +354,18 @@ header {
         font-size: 1.1em !important;
         margin-top: 2px;
     }
+    
+    /* Увеличим размер иконок для новых кнопок */
+    #batchRenameBtn i,
+    #exifEditorBtn i,
+    #collageMakerBtn i {
+        font-size: 1.1em;
+    }
+    
+    /* Уменьшим промежутки между кнопками в шапке */
+    .header-actions {
+        gap: 8px;
+    }
 }
 
 /* Увеличим размер иконки в кнопке истории */

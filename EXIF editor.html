@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXIF Editor | View and Edit Image Metadata</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upload-section {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .preview-section {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .metadata-section {
+            flex: 100%;
+            margin-top: 20px;
+        }
+        
+        .drop-area {
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .drop-area:hover, .drop-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .drop-area i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+        
+        .drop-area h3 {
+            margin-bottom: 10px;
+        }
+        
+        .drop-area p {
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-download {
+            background: #2196F3;
+            margin-top: 10px;
+        }
+        
+        .btn-download:hover {
+            background: #0b7dda;
+        }
+        
+        .btn-toggle {
+            background: #9C27B0;
+        }
+        
+        .btn-toggle:hover {
+            background: #7B1FA2;
+        }
+        
+        .image-preview {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .image-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .image-info h3 {
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #4CAF50;
+        }
+        
+        .metadata-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .metadata-table th {
+            background: rgba(76, 175, 80, 0.3);
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .metadata-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .metadata-table tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .metadata-table tr:hover {
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .editable {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px;
+            width: 100%;
+            border-radius: 4px;
+        }
+        
+        .editable:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 250px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>EXIF Editor</h1>
+            <p class="subtitle">View and edit metadata of your photos. Supports JPEG and other image formats.</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="upload-section">
+                <h2 class="section-title">Upload Image</h2>
+                <div class="drop-area" id="dropArea">
+                    <i>📁</i>
+                    <h3>Drag & Drop your image here</h3>
+                    <p>or</p>
+                    <button class="btn" id="selectBtn">Choose File</button>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+                
+                <div class="status-message hidden" id="statusMessage"></div>
+                
+                <div class="image-info">
+                    <h3>File Information</h3>
+                    <div class="info-grid" id="fileInfo">
+                        <div class="info-item">
+                            <div class="info-label">File Name</div>
+                            <div id="fileName">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">File Type</div>
+                            <div id="fileType">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Size</div>
+                            <div id="fileSize">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Dimensions</div>
+                            <div id="fileDimensions">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <h2 class="section-title">Preview</h2>
+                <div class="image-preview" id="imagePreview">
+                    <div>No image uploaded</div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn" id="resetBtn" disabled>Reset</button>
+                    <button class="btn" id="saveBtn" disabled>Save Changes</button>
+                    <button class="btn btn-download" id="downloadBtn" disabled>Download Image</button>
+                </div>
+            </div>
+            
+            <div class="metadata-section">
+                <div class="filter-controls">
+                    <div>
+                        <button class="btn btn-toggle" id="toggleTagsBtn">Show All Tags</button>
+                    </div>
+                    <div>
+                        <input type="text" id="searchInput" class="search-box" placeholder="Search tags..." disabled>
+                    </div>
+                </div>
+                
+                <h2 class="section-title">EXIF Metadata</h2>
+                <div class="table-container">
+                    <table class="metadata-table">
+                        <thead>
+                            <tr>
+                                <th width="30%">Tag</th>
+                                <th width="35%">Value</th>
+                                <th width="35%">New Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exifTableBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Upload an image to view metadata</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>EXIF Editor &copy; 2025 | All rights reserved</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const selectBtn = document.getElementById('selectBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const exifTableBody = document.getElementById('exifTableBody');
+            const statusMessage = document.getElementById('statusMessage');
+            const resetBtn = document.getElementById('resetBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const fileName = document.getElementById('fileName');
+            const fileType = document.getElementById('fileType');
+            const fileSize = document.getElementById('fileSize');
+            const fileDimensions = document.getElementById('fileDimensions');
+            const toggleTagsBtn = document.getElementById('toggleTagsBtn');
+            const searchInput = document.getElementById('searchInput');
+            
+            // State variables
+            let originalImage = null;
+            let originalExifData = {};
+            let modifiedExifData = {};
+            let currentFile = null;
+            let showAllTags = false;
+            let isSaving = false;
+            
+            // EXIF tag mappings
+            const tagMappings = {
+                "ImageDescription": [piexif.ImageIFD.ImageDescription, "0th"],
+                "Make": [piexif.ImageIFD.Make, "0th"],
+                "Model": [piexif.ImageIFD.Model, "0th"],
+                "Software": [piexif.ImageIFD.Software, "0th"],
+                "Artist": [piexif.ImageIFD.Artist, "0th"],
+                "Copyright": [piexif.ImageIFD.Copyright, "0th"],
+                "DateTime": [piexif.ImageIFD.DateTime, "0th"],
+                "DateTimeOriginal": [piexif.ExifIFD.DateTimeOriginal, "Exif"],
+                "DateTimeDigitized": [piexif.ExifIFD.DateTimeDigitized, "Exif"]
+            };
+            
+            // Event handlers assignment
+            selectBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+            dropArea.addEventListener('dragover', handleDragOver);
+            dropArea.addEventListener('dragleave', handleDragLeave);
+            dropArea.addEventListener('drop', handleDrop);
+            resetBtn.addEventListener('click', resetImage);
+            saveBtn.addEventListener('click', saveChanges);
+            downloadBtn.addEventListener('click', downloadImage);
+            toggleTagsBtn.addEventListener('click', toggleAllTags);
+            searchInput.addEventListener('input', filterExifTable);
+            
+            // Event handlers
+            function handleDragOver(e) {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            }
+            
+            function handleDragLeave(e) {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect(e);
+                }
+            }
+            
+            function handleFileSelect(e) {
+                const file = e.target.files[0] || e.dataTransfer.files[0];
+                if (!file) return;
+                
+                // File type validation
+                if (!file.type.match('image.*')) {
+                    showStatus('Please select an image file (JPEG, PNG, etc.)', 'error');
+                    return;
+                }
+                
+                // Warning for non-JPEG
+                if (file.type !== 'image/jpeg') {
+                    showStatus('Warning: EXIF editing is only supported for JPEG images. You can view EXIF but editing may not work.', 'error');
+                }
+                
+                currentFile = file;
+                
+                // Update file info
+                fileName.textContent = file.name;
+                fileType.textContent = file.type;
+                fileSize.textContent = formatFileSize(file.size);
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Save original image
+                    originalImage = e.target.result;
+                    
+                    // Display preview
+                    const img = new Image();
+                    img.onload = function() {
+                        fileDimensions.textContent = `${img.width} × ${img.height} pixels`;
+                        
+                        imagePreview.innerHTML = '';
+                        imagePreview.appendChild(img);
+                        
+                        // Enable buttons
+                        resetBtn.disabled = false;
+                        saveBtn.disabled = false;
+                        downloadBtn.disabled = false;
+                        searchInput.disabled = false;
+                        
+                        // Load EXIF data
+                        loadExifData(file, img);
+                    };
+                    img.src = originalImage;
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            function loadExifData(file, img) {
+                EXIF.getData(img, function() {
+                    // Get all EXIF tags
+                    const allTags = EXIF.getAllTags(this);
+                    originalExifData = allTags;
+                    modifiedExifData = {...allTags};
+                    
+                    // Display EXIF data
+                    displayExifData(allTags);
+                    
+                    if (Object.keys(allTags).length === 0) {
+                        showStatus('No EXIF data found in the image', 'error');
+                    } else {
+                        showStatus('EXIF data loaded successfully', 'success');
+                    }
+                });
+            }
+            
+            function displayExifData(tags) {
+                exifTableBody.innerHTML = '';
+                
+                if (Object.keys(tags).length === 0) {
+                    exifTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align: center;">No EXIF data found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // List of editable tags
+                const editableTags = [
+                    'DateTime', 'DateTimeOriginal', 'DateTimeDigitized',
+                    'ImageDescription', 'Make', 'Model',
+                    'Software', 'Artist', 'Copyright'
+                ];
+                
+                let tagsToDisplay = Object.keys(tags);
+                if (!showAllTags) {
+                    tagsToDisplay = tagsToDisplay.filter(tag => editableTags.includes(tag));
+                }
+                
+                if (tagsToDisplay.length === 0) {
+                    exifTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" style="text-align: center;">No tags to display</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                for (const tag of tagsToDisplay) {
+                    const value = tags[tag];
+                    const isEditable = editableTags.includes(tag);
+                    
+                    const row = document.createElement('tr');
+                    row.dataset.tag = tag.toLowerCase();
+                    row.innerHTML = `
+                        <td>${tag}</td>
+                        <td>${formatExifValue(value)}</td>
+                        <td>
+                            ${isEditable ? 
+                                `<input type="text" class="editable" data-tag="${tag}" 
+                                 value="${formatExifValue(value)}">` : 
+                                `<span>Not editable</span>`}
+                        </td>
+                    `;
+                    exifTableBody.appendChild(row);
+                }
+                
+                // Add change handlers for editable fields
+                document.querySelectorAll('.editable').forEach(input => {
+                    input.addEventListener('change', function() {
+                        const tag = this.dataset.tag;
+                        modifiedExifData[tag] = this.value;
+                    });
+                });
+            }
+            
+            function formatExifValue(value) {
+                if (Array.isArray(value)) {
+                    return value.join(', ');
+                }
+                return value || '-';
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status-message ${type}`;
+                statusMessage.classList.remove('hidden');
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    statusMessage.classList.add('hidden');
+                }, 5000);
+            }
+            
+            function resetImage() {
+                if (!currentFile) return;
+                
+                // Reset EXIF data
+                modifiedExifData = {...originalExifData};
+                
+                // Update table
+                displayExifData(originalExifData);
+                
+                showStatus('Changes reset', 'success');
+            }
+            
+            function saveChanges() {
+                if (!currentFile) return;
+                
+                // Check for JPEG
+                if (currentFile.type !== 'image/jpeg') {
+                    showStatus('EXIF editing is only supported for JPEG images', 'error');
+                    return;
+                }
+                
+                if (isSaving) return;
+                isSaving = true;
+                saveBtn.innerHTML = '<span class="loading"></span> Saving...';
+                saveBtn.disabled = true;
+                
+                try {
+                    // Extract base64 without prefix
+                    const base64Data = originalImage.replace(/^data:image\/\w+;base64,/, "");
+                    const binaryData = atob(base64Data);
+                    let exifObj = {};
+                    
+                    try {
+                        // Load existing EXIF
+                        exifObj = piexif.load(binaryData);
+                    } catch (e) {
+                        // Create new EXIF object if none exists
+                        exifObj = {"0th":{}, "Exif":{}, "GPS":{}, "1st":{}, "thumbnail":null};
+                    }
+                    
+                    // Date format validation
+                    const dateTags = ['DateTime', 'DateTimeOriginal', 'DateTimeDigitized'];
+                    for (const tag of dateTags) {
+                        if (modifiedExifData[tag]) {
+                            // Date format: YYYY:MM:DD HH:MM:SS
+                            if (!/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(modifiedExifData[tag])) {
+                                showStatus(`Invalid date format for ${tag}. Use format: YYYY:MM:DD HH:MM:SS`, 'error');
+                                saveBtn.innerHTML = 'Save Changes';
+                                saveBtn.disabled = false;
+                                isSaving = false;
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // Update tags in exifObj
+                    for (const tagName in modifiedExifData) {
+                        if (tagMappings[tagName]) {
+                            const [tagId, ifd] = tagMappings[tagName];
+                            const value = modifiedExifData[tagName];
+                            
+                            if (value === "" || value == null) {
+                                // Remove tag if empty
+                                if (exifObj[ifd] && exifObj[ifd][tagId] !== undefined) {
+                                    delete exifObj[ifd][tagId];
+                                }
+                            } else {
+                                // Ensure section exists
+                                if (!exifObj[ifd]) exifObj[ifd] = {};
+                                exifObj[ifd][tagId] = value;
+                            }
+                        }
+                    }
+                    
+                    // Convert to EXIF binary
+                    const exifBytes = piexif.dump(exifObj);
+                    
+                    // Insert EXIF into image
+                    const newBinaryData = piexif.insert(exifBytes, binaryData);
+                    const newImageData = "data:image/jpeg;base64," + btoa(newBinaryData);
+                    
+                    // Update original image
+                    originalImage = newImageData;
+                    
+                    // Update original EXIF data
+                    originalExifData = {...modifiedExifData};
+                    
+                    // Refresh EXIF table
+                    displayExifData(modifiedExifData);
+                    
+                    showStatus('Changes saved successfully! You can now download the image.', 'success');
+                } catch (error) {
+                    showStatus('Error saving EXIF data: ' + error.message, 'error');
+                    console.error(error);
+                } finally {
+                    saveBtn.innerHTML = 'Save Changes';
+                    saveBtn.disabled = false;
+                    isSaving = false;
+                }
+            }
+            
+            function downloadImage() {
+                if (!currentFile || !originalImage) return;
+                
+                try {
+                    // Create download link
+                    const a = document.createElement('a');
+                    a.href = originalImage;
+                    a.download = 'edited_' + currentFile.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    showStatus('Image downloading', 'success');
+                } catch (error) {
+                    showStatus('Error downloading image', 'error');
+                    console.error(error);
+                }
+            }
+            
+            function toggleAllTags() {
+                showAllTags = !showAllTags;
+                toggleTagsBtn.textContent = showAllTags ? 'Hide Additional Tags' : 'Show All Tags';
+                displayExifData(originalExifData);
+            }
+            
+            function filterExifTable() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const rows = exifTableBody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const tagName = row.dataset.tag || '';
+                    if (tagName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

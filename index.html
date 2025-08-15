@@ -160,6 +160,21 @@
                     <i class="fas fa-file-word"></i>
                     <span>PDF to Word/Excel</span>
                 </button>
+                
+                <!-- Новые кнопки -->
+                <button class="pdf-btn" id="batchRenameBtn" title="Batch Rename Files">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Batch Rename</span>
+                </button>
+                <button class="pdf-btn" id="exifEditorBtn" title="EXIF Editor">
+                    <i class="fas fa-info-circle"></i>
+                    <span>EXIF Editor</span>
+                </button>
+                <button class="pdf-btn" id="collageMakerBtn" title="Photo Collage Maker">
+                    <i class="fas fa-th-large"></i>
+                    <span>Collage Maker</span>
+                </button>
+                
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
@@ -724,6 +739,19 @@
         // Обработчик для новой кнопки PDF to Word/Excel
         document.getElementById('pdfToWordExcelBtn').addEventListener('click', function() {
             window.location.href = 'PDF to Word or Excel.html';
+        });
+        
+        // Обработчики для новых кнопок инструментов
+        document.getElementById('batchRenameBtn').addEventListener('click', function() {
+            window.location.href = 'Batch rename files.html';
+        });
+        
+        document.getElementById('exifEditorBtn').addEventListener('click', function() {
+            window.location.href = 'EXIF editor.html';
+        });
+        
+        document.getElementById('collageMakerBtn').addEventListener('click', function() {
+            window.location.href = 'Photo Collage Maker.html';
         });
     </script>
     

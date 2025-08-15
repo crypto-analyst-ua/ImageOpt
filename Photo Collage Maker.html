@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Photo Collage Maker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили остаются без изменений */
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --secondary: #38a169;
+            --danger: #e53e3e;
+            --dark: #2d3748;
+            --light: #f7fafc;
+            --gray: #718096;
+            --light-gray: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--dark);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+            align-items: center;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group h3 i {
+            font-size: 1.2rem;
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload label {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        .file-upload label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .grid-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .grid-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .grid-control label {
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .grid-control label span.value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .grid-control select, .grid-control input {
+            padding: 10px 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .grid-control select:focus, .grid-control input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        .btn-clear {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 62, 62, 0.2);
+        }
+
+        .btn-download {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #2f855a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 161, 105, 0.2);
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .collage-container {
+            background: var(--light);
+            border: 3px dashed var(--light-gray);
+            border-radius: 16px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .collage-grid {
+            display: grid;
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .grid-item {
+            background: var(--light-gray);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: move;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .grid-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .grid-item.empty {
+            background: linear-gradient(135deg, var(--light-gray), #cbd5e0);
+            color: var(--gray);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .grid-item.empty i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .grid-item.empty:hover {
+            background: linear-gradient(135deg, #cbd5e0, #a0aec0);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(229, 62, 62, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 16px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .grid-item:hover .remove-btn {
+            display: flex;
+        }
+
+        .remove-btn:hover {
+            background: rgba(197, 48, 48, 0.9);
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--gray);
+            font-size: 1.2rem;
+            padding: 40px;
+            max-width: 500px;
+        }
+
+        .image-counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .style-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .style-control {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item.active {
+            border: 3px solid var(--primary);
+            transform: scale(1.05);
+        }
+
+        .drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.2);
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            z-index: 100;
+        }
+
+        .collage-container.drag-over .drag-overlay {
+            display: flex;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .tools-panel {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .aspect-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .aspect-option {
+            padding: 8px 12px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .aspect-option.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+            
+            .collage-container {
+                min-height: 400px;
+            }
+            
+            .aspect-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-images"></i> Professional Photo Collage Maker</h1>
+            <p>Create unique collages with preserved image proportions</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3><i class="fas fa-file-upload"></i> Upload Images</h3>
+                <div class="file-upload">
+                    <input type="file" id="imageInput" accept="image/*" multiple>
+                    <label for="imageInput"><i class="fas fa-plus"></i> Add Photos</label>
+                </div>
+                <div class="preview-container" id="previewContainer"></div>
+            </div>
+
+            <div class="control-group">
+                <h3><i class="fas fa-th"></i> Grid Settings</h3>
+                <div class="grid-control">
+                    <label for="gridType">Grid Type:</label>
+                    <select id="gridType">
+                        <option value="auto">Auto</option>
+                        <option value="1x1">1×1</option>
+                        <option value="2x2" selected>2×2</option>
+                        <option value="3x3">3×3</option>
+                        <option value="4x4">4×4</option>
+                        <option value="2x3">2×3</option>
+                        <option value="3x2">3×2</option>
+                        <option value="1x4">1×4</option>
+                        <option value="4x1">4×1</option>
+                    </select>
+                </div>
+
+                <div class="grid-control">
+                    <label for="gapSize">Gap Size: <span class="value" id="gapValue">10px</span></label>
+                    <input type="range" id="gapSize" min="0" max="30" value="10">
+                </div>
+                
+                <div class="grid-control">
+                    <label>Aspect Ratio:</label>
+                    <div class="aspect-controls">
+                        <div class="aspect-option active" data-aspect="free">Free</div>
+                        <div class="aspect-option" data-aspect="1:1">1:1</div>
+                        <div class="aspect-option" data-aspect="4:3">4:3</div>
+                        <div class="aspect-option" data-aspect="16:9">16:9</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3><i class="fas fa-brush"></i> Collage Style</h3>
+                <div class="grid-control">
+                    <label for="borderSize">Border Size: <span class="value" id="borderValue">2px</span></label>
+                    <input type="range" id="borderSize" min="0" max="10" value="2">
+                </div>
+                
+                <div class="grid-control">
+                    <label for="borderColor">Border Color:</label>
+                    <input type="color" id="borderColor" value="#667eea">
+                </div>
+                
+                <div class="grid-control">
+                    <label for="imageFit">Image Mode:</label>
+                    <select id="imageFit">
+                        <!-- Changed default to "contain" -->
+                        <option value="contain">Fit (contain)</option>
+                        <option value="cover">Crop (cover)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-panel">
+            <button class="btn btn-save" onclick="saveCollage()">
+                <i class="fas fa-save"></i> Save Project
+            </button>
+            <button class="btn btn-clear" onclick="clearCollage()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+            <button class="btn btn-download" onclick="downloadCollage()">
+                <i class="fas fa-download"></i> Download Collage
+            </button>
+        </div>
+
+        <div class="collage-container" id="collageContainer">
+            <div class="drag-overlay">
+                <i class="fas fa-cloud-upload-alt"></i> Drop images here
+            </div>
+            <div class="empty-state">
+                <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                <h3>Drag and drop images here</h3>
+                <p>or click the "Add Photos" button</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Collage downloaded successfully!</div>
+
+    <script>
+        let images = [];
+        let currentGridType = '2x2';
+        let draggedIndex = null;
+        let isDragging = false;
+        let currentAspect = 'free';
+
+        // File upload handling
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+            e.target.value = '';
+        });
+
+        // Drag and Drop for file upload
+        const container = document.getElementById('collageContainer');
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            container.classList.add('drag-over');
+        });
+
+        container.addEventListener('dragleave', function() {
+            container.classList.remove('drag-over');
+        });
+
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            container.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        function handleFiles(files) {
+            const fileList = Array.from(files);
+            const newImages = [];
+            
+            fileList.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const imageData = {
+                            src: event.target.result,
+                            name: file.name,
+                            id: Date.now() + Math.random()
+                        };
+                        newImages.push(imageData);
+                        
+                        if (newImages.length === fileList.length) {
+                            images = [...images, ...newImages];
+                            updateCollage();
+                            updatePreview();
+                            showNotification('Images uploaded successfully!');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Grid type change handling
+        document.getElementById('gridType').addEventListener('change', function(e) {
+            currentGridType = e.target.value;
+            updateCollage();
+        });
+
+        // Gap size change handling
+        const gapSize = document.getElementById('gapSize');
+        const gapValue = document.getElementById('gapValue');
+        gapSize.addEventListener('input', function(e) {
+            gapValue.textContent = e.target.value + 'px';
+            updateCollage();
+        });
+
+        // Style changes handling
+        const borderSize = document.getElementById('borderSize');
+        const borderValue = document.getElementById('borderValue');
+        borderSize.addEventListener('input', function(e) {
+            borderValue.textContent = e.target.value + 'px';
+            updateCollage();
+        });
+
+        // Image mode change handling
+        document.getElementById('imageFit').addEventListener('change', function() {
+            updateCollage();
+        });
+
+        // Aspect ratio selection handling
+        document.querySelectorAll('.aspect-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.aspect-option').forEach(el => {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+                currentAspect = this.dataset.aspect;
+                updateCollage();
+            });
+        });
+
+        // Update image previews
+        function updatePreview() {
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = '';
+            
+            images.forEach((img, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                if (index < 6) {
+                    previewItem.classList.add('active');
+                }
+                
+                previewItem.innerHTML = `
+                    <img src="${img.src}" alt="Preview">
+                    <div class="remove-btn" onclick="removeImage(${index})">×</div>
+                `;
+                
+                previewItem.addEventListener('click', function() {
+                    document.querySelectorAll('.preview-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+                
+                previewContainer.appendChild(previewItem);
+            });
+        }
+
+        // Update collage grid
+        function updateCollage() {
+            const container = document.getElementById('collageContainer');
+            
+            if (images.length === 0) {
+                container.innerHTML = `
+                    <div class="drag-overlay">
+                        <i class="fas fa-cloud-upload-alt"></i> Drop images here
+                    </div>
+                    <div class="empty-state">
+                        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        <h3>Drag and drop images here</h3>
+                        <p>or click the "Add Photos" button</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Determine grid dimensions
+            let cols, rows;
+            if (currentGridType === 'auto') {
+                const count = images.length;
+                cols = Math.ceil(Math.sqrt(count));
+                rows = Math.ceil(count / cols);
+            } else {
+                [cols, rows] = currentGridType.split('x').map(Number);
+            }
+
+            const totalSlots = cols * rows;
+            const gapSizeValue = gapSize.value + 'px';
+            const borderSizeValue = borderSize.value + 'px';
+            const borderColorValue = document.getElementById('borderColor').value;
+            const fitMode = document.getElementById('imageFit').value;
+
+            // Calculate aspect ratio
+            let aspectRatio = null;
+            if (currentAspect === '1:1') aspectRatio = 1;
+            else if (currentAspect === '4:3') aspectRatio = 4/3;
+            else if (currentAspect === '16:9') aspectRatio = 16/9;
+
+            // Create grid
+            container.innerHTML = `
+                <div class="drag-overlay">
+                    <i class="fas fa-cloud-upload-alt"></i> Drop images here
+                </div>
+                <div class="collage-grid" style="
+                    grid-template-columns: repeat(${cols}, 1fr);
+                    grid-template-rows: repeat(${rows}, 1fr);
+                    gap: ${gapSizeValue};
+                ">
+                    ${Array.from({ length: totalSlots }, (_, index) => {
+                        if (index < images.length) {
+                            const img = images[index];
+                            return `
+                                <div class="grid-item" 
+                                    draggable="true"
+                                    ondragstart="dragStart(event, ${index})"
+                                    ondragover="dragOver(event)"
+                                    ondrop="drop(event, ${index})"
+                                    style="
+                                        border: ${borderSizeValue} solid ${borderColorValue};
+                                        ${aspectRatio ? 'aspect-ratio: ' + aspectRatio + ';' : ''}
+                                    ">
+                                    <img src="${img.src}" alt="${img.name}" style="object-fit: ${fitMode}">
+                                    <button class="remove-btn" onclick="removeImage(${index})">×</button>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="grid-item empty" onclick="addImage()" style="
+                                    border: ${borderSizeValue} solid ${borderColorValue};
+                                    ${aspectRatio ? 'aspect-ratio: ' + aspectRatio + ';' : ''}
+                                ">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Add Photo</span>
+                                </div>
+                            `;
+                        }
+                    }).join('')}
+                </div>
+                <div class="image-counter">${images.length} photos</div>
+            `;
+        }
+
+        // Drag and Drop for rearranging images
+        function dragStart(e, index) {
+            draggedIndex = index;
+            e.dataTransfer.setData('text/plain', index);
+            e.currentTarget.style.opacity = '0.5';
+            isDragging = true;
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e, targetIndex) {
+            e.preventDefault();
+            if (draggedIndex === null) return;
+            
+            // Swap images
+            [images[draggedIndex], images[targetIndex]] = [images[targetIndex], images[draggedIndex]];
+            updateCollage();
+            updatePreview();
+            draggedIndex = null;
+            isDragging = false;
+        }
+
+        // Remove image
+        function removeImage(index) {
+            images.splice(index, 1);
+            updateCollage();
+            updatePreview();
+        }
+
+        // Add image
+        function addImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        // Clear collage
+        function clearCollage() {
+            if (images.length === 0) return;
+            
+            if (confirm('Are you sure you want to remove all images?')) {
+                images = [];
+                document.getElementById('imageInput').value = '';
+                updateCollage();
+                updatePreview();
+                showNotification('All images removed!');
+            }
+        }
+
+        // Get aspect ratio value
+        function getAspectRatioValue(aspect) {
+            switch(aspect) {
+                case '1:1': return 1;
+                case '4:3': return 4/3;
+                case '16:9': return 16/9;
+                default: return null;
+            }
+        }
+
+        // Download collage
+        function downloadCollage() {
+            if (images.length === 0) {
+                showNotification('Add photos to create a collage!', true);
+                return;
+            }
+
+            // Set canvas dimensions
+            let canvasWidth, canvasHeight;
+            const aspectRatio = getAspectRatioValue(currentAspect);
+            
+            if (aspectRatio) {
+                canvasHeight = 1200;
+                canvasWidth = canvasHeight * aspectRatio;
+            } else {
+                canvasWidth = canvasHeight = 1200;
+            }
+            
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // Fill background
+            ctx.fillStyle = '#f7fafc';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Determine grid dimensions
+            let cols, rows;
+            if (currentGridType === 'auto') {
+                const count = images.length;
+                cols = Math.ceil(Math.sqrt(count));
+                rows = Math.ceil(count / cols);
+            } else {
+                [cols, rows] = currentGridType.split('x').map(Number);
+            }
+            
+            const gap = parseInt(gapSize.value);
+            const borderSizeValue = parseInt(borderSize.value);
+            const borderColorValue = document.getElementById('borderColor').value;
+            const fitMode = document.getElementById('imageFit').value;
+            
+            // Calculate cell sizes
+            const cellWidth = (canvasWidth - gap * (cols - 1)) / cols;
+            const cellHeight = (canvasHeight - gap * (rows - 1)) / rows;
+            
+            let loadedImages = 0;
+            const totalImages = Math.min(images.length, cols * rows);
+            
+            // Process images
+            images.slice(0, totalImages).forEach((imgData, index) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function() {
+                    const col = index % cols;
+                    const row = Math.floor(index / cols);
+                    
+                    const x = col * (cellWidth + gap);
+                    const y = row * (cellHeight + gap);
+                    
+                    // Draw border
+                    if (borderSizeValue > 0) {
+                        ctx.fillStyle = borderColorValue;
+                        ctx.fillRect(x, y, cellWidth, cellHeight);
+                    }
+                    
+                    // Calculate image area
+                    const imgX = x + borderSizeValue;
+                    const imgY = y + borderSizeValue;
+                    const imgWidth = cellWidth - 2 * borderSizeValue;
+                    const imgHeight = cellHeight - 2 * borderSizeValue;
+                    
+                    // Draw image based on selected mode
+                    if (fitMode === 'cover') {
+                        // Cover mode - crop image
+                        const imgAspect = img.width / img.height;
+                        const cellAspect = imgWidth / imgHeight;
+                        
+                        let sx, sy, sw, sh;
+                        
+                        if (imgAspect > cellAspect) {
+                            // Image is wider than area
+                            sw = img.height * cellAspect;
+                            sh = img.height;
+                            sx = (img.width - sw) / 2;
+                            sy = 0;
+                        } else {
+                            // Image is taller than area
+                            sw = img.width;
+                            sh = img.width / cellAspect;
+                            sx = 0;
+                            sy = (img.height - sh) / 2;
+                        }
+                        
+                        ctx.drawImage(img, sx, sy, sw, sh, imgX, imgY, imgWidth, imgHeight);
+                    } else {
+                        // Contain mode - fit image
+                        const scale = Math.min(imgWidth / img.width, imgHeight / img.height);
+                        const newWidth = img.width * scale;
+                        const newHeight = img.height * scale;
+                        
+                        const xOffset = imgX + (imgWidth - newWidth) / 2;
+                        const yOffset = imgY + (imgHeight - newHeight) / 2;
+                        
+                        ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
+                    }
+                    
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        // Create download link
+                        const link = document.createElement('a');
+                        link.download = `photo_collage_${Date.now()}.png`;
+                        link.href = canvas.toDataURL('image/png', 0.95);
+                        link.click();
+                        showNotification('Collage downloaded successfully!');
+                    }
+                };
+                img.src = imgData.src;
+            });
+        }
+
+        // Save project
+        function saveCollage() {
+            if (images.length === 0) {
+                showNotification('No images to save!', true);
+                return;
+            }
+            
+            const projectData = {
+                images: images,
+                gridType: currentGridType,
+                gapSize: gapSize.value,
+                borderSize: borderSize.value,
+                borderColor: document.getElementById('borderColor').value,
+                aspect: currentAspect,
+                fitMode: document.getElementById('imageFit').value
+            };
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "photo_collage_project.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            
+            showNotification('Project saved successfully!');
+        }
+
+        // Notifications
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification';
+            
+            if (isError) {
+                notification.classList.add('error');
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            // Load demo images
+            const demoImages = [
+                'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+            ];
+            
+            demoImages.forEach((src, index) => {
+                images.push({
+                    src: src,
+                    name: `demo-${index+1}.jpg`,
+                    id: `demo-${index+1}`
+                });
+            });
+            
+            updateCollage();
+            updatePreview();
+        });
+    </script>
+</body>
+</html>
