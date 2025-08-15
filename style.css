@@ -349,6 +349,11 @@ header {
         width: 40px;
         justify-content: center;
     }
+    /* Стиль для иконки Word/Excel */
+    .fa-file-word {
+        font-size: 1.1em !important;
+        margin-top: 2px;
+    }
 }
 
 /* Увеличим размер иконки в кнопке истории */
