@@ -175,6 +175,12 @@
                     <span>Collage Maker</span>
                 </button>
                 
+                <!-- Новая кнопка Improve Quality -->
+                <button class="pdf-btn" id="improveQualityBtn" title="Improve Image Quality">
+                    <i class="fas fa-star"></i>
+                    <span>Image Quality Boost</span>
+                </button>
+                
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
@@ -752,6 +758,11 @@
         
         document.getElementById('collageMakerBtn').addEventListener('click', function() {
             window.location.href = 'Photo Collage Maker.html';
+        });
+        
+        // Новый обработчик для кнопки улучшения качества
+        document.getElementById('improveQualityBtn').addEventListener('click', function() {
+            window.location.href = 'Improved image quality.html';
         });
     </script>
     

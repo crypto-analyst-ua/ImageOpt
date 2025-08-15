@@ -1427,3 +1427,33 @@ body {
         padding: 10px;
     }
 }
+
+/* ... существующие стили ... */
+
+/* Стиль для кнопки улучшения качества */
+#improveQualityBtn {
+    background: linear-gradient(135deg, #ff9a00, #ffd700);
+    color: #333;
+}
+
+#improveQualityBtn:hover {
+    background: linear-gradient(135deg, #ff8c00, #ffcc00);
+    transform: scale(1.05);
+}
+
+#improveQualityBtn i {
+    color: #fff;
+    text-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    #improveQualityBtn span {
+        display: none;
+    }
+    #improveQualityBtn {
+        padding: 10px;
+        width: 40px;
+        justify-content: center;
+    }
+}
