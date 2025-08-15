@@ -4,32 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- SEO tags -->
-<meta name="description" content="Image PixMizer – online image optimizer and PDF editor. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files easily with free tools.">
+<!-- SEO-теги -->
+<meta name="description" content="ImageOpt Pro - online image optimization, PDF creation and editing. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files with our free tools.">
 <meta name="keywords" content="image optimization, photo compression, reduce image size, pdf editor, pdf creator, pdf tools, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
-<meta name="author" content="Image PixMizer Team">
+<meta name="author" content="ImageOpt Pro Team">
 
-<link rel="canonical" href="https://image-pixmizer.web.app/">
+<link rel="canonical" href="https://imageopt-pro.web.app/">
 
 <!-- Open Graph / Social Media -->
-<meta property="og:title" content="Image PixMizer - Online Image Optimizer & PDF Editor">
+<meta property="og:title" content="ImageOpt Pro - Online Image Optimizer & PDF Editor">
 <meta property="og:description" content="Free tool for compressing and optimizing images, creating and editing PDF documents. Reduce file sizes without quality loss!">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://image-pixmizer.web.app/">
-<meta property="og:image" content="https://image-pixmizer.web.app/preview.jpg">
+<meta property="og:url" content="https://imageopt-pro.web.app/">
+<meta property="og:image" content="https://imageopt-pro.web.app/preview.jpg">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Image PixMizer - Image Optimizer & PDF Editor">
+<meta name="twitter:title" content="ImageOpt Pro - Image Optimizer & PDF Editor">
 <meta name="twitter:description" content="Optimize images and edit PDFs online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
-<meta name="twitter:image" content="https://image-pixmizer.web.app/twitter-preview.jpg">
+<meta name="twitter:image" content="https://imageopt-pro.web.app/twitter-preview.jpg">
 
 <!-- Structured Data -->
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Image PixMizer",
+    "name": "ImageOpt Pro",
     "description": "Free online tool for image optimization, compression and PDF editing",
     "applicationCategory": "Multimedia",
     "operatingSystem": "Windows, macOS, Linux, Android, iOS",
@@ -43,11 +43,11 @@
         "ratingValue": "4.8",
         "reviewCount": "124"
     },
-    "url": "https://image-pixmizer.web.app/"
+    "url": "https://imageopt-pro.web.app/"
 }
 </script>
     
-    <title>Image PixMizer – Online Image Compressor & Optimizer</title>
+    <title>ImageOpt Pro - Image Optimizer & PDF Editor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Cropper.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
@@ -63,7 +63,7 @@
             margin-left: 5px;
         }
         
-        /* Footer styles */
+        /* Добавленные стили для футера */
         body {
             display: flex;
             flex-direction: column;
@@ -84,7 +84,7 @@
             margin-top: auto;
         }
         
-        /* Updated styles for PDF buttons */
+        /* Обновленные стили для кнопок PDF */
         .pdf-btn {
             background: rgba(255, 255, 255, 0.15);
             border: none;
@@ -105,7 +105,7 @@
             transform: scale(1.05);
         }
 
-        /* Mobile adaptation */
+        /* Адаптация для мобильных */
         @media (max-width: 768px) {
             .pdf-btn span {
                 display: none;
@@ -117,7 +117,7 @@
             }
         }
 
-        /* Increased spacing between buttons */
+        /* Увеличим отступы между кнопками */
         .header-actions {
             gap: 12px;
         }
@@ -131,12 +131,12 @@
                     <i class="fas fa-image"></i>
                 </div>
                 <div class="header-text">
-                    <h1>Image PixMizer <span class="pdf-tag">+ PDF Editor</span></h1>
-                    <div class="subtitle">Online Image Compressor & Optimizer - Advanced Image Optimization & PDF Tools</div>
+                    <h1>ImageOpt Pro <span class="pdf-tag">+ PDF Editor</span></h1>
+                    <div class="subtitle">Advanced Image Optimization & PDF Tools</div>
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Updated PDF buttons -->
+                <!-- Обновленные кнопки PDF -->
                 <button class="pdf-btn" id="createPdfBtn" title="Create PDF">
                     <i class="fas fa-file-pdf"></i>
                     <span>Create PDF</span>
@@ -145,23 +145,23 @@
                     <i class="fas fa-file-image"></i>
                     <span>Extract Images</span>
                 </button>
-                <!-- New PDF Compressor button -->
+                <!-- Новая кнопка PDF Compressor -->
                 <button class="pdf-btn" id="pdfCompressorBtn" title="PDF Compressor">
                     <i class="fas fa-file-contract"></i>
                     <span>Compress PDF</span>
                 </button>
-                <!-- New PDF Merger button -->
+                <!-- Новая кнопка PDF Merger -->
                 <button class="pdf-btn" id="pdfMergerBtn" title="PDF Merger">
                     <i class="fas fa-file-medical"></i>
                     <span>Merge PDF</span>
                 </button>
-                <!-- New PDF to Word/Excel button -->
+                <!-- Новая кнопка PDF to Word/Excel -->
                 <button class="pdf-btn" id="pdfToWordExcelBtn" title="PDF to Word/Excel">
                     <i class="fas fa-file-word"></i>
                     <span>PDF to Word/Excel</span>
                 </button>
                 
-                <!-- New buttons -->
+                <!-- Новые кнопки -->
                 <button class="pdf-btn" id="batchRenameBtn" title="Batch Rename Files">
                     <i class="fas fa-file-signature"></i>
                     <span>Batch Rename</span>
@@ -175,7 +175,7 @@
                     <span>Collage Maker</span>
                 </button>
                 
-                <!-- New Improve Quality button -->
+                <!-- Новая кнопка Improve Quality -->
                 <button class="pdf-btn" id="improveQualityBtn" title="Improve Image Quality">
                     <i class="fas fa-star"></i>
                     <span>Image Quality Boost</span>
@@ -210,7 +210,7 @@
                     <h2>Upload Images</h2>
                 </div>
                 
-                <!-- Updated info message -->
+                <!-- Обновленное информационное сообщение -->
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
                     You can upload up to 15 images at once. Supported formats: JPG, PNG, WebP, AVIF, HEIC, TIFF.
@@ -289,7 +289,7 @@
                             <i class="fas fa-adjust"></i>
                             <span>Adjust</span>
                         </div>
-                        <!-- Added Auto button -->
+                        <!-- Добавленная кнопка Auto -->
                         <div class="editor-btn" id="autoAdjustBtn">
                             <i class="fas fa-magic"></i>
                             <span>Auto</span>
@@ -300,7 +300,7 @@
                         </div>
                     </div>
                     
-                    <!-- Added info block -->
+                    <!-- Ваш добавленный блок информации -->
                     <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
                         <span class="explanation-icon">i</span>
                         Auto adjustment applies moderate enhancements. For best results, 
@@ -324,13 +324,13 @@
                         <div class="touch-btn" id="touchAdjust">
                             <i class="fas fa-adjust"></i>
                         </div>
-                        <!-- Added Auto button for mobile -->
+                        <!-- Добавленная кнопка Auto для мобильных -->
                         <div class="touch-btn" id="touchAutoAdjust">
                             <i class="fas fa-magic"></i>
                         </div>
                     </div>
                     
-                    <!-- Crop controls (updated version) -->
+                    <!-- Crop controls (обновленная версия) -->
                     <div class="crop-controls" id="cropControls">
                         <div class="crop-header">
                             <h3><i class="fas fa-crop-alt"></i> Crop Image</h3>
@@ -412,17 +412,17 @@
                     </div>
                 </div>
                 
-                <!-- Watermarks - UPDATED BLOCK -->
+                <!-- Watermarks - ОБНОВЛЕННЫЙ БЛОК -->
                 <div class="watermark-controls" id="watermarkControls">
                     <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
                     
-                    <!-- Type toggle -->
+                    <!-- Переключатель типа -->
                     <div class="watermark-type-toggle">
                         <button class="watermark-type-btn active" data-type="text">Text</button>
                         <button class="watermark-type-btn" data-type="image">Image</button>
                     </div>
                     
-                    <!-- Text watermark -->
+                    <!-- Текстовый водяной знак -->
                     <div class="watermark-text-section">
                         <div class="watermark-row">
                             <input type="text" id="watermarkText" placeholder="Watermark text">
@@ -435,7 +435,7 @@
                         </div>
                     </div>
                     
-                    <!-- Image watermark -->
+                    <!-- Изображение водяного знака -->
                     <div class="watermark-image-section" style="display: none;">
                         <div class="watermark-row">
                             <input type="file" id="watermarkImageInput" accept="image/*">
@@ -447,7 +447,7 @@
                         </div>
                     </div>
                     
-                    <!-- General settings -->
+                    <!-- Общие настройки -->
                     <div class="watermark-row">
                         <label>Opacity:</label>
                         <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
@@ -643,9 +643,9 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- New footer -->
+    <!-- Новый футер -->
     <footer style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); color: #fff; padding: 45px 15px 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; font-size: 12px;">
-      <!-- Gradient line at top -->
+      <!-- Градиентная линия сверху -->
       <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #ffcc00, #ff9900);"></div>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
@@ -699,8 +699,8 @@
           </a>
         </div>
         
-        <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 Image PixMizer. All rights reserved.</p>
-        <!-- Views counter -->
+        <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 ImageOpt Pro. All rights reserved.</p>
+        <!-- Счетчик просмотров -->
         <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
       </div>
     </footer>
@@ -713,13 +713,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Added HEIC library -->
+    <!-- Добавлена библиотека для работы с HEIC -->
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
-    <!-- Added TIFF library -->
+    <!-- Добавлена библиотека для работы с TIFF -->
     <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
     <script src="script.js"></script>
     
-    <!-- Added handler for PDF buttons -->
+    <!-- Добавленный обработчик для кнопок PDF -->
     <script>
         document.getElementById('createPdfBtn').addEventListener('click', function() {
             window.location.href = 'PDF.html';
@@ -731,9 +731,9 @@
         });
     </script>
     
-    <!-- Handlers for new buttons -->
+    <!-- Обработчики для новых кнопок -->
     <script>
-        // Handlers for new buttons
+        // Обработчики для новых кнопок
         document.getElementById('pdfCompressorBtn').addEventListener('click', function() {
             window.location.href = 'PDF Compressor.html';
         });
@@ -742,12 +742,12 @@
             window.location.href = 'PDF Merger.html';
         });
         
-        // Handler for new PDF to Word/Excel button
+        // Обработчик для новой кнопки PDF to Word/Excel
         document.getElementById('pdfToWordExcelBtn').addEventListener('click', function() {
             window.location.href = 'PDF to Word or Excel.html';
         });
         
-        // Handlers for new tool buttons
+        // Обработчики для новых кнопок инструментов
         document.getElementById('batchRenameBtn').addEventListener('click', function() {
             window.location.href = 'Batch rename files.html';
         });
@@ -760,15 +760,15 @@
             window.location.href = 'Photo Collage Maker.html';
         });
         
-        // New handler for quality improvement button
+        // Новый обработчик для кнопки улучшения качества
         document.getElementById('improveQualityBtn').addEventListener('click', function() {
             window.location.href = 'Improved image quality.html';
         });
     </script>
     
-    <!-- Script for views counter -->
+    <!-- Скрипт для счетчика просмотров -->
     <script>
-        // Create parameters for the counter
+        // Создаем параметры для счетчика
         const params = new URLSearchParams({
             style: 'flat-square',
             label: 'Views',
@@ -776,13 +776,13 @@
             logo: 'firebase'
         });
         
-        // Get current page path
+        // Получаем текущий путь страницы
         const currentPath = window.location.pathname;
         
-        // Form counter URL
+        // Формируем URL для счетчика
         const counterURL = `https://hits.sh/imageopt-pro.web.app${currentPath}.svg?${params.toString()}`;
         
-        // Set source for the image
+        // Устанавливаем источник для изображения
         document.getElementById('page-views').src = counterURL;
     </script>
 </body>
