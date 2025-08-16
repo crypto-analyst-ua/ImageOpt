@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Quality Enhancement</title>
     <style>
-* {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -322,7 +322,6 @@
             line-height: 1.4;
         }
 
-        /* Новые стили для миниатюр и навигации */
         .thumbnails-container {
             display: flex;
             flex-wrap: wrap;
@@ -584,7 +583,7 @@
                 file.type.match('image/jpeg|image/png|image/gif|image/webp'));
             
             if (validFiles.length === 0) {
-                alert('Пожалуйста, выберите файлы изображений (JPG, PNG, GIF, WebP)');
+                alert('Please select image files (JPG, PNG, GIF, WebP)');
                 return;
             }
 
@@ -898,38 +897,192 @@
             applySettingsToImage(imageObj);
         }
 
-        function downloadImage() {
+        // Функция для применения настроек к оригинальному изображению
+        async function processFullSizeImage(file, settings) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Применяем настройки
+                        applySettingsToCanvas(ctx, canvas.width, canvas.height, settings);
+                        
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // Применение настроек к холсту
+        function applySettingsToCanvas(ctx, width, height, settings) {
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            // Применяем базовые фильтры
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                // Яркость
+                r += settings.brightness;
+                g += settings.brightness;
+                b += settings.brightness;
+                
+                // Контрастность
+                const contrastFactor = settings.contrast / 100;
+                r = ((r - 128) * contrastFactor + 128);
+                g = ((g - 128) * contrastFactor + 128);
+                b = ((b - 128) * contrastFactor + 128);
+                
+                // Гамма коррекция
+                r = Math.pow(r / 255, 1 / settings.gamma) * 255;
+                g = Math.pow(g / 255, 1 / settings.gamma) * 255;
+                b = Math.pow(b / 255, 1 / settings.gamma) * 255;
+                
+                // Насыщенность
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                const satFactor = settings.saturation / 100;
+                r = gray + (r - gray) * satFactor;
+                g = gray + (g - gray) * satFactor;
+                b = gray + (b - gray) * satFactor;
+                
+                // Живость
+                if (settings.vibrance !== 0) {
+                    const max = Math.max(r, g, b);
+                    const avg = (r + g + b) / 3;
+                    const amt = ((Math.abs(max - avg) * 2 / 255) * settings.vibrance) / 100;
+                    if (r !== max) r += (max - r) * amt;
+                    if (g !== max) g += (max - g) * amt;
+                    if (b !== max) b += (max - b) * amt;
+                }
+                
+                // Ограничиваем значения
+                data[i] = Math.max(0, Math.min(255, r));
+                data[i + 1] = Math.max(0, Math.min(255, g));
+                data[i + 2] = Math.max(0, Math.min(255, b));
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Применяем резкость
+            if (settings.sharpness > 0) {
+                const sharpenedData = applySharpnessToFullImage(ctx, width, height, settings.sharpness);
+                ctx.putImageData(sharpenedData, 0, 0);
+            }
+        }
+
+        // Применение резкости к полному изображению
+        function applySharpnessToFullImage(ctx, width, height, amount) {
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            const sharpenKernel = [
+                0, -amount/4, 0,
+                -amount/4, 1 + amount, -amount/4,
+                0, -amount/4, 0
+            ];
+            
+            const newData = new Uint8ClampedArray(data);
+            
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    for (let c = 0; c < 3; c++) {
+                        let sum = 0;
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+                                const kidx = (ky + 1) * 3 + (kx + 1);
+                                sum += data[idx] * sharpenKernel[kidx];
+                            }
+                        }
+                        newData[(y * width + x) * 4 + c] = Math.max(0, Math.min(255, sum));
+                    }
+                }
+            }
+            
+            return new ImageData(newData, width, height);
+        }
+
+        // Скачивание текущего изображения в оригинальном разрешении
+        async function downloadImage() {
             if (images.length === 0 || currentIndex >= images.length) return;
             
             const imageObj = images[currentIndex];
-            const link = document.createElement('a');
-            link.download = `enhanced_${currentIndex + 1}.png`;
-            link.href = imageObj.canvas.toDataURL();
-            link.click();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('batchInfo').textContent = 'Processing full resolution image...';
+            
+            try {
+                const dataUrl = await processFullSizeImage(
+                    imageObj.file, 
+                    imageObj.settings
+                );
+                
+                const link = document.createElement('a');
+                link.download = `enhanced_${currentIndex + 1}.png`;
+                link.href = dataUrl;
+                link.click();
+                
+            } catch (e) {
+                console.error('Processing error:', e);
+                alert('Error processing image');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('batchInfo').textContent = '';
+            }
         }
 
-        function downloadAll() {
+        // Скачивание всех изображений в оригинальном разрешении
+        async function downloadAll() {
             if (images.length === 0) return;
             
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('batchInfo').textContent = `Идет подготовка ${images.length} изображений...`;
+            document.getElementById('progressBar').style.display = 'block';
+            document.getElementById('progress').style.width = '0%';
+            document.getElementById('batchInfo').textContent = `Processing ${images.length} images...`;
             
-            // Используем setTimeout чтобы дать UI обновиться
-            setTimeout(() => {
-                images.forEach((imgObj, index) => {
+            try {
+                for (let i = 0; i < images.length; i++) {
+                    const imageObj = images[i];
+                    document.getElementById('batchInfo').textContent = `Processing ${i+1}/${images.length}...`;
+                    document.getElementById('progress').style.width = `${Math.round((i / images.length) * 100)}%`;
+                    
+                    const dataUrl = await processFullSizeImage(
+                        imageObj.file, 
+                        imageObj.settings
+                    );
+                    
                     const link = document.createElement('a');
-                    link.download = `enhanced_${index + 1}.png`;
-                    link.href = imgObj.canvas.toDataURL();
+                    link.download = `enhanced_${i + 1}.png`;
+                    link.href = dataUrl;
                     link.style.display = 'none';
                     document.body.appendChild(link);
                     link.click();
-                    document.body.removeChild(link);
-                });
+                    setTimeout(() => document.body.removeChild(link), 100);
+                }
                 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('batchInfo').textContent = 
-                    `Все ${images.length} изображений успешно подготовлены!`;
-            }, 100);
+                document.getElementById('batchInfo').textContent = `All ${images.length} images processed successfully!`;
+                document.getElementById('progress').style.width = '100%';
+                
+            } catch (e) {
+                console.error('Batch processing error:', e);
+                alert('Error processing images');
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('progressBar').style.display = 'none';
+                }, 2000);
+            }
         }
 
         function updateNavigation() {
