@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Quality Enhancement</title>
+    <title>Pro Image Enhancer - Light Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,70 +13,111 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --light-bg: #f8f9fa;
+            --light-panel: #ffffff;
+            --darker-panel: #f1f3f5;
+            --light-border: #dee2e6;
+            --accent-color: #6f42c1;
+            --accent-hover: #7952b3;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--light-bg);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
+            background: var(--light-panel);
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--light-border);
         }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--accent-color), #5a32a3);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(111, 66, 193, 0.2);
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #6f42c1, #5a32a3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 4px;
         }
 
         .upload-section {
             text-align: center;
             margin-bottom: 30px;
             padding: 40px;
-            border: 3px dashed #667eea;
+            border: 2px dashed var(--light-border);
             border-radius: 15px;
-            background: linear-gradient(45deg, #f8f9ff, #e8f0fe);
+            background: var(--darker-panel);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
 
         .upload-section:hover {
-            border-color: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
 
-        .upload-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s;
-            opacity: 0;
+        .upload-section i {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
         }
 
-        .upload-section:hover::before {
-            animation: shimmer 1.5s ease-in-out;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+        .upload-section p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
         }
 
         #fileInput {
@@ -82,204 +125,49 @@
         }
 
         .upload-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--accent-color), #5a32a3);
             color: white;
             padding: 15px 30px;
             border: none;
             border-radius: 50px;
             font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(111, 66, 193, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .upload-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 8px 25px rgba(111, 66, 193, 0.3);
+            background: linear-gradient(135deg, var(--accent-hover), #6340a8);
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .image-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .image-box {
-            text-align: center;
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .image-box:hover {
-            transform: translateY(-5px);
-        }
-
-        .image-box h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-            font-size: 1.2em;
-        }
-
-        .image-display {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .image-display:hover {
-            transform: scale(1.05);
-        }
-
-        .controls-panel {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            max-height: fit-content;
-        }
-
-        .controls-panel h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-            text-align: center;
-        }
-
-        .auto-enhance {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .auto-btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-            margin: 0 5px;
-        }
-
-        .auto-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
-        }
-
-        .control-group {
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .control-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #495057;
-            font-weight: 500;
-        }
-
-        .control-group input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #dee2e6;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .control-group input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .value-display {
-            display: inline-block;
-            float: right;
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 12px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            flex: 1;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        .format-info {
+            margin-top: 15px;
+            color: var(--text-secondary);
             font-size: 14px;
-            transition: all 0.3s ease;
-            min-width: 120px;
-            margin-bottom: 5px;
         }
 
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        .progress-bar {
+            width: 100%;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+            height: 12px;
         }
 
-        .reset-btn {
-            background: linear-gradient(135deg, #6c757d, #495057) !important;
-        }
-
-        .reset-btn:hover {
-            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4) !important;
-        }
-
-        @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .image-container {
-                grid-template-columns: 1fr;
-            }
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #5a32a3);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
         }
 
         .loading {
@@ -289,8 +177,8 @@
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--accent-color);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -303,102 +191,51 @@
             100% { transform: rotate(360deg); }
         }
 
-        .info-panel {
-            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #667eea;
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+            margin-top: 30px;
         }
 
-        .info-panel h4 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .info-panel p {
-            color: #6c757d;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .thumbnails-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .thumbnail {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
+        .image-viewer {
+            background: var(--darker-panel);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             position: relative;
-        }
-
-        .thumbnail:hover {
-            transform: translateY(-3px);
-            border-color: #667eea;
-        }
-
-        .thumbnail.active {
-            border-color: #764ba2;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .thumbnail .index-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(102, 126, 234, 0.8);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: 1px solid var(--light-border);
         }
 
         .image-navigation {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            gap: 20px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
         }
 
         .nav-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
+            background: var(--darker-panel);
+            color: var(--text-primary);
+            border: 1px solid var(--light-border);
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.5);
+            gap: 8px;
             transition: all 0.2s ease;
         }
 
         .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.7);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
         .nav-btn:disabled {
@@ -407,53 +244,448 @@
         }
 
         .image-counter {
-            font-size: 18px;
-            color: #2c3e50;
-            font-weight: bold;
-            min-width: 80px;
-            text-align: center;
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
-        .progress-bar {
-            width: 100%;
-            background: #e9ecef;
-            border-radius: 10px;
-            margin: 10px 0;
+        .comparison-container {
+            position: relative;
+            height: 500px;
+            border-radius: 12px;
             overflow: hidden;
+            background: #f8f9fa;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--light-border);
+        }
+
+        .image-display {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             display: none;
         }
 
-        .progress {
-            height: 10px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s ease;
+        #originalImage, #enhancedImage {
+            display: block;
         }
 
-        .batch-info {
-            text-align: center;
-            margin: 10px 0;
-            color: #6c757d;
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: var(--accent-color);
+            cursor: ew-resize;
+            z-index: 10;
+        }
+
+        .comparison-slider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(111, 66, 193, 0.3);
+        }
+
+        .comparison-slider::before {
+            content: '↔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 11;
+        }
+
+        .image-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
             font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .presets-panel {
+            background: var(--darker-panel);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--light-border);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-header h3 {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .preset-btn {
+            background: white;
+            border: 1px solid var(--light-border);
+            border-radius: 10px;
+            padding: 15px 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .preset-btn:hover {
+            background: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(111, 66, 193, 0.15);
+            color: white;
+        }
+
+        .preset-btn i {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .preset-btn:hover i {
+            color: white;
+        }
+
+        .controls-panel {
+            background: var(--darker-panel);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--light-border);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--light-border);
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-header label {
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .value-display {
+            background: #e9ecef;
+            color: var(--text-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .slider-container {
+            position: relative;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        .slider-track {
+            height: 100%;
+            background: linear-gradient(to right, #e9ecef, var(--accent-color));
+            border-radius: 3px;
+            width: 50%;
+        }
+
+        input[type="range"] {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 100%;
+            height: 16px;
+            -webkit-appearance: none;
+            background: transparent;
+            outline: none;
+            z-index: 2;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .histogram {
+            height: 60px;
+            background: #e9ecef;
+            border-radius: 8px;
+            margin-top: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .histogram-bar {
+            position: absolute;
+            bottom: 0;
+            width: 1.5px;
+            background: var(--accent-color);
+            transition: height 0.3s ease;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: white;
+            color: var(--text-primary);
+            padding: 14px;
+            border: 1px solid var(--light-border);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), #5a32a3);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .action-btn.danger {
+            background: linear-gradient(135deg, #dc3545, #bd2130);
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .action-btn.success {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+            border-color: #28a745;
+        }
+
+        .info-panel {
+            background: rgba(111, 66, 193, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .info-panel h4 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-panel p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .file-info {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            border: 1px solid var(--light-border);
+        }
+
+        .file-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--light-border);
+        }
+
+        .file-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info-label {
+            color: var(--text-secondary);
+        }
+
+        .file-info-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .preset-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .upload-section {
+                padding: 25px 15px;
+            }
+            
+            .comparison-container {
+                height: 400px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .preset-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.7);
+            color: var(--accent-color);
+            border: 1px solid var(--light-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            font-size: 18px;
+        }
+
+        .enhanced-tag {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(111, 66, 193, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 20;
+        }
+
+        .original-tag {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.1);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 20;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Image Quality Enhancement</h1>
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Pro Image Enhancer</h1>
+                    <p>Transform your images with advanced enhancement tools</p>
+                </div>
+            </div>
+        </header>
         
-        <div class="upload-section">
-            <p style="font-size: 18px; color: #6c757d; margin-bottom: 20px;">
-                Upload one or more images to enhance their quality
-            </p>
+        <div class="upload-section" id="uploadSection">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop your images or click to browse</p>
             <input type="file" id="fileInput" accept="image/*" multiple>
             <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                📁 Select Images
+                <i class="fas fa-folder-open"></i> Select Images
             </button>
-            <p style="margin-top: 15px; color: #6c757d; font-size: 14px;">
-                Supported formats: JPG, PNG, GIF, WebP
-            </p>
+            <p class="format-info">Supported formats: JPG, PNG, GIF, WebP, BMP</p>
         </div>
 
         <div class="progress-bar" id="progressBar">
@@ -462,636 +694,626 @@
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Processing image...</p>
+            <p>Processing your images...</p>
         </div>
 
-        <div class="thumbnails-container" id="thumbnailsContainer"></div>
-
         <div class="main-content" id="mainContent" style="display: none;">
-            <div class="image-navigation">
-                <button class="nav-btn" id="prevBtn" disabled>←</button>
-                <span class="image-counter" id="imageCounter">1 / 1</span>
-                <button class="nav-btn" id="nextBtn" disabled>→</button>
-            </div>
-
-            <div class="image-container">
-                <div class="image-box">
-                    <h3>Original Image</h3>
-                    <img id="originalImage" class="image-display" alt="Original Image">
+            <div class="image-viewer">
+                <div class="image-navigation">
+                    <div class="nav-buttons">
+                        <button class="nav-btn" id="prevBtn" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="nav-btn" id="nextBtn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="image-counter" id="imageCounter">1 / 1</div>
                 </div>
-                <div class="image-box">
-                    <h3>Enhanced Image</h3>
+                
+                <div class="comparison-container">
+                    <img id="originalImage" class="image-display" alt="Original Image">
                     <img id="enhancedImage" class="image-display" alt="Enhanced Image">
+                    <div class="comparison-slider" id="comparisonSlider"></div>
+                    <button class="fullscreen-btn" id="fullscreenBtn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <div class="original-tag">Original</div>
+                    <div class="enhanced-tag">Enhanced</div>
+                </div>
+                
+                <div class="image-info">
+                    <div id="resolutionInfo">Resolution: 1920x1080</div>
+                    <div id="fileSize">Size: 4.2 MB</div>
                 </div>
             </div>
 
             <div class="controls-panel">
-                <h3>⚙️ Enhancement Settings</h3>
+                <div class="presets-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-bolt"></i> Quick Presets</h3>
+                    </div>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="applyPreset('auto')">
+                            <i class="fas fa-magic"></i> Auto Enhance
+                        </button>
+                        <button class="preset-btn" onclick="applyPreset('portrait')">
+                            <i class="fas fa-user"></i> Portrait
+                        </button>
+                        <button class="preset-btn" onclick="applyPreset('landscape')">
+                            <i class="fas fa-mountain"></i> Landscape
+                        </button>
+                        <button class="preset-btn" onclick="applyPreset('vintage')">
+                            <i class="fas fa-camera-retro"></i> Vintage
+                        </button>
+                        <button class="preset-btn" onclick="applyPreset('bw')">
+                            <i class="fas fa-moon"></i> B&W
+                        </button>
+                        <button class="preset-btn" onclick="applyPreset('clear')">
+                            <i class="fas fa-snowflake"></i> Crisp
+                        </button>
+                    </div>
+                </div>
                 
-                <div class="auto-enhance">
-                    <button class="auto-btn" onclick="autoEnhance('light')">🌅 Light</button>
-                    <button class="auto-btn" onclick="autoEnhance('medium')">⭐ Medium</button>
-                    <button class="auto-btn" onclick="autoEnhance('strong')">🚀 Strong</button>
+                <div class="controls-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-sliders-h"></i> Adjustment Tools</h3>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="brightness"><i class="fas fa-sun"></i> Brightness</label>
+                            <span class="value-display" id="brightnessValue">0</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="brightnessTrack"></div>
+                            <input type="range" id="brightness" min="-50" max="50" value="0">
+                        </div>
+                        <div class="histogram" id="brightnessHistogram"></div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="contrast"><i class="fas fa-adjust"></i> Contrast</label>
+                            <span class="value-display" id="contrastValue">100</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="contrastTrack"></div>
+                            <input type="range" id="contrast" min="50" max="200" value="100">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="saturation"><i class="fas fa-palette"></i> Saturation</label>
+                            <span class="value-display" id="saturationValue">100</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="saturationTrack"></div>
+                            <input type="range" id="saturation" min="0" max="200" value="100">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <label for="sharpness"><i class="fas fa-cut"></i> Sharpness</label>
+                            <span class="value-display" id="sharpnessValue">0</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="sharpnessTrack"></div>
+                            <input type="range" id="sharpness" min="0" max="10" value="0">
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn danger" onclick="resetSettings()">
+                            <i class="fas fa-redo"></i> Reset All
+                        </button>
+                        <button class="action-btn primary" onclick="downloadImage()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="action-btn success" onclick="downloadAll()">
+                            <i class="fas fa-folder-download"></i> Download All
+                        </button>
+                        <button class="action-btn" onclick="shareImage()">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
                 </div>
-
-                <div class="control-group">
-                    <label for="brightness">
-                        Brightness <span class="value-display" id="brightnessValue">0</span>
-                    </label>
-                    <input type="range" id="brightness" min="-50" max="50" value="0">
-                </div>
-
-                <div class="control-group">
-                    <label for="contrast">
-                        Contrast <span class="value-display" id="contrastValue">100</span>
-                    </label>
-                    <input type="range" id="contrast" min="50" max="200" value="100">
-                </div>
-
-                <div class="control-group">
-                    <label for="saturation">
-                        Saturation <span class="value-display" id="saturationValue">100</span>
-                    </label>
-                    <input type="range" id="saturation" min="0" max="200" value="100">
-                </div>
-
-                <div class="control-group">
-                    <label for="sharpness">
-                        Sharpness <span class="value-display" id="sharpnessValue">0</span>
-                    </label>
-                    <input type="range" id="sharpness" min="0" max="10" value="0">
-                </div>
-
-                <div class="control-group">
-                    <label for="vibrance">
-                        Vibrance <span class="value-display" id="vibranceValue">0</span>
-                    </label>
-                    <input type="range" id="vibrance" min="-50" max="50" value="0">
-                </div>
-
-                <div class="control-group">
-                    <label for="gamma">
-                        Gamma <span class="value-display" id="gammaValue">1.0</span>
-                    </label>
-                    <input type="range" id="gamma" min="0.5" max="2.5" value="1.0" step="0.1">
-                </div>
-
-                <div class="action-buttons">
-                    <button class="action-btn reset-btn" onclick="resetSettings()">🔄 Reset</button>
-                    <button class="action-btn" onclick="downloadImage()">💾 Download Current</button>
-                    <button class="action-btn" onclick="downloadAll()">📚 Download All</button>
-                </div>
-
-                <div class="batch-info" id="batchInfo"></div>
-
+                
                 <div class="info-panel">
-                    <h4>💡 Enhancement Tips:</h4>
-                    <p>• Start with automatic enhancement<br>
-                    • Increase contrast for old photos<br>
-                    • Increase brightness for dark images<br>
-                    • Use sharpness for blurry photos</p>
+                    <h4><i class="fas fa-lightbulb"></i> Enhancement Tips</h4>
+                    <p>• Use Auto Enhance for quick improvements<br>
+                    • Increase contrast for faded photos<br>
+                    • Adjust brightness for underexposed images<br>
+                    • Add sharpness to reduce blurriness<br>
+                    • Try presets for one-click transformations</p>
+                </div>
+                
+                <div class="file-info">
+                    <div class="file-info-item">
+                        <span class="file-info-label">Filename:</span>
+                        <span class="file-info-value" id="fileName">image.jpg</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">Dimensions:</span>
+                        <span class="file-info-value" id="fileDimensions">1920 × 1080</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">File size:</span>
+                        <span class="file-info-value" id="fileSizeInfo">4.2 MB</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">Type:</span>
+                        <span class="file-info-value" id="fileType">JPEG</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let images = [];
-        let currentIndex = 0;
-        let originalCanvas, enhancedCanvas, originalCtx, enhancedCtx;
-        let originalImageData;
+    // Глобальные переменные
+    let images = [];
+    let currentIndex = 0;
+    let isDragging = false;
 
-        // Инициализация
-        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-        document.getElementById('prevBtn').addEventListener('click', () => showImage(currentIndex - 1));
-        document.getElementById('nextBtn').addEventListener('click', () => showImage(currentIndex + 1));
+    // DOM
+    const fileInput = document.getElementById('fileInput');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const imageCounter = document.getElementById('imageCounter');
+    const originalImage = document.getElementById('originalImage');
+    const enhancedImage = document.getElementById('enhancedImage');
+    const comparisonSlider = document.getElementById('comparisonSlider');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const mainContent = document.getElementById('mainContent');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.getElementById('progress');
+    const uploadSection = document.getElementById('uploadSection');
 
-        // Добавляем слушатели для всех контролов
-        const controls = ['brightness', 'contrast', 'saturation', 'sharpness', 'vibrance', 'gamma'];
-        controls.forEach(control => {
-            const slider = document.getElementById(control);
-            slider.addEventListener('input', updateImage);
-            slider.addEventListener('input', updateValueDisplay);
+    // Слайдеры
+    const brightnessSlider = document.getElementById('brightness');
+    const contrastSlider = document.getElementById('contrast');
+    const saturationSlider = document.getElementById('saturation');
+    const sharpnessSlider = document.getElementById('sharpness');
+
+    // Значения
+    const brightnessValue = document.getElementById('brightnessValue');
+    const contrastValue = document.getElementById('contrastValue');
+    const saturationValue = document.getElementById('saturationValue');
+    const sharpnessValue = document.getElementById('sharpnessValue');
+
+    // Инфо о файле
+    const fileName = document.getElementById('fileName');
+    const fileDimensions = document.getElementById('fileDimensions');
+    const fileSizeInfo = document.getElementById('fileSizeInfo');
+    const fileType = document.getElementById('fileType');
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+        fileInput.addEventListener('change', handleFileSelect);
+        prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
+        nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
+
+        // Слайдеры
+        [brightnessSlider, contrastSlider, saturationSlider, sharpnessSlider].forEach(slider => {
+            slider.addEventListener('input', () => {
+                updateValueDisplay();
+                updateImage();
+            });
         });
 
-        function handleFileSelect(event) {
-            const files = Array.from(event.target.files);
-            if (!files.length) return;
+        // Сравнение
+        comparisonSlider.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
 
-            // Проверка форматов
-            const validFiles = files.filter(file => 
-                file.type.match('image/jpeg|image/png|image/gif|image/webp'));
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // Drag & Drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = 'var(--accent-color)';
+            uploadSection.style.backgroundColor = 'rgba(111, 66, 193, 0.05)';
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.style.borderColor = 'var(--light-border)';
+            uploadSection.style.backgroundColor = '';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = 'var(--light-border)';
+            uploadSection.style.backgroundColor = '';
             
-            if (validFiles.length === 0) {
-                alert('Please select image files (JPG, PNG, GIF, WebP)');
-                return;
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: fileInput });
             }
+        });
 
-            // Показать прогресс
-            document.getElementById('progressBar').style.display = 'block';
-            document.getElementById('progress').style.width = '0%';
-            document.getElementById('loading').style.display = 'block';
-            
-            images = [];
-            document.getElementById('thumbnailsContainer').innerHTML = '';
-            
-            let processed = 0;
-            const total = validFiles.length;
-            
-            validFiles.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const imageObj = {
-                            file: file,
-                            index: images.length,
-                            settings: {
-                                brightness: 0,
-                                contrast: 100,
-                                saturation: 100,
-                                sharpness: 0,
-                                vibrance: 0,
-                                gamma: 1.0
-                            },
-                            originalImage: img,
-                            originalImageData: null,
-                            canvas: null,
-                            ctx: null
-                        };
-                        
-                        createThumbnail(imageObj, e.target.result, images.length);
-                        prepareImageCanvas(imageObj);
-                        
-                        images.push(imageObj);
-                        processed++;
-                        
-                        // Обновить прогресс
-                        const progress = Math.round((processed / total) * 100);
-                        document.getElementById('progress').style.width = `${progress}%`;
-                        
-                        if (processed === total) {
-                            document.getElementById('loading').style.display = 'none';
-                            document.getElementById('progressBar').style.display = 'none';
-                            
-                            if (images.length > 0) {
-                                currentIndex = 0;
-                                showImage(currentIndex);
-                                document.getElementById('mainContent').style.display = 'block';
-                                updateNavigation();
-                            }
-                        }
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
+        updateValueDisplay();
+        setInitialClip();
+    });
+
+    // Установка стартовой маски сравнения (50/50)
+    function setInitialClip() {
+        comparisonSlider.style.left = "50%";
+        originalImage.style.clipPath = "inset(0 50% 0 0)";
+        enhancedImage.style.clipPath = "inset(0 0 0 50%)";
+    }
+
+    function handleFileSelect(event) {
+        const files = Array.from(event.target.files);
+        if (!files.length) return;
+
+        const validFiles = files.filter(file =>
+            file.type.match('image/jpeg|image/png|image/gif|image/webp|image/bmp')
+        );
+
+        if (validFiles.length === 0) {
+            alert('Поддерживаются только JPG, PNG, GIF, WebP, BMP');
+            return;
         }
 
-        function createThumbnail(imageObj, src, index) {
-            const container = document.getElementById('thumbnailsContainer');
-            const thumb = document.createElement('div');
-            thumb.className = 'thumbnail';
-            thumb.innerHTML = `
-                <img src="${src}" alt="thumbnail">
-                <div class="index-badge">${index + 1}</div>
-            `;
-            thumb.onclick = () => showImage(index);
-            container.appendChild(thumb);
-        }
+        images = [];
+        let processed = 0;
+        const total = validFiles.length;
 
-        function prepareImageCanvas(imageObj) {
-            const img = imageObj.originalImage;
-            const maxWidth = 600;
-            const maxHeight = 400;
-            
-            let { width, height } = img;
-            
-            // Масштабирование для отображения
-            if (width > maxWidth || height > maxHeight) {
-                const ratio = Math.min(maxWidth / width, maxHeight / height);
-                width *= ratio;
-                height *= ratio;
-            }
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            imageObj.originalImageData = ctx.getImageData(0, 0, width, height);
-            imageObj.canvas = canvas;
-            imageObj.ctx = ctx;
-        }
+        // Показать прогресс-бар
+        progressBar.style.display = 'block';
+        progress.style.width = '0%';
 
-        function showImage(index) {
-            if (index < 0 || index >= images.length) return;
-            
-            currentIndex = index;
-            const imageObj = images[index];
-            
-            // Обновляем слайдеры
-            document.getElementById('brightness').value = imageObj.settings.brightness;
-            document.getElementById('contrast').value = imageObj.settings.contrast;
-            document.getElementById('saturation').value = imageObj.settings.saturation;
-            document.getElementById('sharpness').value = imageObj.settings.sharpness;
-            document.getElementById('vibrance').value = imageObj.settings.vibrance;
-            document.getElementById('gamma').value = imageObj.settings.gamma;
-            
-            updateValueDisplay();
-            
-            // Отображаем изображения
-            document.getElementById('originalImage').src = imageObj.canvas.toDataURL();
-            applySettingsToImage(imageObj);
-            
-            // Обновляем счетчик
-            document.getElementById('imageCounter').textContent = `${index+1} / ${images.length}`;
-            
-            // Обновляем активную миниатюру
-            document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
-                thumb.classList.toggle('active', i === index);
-            });
-            
-            updateNavigation();
-        }
-
-        function applySettingsToImage(imageObj) {
-            const { brightness, contrast, saturation, sharpness, vibrance, gamma } = imageObj.settings;
-            const imageData = imageObj.ctx.createImageData(imageObj.originalImageData);
-            const data = imageData.data;
-            const originalData = imageObj.originalImageData.data;
-            
-            // Применяем фильтры
-            for (let i = 0; i < data.length; i += 4) {
-                let r = originalData[i];
-                let g = originalData[i + 1];
-                let b = originalData[i + 2];
-                
-                // Яркость
-                r += brightness;
-                g += brightness;
-                b += brightness;
-                
-                // Контрастность
-                const contrastFactor = contrast / 100;
-                r = ((r - 128) * contrastFactor + 128);
-                g = ((g - 128) * contrastFactor + 128);
-                b = ((b - 128) * contrastFactor + 128);
-                
-                // Гамма коррекция
-                r = Math.pow(r / 255, 1 / gamma) * 255;
-                g = Math.pow(g / 255, 1 / gamma) * 255;
-                b = Math.pow(b / 255, 1 / gamma) * 255;
-                
-                // Насыщенность
-                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                const satFactor = saturation / 100;
-                r = gray + (r - gray) * satFactor;
-                g = gray + (g - gray) * satFactor;
-                b = gray + (b - gray) * satFactor;
-                
-                // Живость
-                if (vibrance !== 0) {
-                    const max = Math.max(r, g, b);
-                    const avg = (r + g + b) / 3;
-                    const amt = ((Math.abs(max - avg) * 2 / 255) * vibrance) / 100;
-                    if (r !== max) r += (max - r) * amt;
-                    if (g !== max) g += (max - g) * amt;
-                    if (b !== max) b += (max - b) * amt;
-                }
-                
-                // Ограничиваем значения
-                data[i] = Math.max(0, Math.min(255, r));
-                data[i + 1] = Math.max(0, Math.min(255, g));
-                data[i + 2] = Math.max(0, Math.min(255, b));
-                data[i + 3] = originalData[i + 3];
-            }
-            
-            imageObj.ctx.putImageData(imageData, 0, 0);
-            
-            // Применяем резкость
-            if (sharpness > 0) {
-                applySharpening(imageObj, sharpness);
-            }
-            
-            document.getElementById('enhancedImage').src = imageObj.canvas.toDataURL();
-        }
-
-        function applySharpening(imageObj, amount) {
-            const imageData = imageObj.ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
-            const data = imageData.data;
-            const width = imageObj.canvas.width;
-            const height = imageObj.canvas.height;
-            
-            const sharpenKernel = [
-                0, -amount/4, 0,
-                -amount/4, 1 + amount, -amount/4,
-                0, -amount/4, 0
-            ];
-            
-            const newData = new Uint8ClampedArray(data);
-            
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    for (let c = 0; c < 3; c++) {
-                        let sum = 0;
-                        for (let ky = -1; ky <= 1; ky++) {
-                            for (let kx = -1; kx <= 1; kx++) {
-                                const idx = ((y + ky) * width + (x + kx)) * 4 + c;
-                                const kidx = (ky + 1) * 3 + (kx + 1);
-                                sum += data[idx] * sharpenKernel[kidx];
-                            }
-                        }
-                        newData[(y * width + x) * 4 + c] = Math.max(0, Math.min(255, sum));
-                    }
-                }
-            }
-            
-            const newImageData = new ImageData(newData, width, height);
-            imageObj.ctx.putImageData(newImageData, 0, 0);
-        }
-
-        function updateImage() {
-            if (images.length === 0 || currentIndex >= images.length) return;
-            
-            const imageObj = images[currentIndex];
-            
-            // Обновляем настройки для текущего изображения
-            imageObj.settings.brightness = parseInt(document.getElementById('brightness').value);
-            imageObj.settings.contrast = parseInt(document.getElementById('contrast').value);
-            imageObj.settings.saturation = parseInt(document.getElementById('saturation').value);
-            imageObj.settings.sharpness = parseInt(document.getElementById('sharpness').value);
-            imageObj.settings.vibrance = parseInt(document.getElementById('vibrance').value);
-            imageObj.settings.gamma = parseFloat(document.getElementById('gamma').value);
-            
-            applySettingsToImage(imageObj);
-        }
-
-        function updateValueDisplay() {
-            document.getElementById('brightnessValue').textContent = document.getElementById('brightness').value;
-            document.getElementById('contrastValue').textContent = document.getElementById('contrast').value;
-            document.getElementById('saturationValue').textContent = document.getElementById('saturation').value;
-            document.getElementById('sharpnessValue').textContent = document.getElementById('sharpness').value;
-            document.getElementById('vibranceValue').textContent = document.getElementById('vibrance').value;
-            document.getElementById('gammaValue').textContent = document.getElementById('gamma').value;
-        }
-
-        function autoEnhance(level) {
-            if (images.length === 0) return;
-            
-            const settings = {
-                light: {
-                    brightness: 5, contrast: 110, saturation: 105, 
-                    sharpness: 1, vibrance: 5, gamma: 1.1
-                },
-                medium: {
-                    brightness: 10, contrast: 120, saturation: 115, 
-                    sharpness: 2, vibrance: 10, gamma: 1.2
-                },
-                strong: {
-                    brightness: 15, contrast: 140, saturation: 130, 
-                    sharpness: 4, vibrance: 20, gamma: 1.3
-                }
-            };
-            
-            const imageObj = images[currentIndex];
-            const setting = settings[level];
-            
-            // Обновляем настройки
-            imageObj.settings = { ...setting };
-            
-            // Обновляем слайдеры
-            document.getElementById('brightness').value = setting.brightness;
-            document.getElementById('contrast').value = setting.contrast;
-            document.getElementById('saturation').value = setting.saturation;
-            document.getElementById('sharpness').value = setting.sharpness;
-            document.getElementById('vibrance').value = setting.vibrance;
-            document.getElementById('gamma').value = setting.gamma;
-            
-            updateValueDisplay();
-            applySettingsToImage(imageObj);
-        }
-
-        function resetSettings() {
-            if (images.length === 0) return;
-            
-            const imageObj = images[currentIndex];
-            imageObj.settings = {
-                brightness: 0,
-                contrast: 100,
-                saturation: 100,
-                sharpness: 0,
-                vibrance: 0,
-                gamma: 1.0
-            };
-            
-            document.getElementById('brightness').value = 0;
-            document.getElementById('contrast').value = 100;
-            document.getElementById('saturation').value = 100;
-            document.getElementById('sharpness').value = 0;
-            document.getElementById('vibrance').value = 0;
-            document.getElementById('gamma').value = 1.0;
-            
-            updateValueDisplay();
-            applySettingsToImage(imageObj);
-        }
-
-        // Функция для применения настроек к оригинальному изображению
-        async function processFullSizeImage(file, settings) {
-            return new Promise((resolve, reject) => {
+        validFiles.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
-                        // Применяем настройки
-                        applySettingsToCanvas(ctx, canvas.width, canvas.height, settings);
-                        
-                        resolve(canvas.toDataURL('image/png'));
-                    } catch (e) {
-                        reject(e);
+                    const imageObj = {
+                        file,
+                        settings: { brightness: 0, contrast: 100, saturation: 100, sharpness: 0 },
+                        originalImage: img,
+                        originalImageData: null,
+                        canvas: null,
+                        ctx: null
+                    };
+                    prepareImageCanvas(imageObj);
+                    images.push(imageObj);
+                    processed++;
+                    progress.style.width = `${(processed/total)*100}%`;
+                    
+                    if (processed === total) {
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            currentIndex = 0;
+                            showImage(currentIndex);
+                            mainContent.style.display = 'grid';
+                            updateNavigation();
+                        }, 500);
                     }
                 };
-                img.onerror = reject;
-                img.src = URL.createObjectURL(file);
-            });
-        }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
-        // Применение настроек к холсту
-        function applySettingsToCanvas(ctx, width, height, settings) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            
-            // Применяем базовые фильтры
-            for (let i = 0; i < data.length; i += 4) {
-                let r = data[i];
-                let g = data[i + 1];
-                let b = data[i + 2];
-                
-                // Яркость
-                r += settings.brightness;
-                g += settings.brightness;
-                b += settings.brightness;
-                
-                // Контрастность
-                const contrastFactor = settings.contrast / 100;
-                r = ((r - 128) * contrastFactor + 128);
-                g = ((g - 128) * contrastFactor + 128);
-                b = ((b - 128) * contrastFactor + 128);
-                
-                // Гамма коррекция
-                r = Math.pow(r / 255, 1 / settings.gamma) * 255;
-                g = Math.pow(g / 255, 1 / settings.gamma) * 255;
-                b = Math.pow(b / 255, 1 / settings.gamma) * 255;
-                
-                // Насыщенность
-                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                const satFactor = settings.saturation / 100;
-                r = gray + (r - gray) * satFactor;
-                g = gray + (g - gray) * satFactor;
-                b = gray + (b - gray) * satFactor;
-                
-                // Живость
-                if (settings.vibrance !== 0) {
-                    const max = Math.max(r, g, b);
-                    const avg = (r + g + b) / 3;
-                    const amt = ((Math.abs(max - avg) * 2 / 255) * settings.vibrance) / 100;
-                    if (r !== max) r += (max - r) * amt;
-                    if (g !== max) g += (max - g) * amt;
-                    if (b !== max) b += (max - b) * amt;
-                }
-                
-                // Ограничиваем значения
-                data[i] = Math.max(0, Math.min(255, r));
-                data[i + 1] = Math.max(0, Math.min(255, g));
-                data[i + 2] = Math.max(0, Math.min(255, b));
-            }
-            
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Применяем резкость
-            if (settings.sharpness > 0) {
-                const sharpenedData = applySharpnessToFullImage(ctx, width, height, settings.sharpness);
-                ctx.putImageData(sharpenedData, 0, 0);
-            }
-        }
+    function prepareImageCanvas(imageObj) {
+        const img = imageObj.originalImage;
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        imageObj.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        imageObj.canvas = canvas;
+        imageObj.ctx = ctx;
+    }
 
-        // Применение резкости к полному изображению
-        function applySharpnessToFullImage(ctx, width, height, amount) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            
-            const sharpenKernel = [
-                0, -amount/4, 0,
-                -amount/4, 1 + amount, -amount/4,
-                0, -amount/4, 0
-            ];
-            
-            const newData = new Uint8ClampedArray(data);
-            
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    for (let c = 0; c < 3; c++) {
-                        let sum = 0;
-                        for (let ky = -1; ky <= 1; ky++) {
-                            for (let kx = -1; kx <= 1; kx++) {
-                                const idx = ((y + ky) * width + (x + kx)) * 4 + c;
-                                const kidx = (ky + 1) * 3 + (kx + 1);
-                                sum += data[idx] * sharpenKernel[kidx];
-                            }
-                        }
-                        newData[(y * width + x) * 4 + c] = Math.max(0, Math.min(255, sum));
-                    }
-                }
-            }
-            
-            return new ImageData(newData, width, height);
-        }
+    function showImage(index) {
+        if (index < 0 || index >= images.length) return;
+        currentIndex = index;
+        const imageObj = images[index];
 
-        // Скачивание текущего изображения в оригинальном разрешении
-        async function downloadImage() {
-            if (images.length === 0 || currentIndex >= images.length) return;
-            
-            const imageObj = images[currentIndex];
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('batchInfo').textContent = 'Processing full resolution image...';
-            
-            try {
-                const dataUrl = await processFullSizeImage(
-                    imageObj.file, 
-                    imageObj.settings
-                );
-                
-                const link = document.createElement('a');
-                link.download = `enhanced_${currentIndex + 1}.png`;
-                link.href = dataUrl;
-                link.click();
-                
-            } catch (e) {
-                console.error('Processing error:', e);
-                alert('Error processing image');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('batchInfo').textContent = '';
-            }
-        }
+        brightnessSlider.value = imageObj.settings.brightness;
+        contrastSlider.value = imageObj.settings.contrast;
+        saturationSlider.value = imageObj.settings.saturation;
+        sharpnessSlider.value = imageObj.settings.sharpness;
 
-        // Скачивание всех изображений в оригинальном разрешении
-        async function downloadAll() {
-            if (images.length === 0) return;
-            
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('progressBar').style.display = 'block';
-            document.getElementById('progress').style.width = '0%';
-            document.getElementById('batchInfo').textContent = `Processing ${images.length} images...`;
-            
-            try {
-                for (let i = 0; i < images.length; i++) {
-                    const imageObj = images[i];
-                    document.getElementById('batchInfo').textContent = `Processing ${i+1}/${images.length}...`;
-                    document.getElementById('progress').style.width = `${Math.round((i / images.length) * 100)}%`;
-                    
-                    const dataUrl = await processFullSizeImage(
-                        imageObj.file, 
-                        imageObj.settings
-                    );
-                    
-                    const link = document.createElement('a');
-                    link.download = `enhanced_${i + 1}.png`;
-                    link.href = dataUrl;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    setTimeout(() => document.body.removeChild(link), 100);
-                }
-                
-                document.getElementById('batchInfo').textContent = `All ${images.length} images processed successfully!`;
-                document.getElementById('progress').style.width = '100%';
-                
-            } catch (e) {
-                console.error('Batch processing error:', e);
-                alert('Error processing images');
-            } finally {
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('progressBar').style.display = 'none';
-                }, 2000);
-            }
-        }
-
-        function updateNavigation() {
-            document.getElementById('prevBtn').disabled = currentIndex === 0;
-            document.getElementById('nextBtn').disabled = currentIndex === images.length - 1;
-        }
-
-        // Обновляем отображение значений при загрузке
         updateValueDisplay();
-    </script>
+        originalImage.src = imageObj.originalImage.src;
+        applySettingsToImage(imageObj);
+        updateHistogram();
+
+        imageCounter.textContent = `${index + 1} / ${images.length}`;
+        fileName.textContent = imageObj.file.name;
+        fileDimensions.textContent = `${imageObj.originalImage.naturalWidth} × ${imageObj.originalImage.naturalHeight}`;
+        fileSizeInfo.textContent = formatFileSize(imageObj.file.size);
+        fileType.textContent = imageObj.file.type.split('/')[1].toUpperCase();
+
+        updateNavigation();
+        setInitialClip();
+    }
+
+    function applySettingsToImage(imageObj) {
+        const { brightness, contrast, saturation, sharpness } = imageObj.settings;
+        const ctx = imageObj.ctx;
+        ctx.putImageData(imageObj.originalImageData, 0, 0); // всегда с оригинала
+
+        let imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
+        let data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i], g = data[i+1], b = data[i+2];
+
+            r += brightness; g += brightness; b += brightness;
+            const cf = contrast / 100;
+            r = (r - 128) * cf + 128;
+            g = (g - 128) * cf + 128;
+            b = (b - 128) * cf + 128;
+
+            const gray = 0.299*r + 0.587*g + 0.114*b;
+            const sf = saturation / 100;
+            r = gray + (r - gray) * sf;
+            g = gray + (g - gray) * sf;
+            b = gray + (b - gray) * sf;
+
+            data[i]   = Math.max(0, Math.min(255, r));
+            data[i+1] = Math.max(0, Math.min(255, g));
+            data[i+2] = Math.max(0, Math.min(255, b));
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        if (sharpness > 0) applySharpening(imageObj, sharpness);
+
+        enhancedImage.src = imageObj.canvas.toDataURL();
+    }
+
+    function applySharpening(imageObj, amount) {
+        const ctx = imageObj.ctx;
+        let { width, height } = imageObj.canvas;
+        let imageData = ctx.getImageData(0, 0, width, height);
+        let data = imageData.data;
+        let copy = new Uint8ClampedArray(data);
+
+        const kernel = [
+            0, -amount/4, 0,
+            -amount/4, 1+amount, -amount/4,
+            0, -amount/4, 0
+        ];
+
+        for (let y = 1; y < height-1; y++) {
+            for (let x = 1; x < width-1; x++) {
+                for (let c = 0; c < 3; c++) {
+                    let sum = 0;
+                    for (let ky=-1; ky<=1; ky++) {
+                        for (let kx=-1; kx<=1; kx++) {
+                            let idx = ((y+ky)*width + (x+kx))*4 + c;
+                            let kidx = (ky+1)*3 + (kx+1);
+                            sum += copy[idx]*kernel[kidx];
+                        }
+                    }
+                    data[(y*width+x)*4 + c] = Math.max(0, Math.min(255, sum));
+                }
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function updateImage() {
+        if (!images.length) return;
+        const imageObj = images[currentIndex];
+        imageObj.settings = {
+            brightness: parseInt(brightnessSlider.value),
+            contrast: parseInt(contrastSlider.value),
+            saturation: parseInt(saturationSlider.value),
+            sharpness: parseInt(sharpnessSlider.value)
+        };
+        applySettingsToImage(imageObj);
+        updateSliderTrack();
+        updateHistogram();
+    }
+
+    function updateValueDisplay() {
+        brightnessValue.textContent = brightnessSlider.value;
+        contrastValue.textContent = contrastSlider.value;
+        saturationValue.textContent = saturationSlider.value;
+        sharpnessValue.textContent = sharpnessSlider.value;
+        updateSliderTrack();
+    }
+
+    function updateSliderTrack() {
+        document.getElementById('brightnessTrack').style.width = `${(parseInt(brightnessSlider.value)+50)/100*100}%`;
+        document.getElementById('contrastTrack').style.width = `${(parseInt(contrastSlider.value)-50)/150*100}%`;
+        document.getElementById('saturationTrack').style.width = `${parseInt(saturationSlider.value)/200*100}%`;
+        document.getElementById('sharpnessTrack').style.width = `${parseInt(sharpnessSlider.value)/10*100}%`;
+    }
+
+    function startDrag() { isDragging = true; document.body.style.cursor = 'ew-resize'; }
+    function drag(e) {
+        if (!isDragging) return;
+        const rect = document.querySelector('.comparison-container').getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pos = Math.max(0, Math.min(100, (x/rect.width)*100));
+        comparisonSlider.style.left = `${pos}%`;
+        originalImage.style.clipPath = `inset(0 ${100-pos}% 0 0)`;
+        enhancedImage.style.clipPath = `inset(0 0 0 ${pos}%)`;
+    }
+    function stopDrag() { isDragging = false; document.body.style.cursor = ''; }
+
+    function toggleFullscreen() {
+        const container = document.querySelector('.comparison-container');
+        if (!document.fullscreenElement) container.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    function updateNavigation() {
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === images.length-1;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        else if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+        else return (bytes/1048576).toFixed(1) + ' MB';
+    }
+
+    function downloadImage() {
+        if (!images.length) return;
+        const imageObj = images[currentIndex];
+        const link = document.createElement('a');
+        link.download = `enhanced_${imageObj.file.name}`;
+        link.href = enhancedImage.src;
+        link.click();
+    }
+
+    async function downloadAll() {
+        if (!images.length) return;
+        const zip = new JSZip();
+        const promises = [];
+        
+        images.forEach((img, index) => {
+            const promise = new Promise((resolve) => {
+                const link = document.createElement('a');
+                link.href = img.canvas.toDataURL('image/jpeg', 0.9);
+                link.download = `enhanced_${index + 1}.jpg`;
+                
+                fetch(link.href)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        zip.file(link.download, blob);
+                        resolve();
+                    });
+            });
+            promises.push(promise);
+        });
+        
+        await Promise.all(promises);
+        
+        zip.generateAsync({ type: 'blob' })
+            .then(content => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'enhanced_images.zip';
+                link.click();
+            });
+    }
+
+    function shareImage() {
+        if (!images.length) return;
+        if (navigator.share) {
+            const imageObj = images[currentIndex];
+            const blob = dataURLToBlob(enhancedImage.src);
+            const file = new File([blob], `enhanced_${imageObj.file.name}`, { type: blob.type });
+            
+            navigator.share({
+                title: 'Enhanced Image',
+                files: [file]
+            }).catch(error => {
+                console.error('Sharing failed', error);
+            });
+        } else {
+            alert("Sharing is not supported in your browser");
+        }
+    }
+
+    function dataURLToBlob(dataURL) {
+        const parts = dataURL.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const uInt8Array = new Uint8Array(raw.length);
+        
+        for (let i = 0; i < raw.length; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+        
+        return new Blob([uInt8Array], { type: contentType });
+    }
+
+    function applyPreset(presetName) {
+        if (!images.length) return;
+        
+        const imageObj = images[currentIndex];
+        let settings = { brightness: 0, contrast: 100, saturation: 100, sharpness: 0 };
+
+        switch(presetName) {
+            case 'auto':
+                settings = { brightness: 10, contrast: 110, saturation: 110, sharpness: 2 };
+                break;
+            case 'portrait':
+                settings = { brightness: 5, contrast: 105, saturation: 90, sharpness: 1 };
+                break;
+            case 'landscape':
+                settings = { brightness: 15, contrast: 120, saturation: 130, sharpness: 3 };
+                break;
+            case 'vintage':
+                settings = { brightness: -10, contrast: 90, saturation: 85, sharpness: 0 };
+                break;
+            case 'bw':
+                settings = { brightness: 0, contrast: 110, saturation: 0, sharpness: 1 };
+                break;
+            case 'clear':
+                settings = { brightness: 5, contrast: 115, saturation: 105, sharpness: 4 };
+                break;
+        }
+
+        brightnessSlider.value = settings.brightness;
+        contrastSlider.value = settings.contrast;
+        saturationSlider.value = settings.saturation;
+        sharpnessSlider.value = settings.sharpness;
+        imageObj.settings = settings;
+        updateValueDisplay();
+        updateImage();
+    }
+
+    function resetSettings() {
+        if (!images.length) return;
+        
+        const imageObj = images[currentIndex];
+        brightnessSlider.value = 0;
+        contrastSlider.value = 100;
+        saturationSlider.value = 100;
+        sharpnessSlider.value = 0;
+        imageObj.settings = { brightness: 0, contrast: 100, saturation: 100, sharpness: 0 };
+        updateValueDisplay();
+        updateImage();
+    }
+
+    function updateHistogram() {
+        if (!images.length) return;
+        
+        const histogramEl = document.getElementById('brightnessHistogram');
+        histogramEl.innerHTML = '';
+        
+        const imageObj = images[currentIndex];
+        const ctx = imageObj.ctx;
+        const imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
+        const data = imageData.data;
+        
+        const histogram = new Array(256).fill(0);
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const brightness = Math.floor(0.299 * r + 0.587 * g + 0.114 * b);
+            histogram[brightness]++;
+        }
+        
+        const max = Math.max(...histogram);
+        
+        for (let i = 0; i < 256; i++) {
+            if (histogram[i] > 0) {
+                const bar = document.createElement('div');
+                bar.className = 'histogram-bar';
+                bar.style.left = `${(i / 256) * 100}%`;
+                bar.style.height = `${(histogram[i] / max) * 100}%`;
+                histogramEl.appendChild(bar);
+            }
+        }
+    }
+</script>
 </body>
 </html>
