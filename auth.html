@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Авторизація</title>
+  <title>Authorization</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -172,38 +172,38 @@
   <div class="container">
     <div class="header">
       <h1>ImageOpt Pro</h1>
-      <p>Увійдіть або зареєструйтесь</p>
+      <p>Sign in or Sign up</p>
     </div>
     
     <div class="form">
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" placeholder="Ваш email" autocomplete="email">
+        <input type="email" id="email" placeholder="Your email" autocomplete="email">
       </div>
       
       <div class="form-group">
-        <label for="password">Пароль</label>
-        <input type="password" id="password" placeholder="Ваш пароль" autocomplete="current-password">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
       </div>
       
       <div class="btn-group">
         <button class="btn-secondary" onclick="signUp()">
-          <i class="fas fa-user-plus"></i> Реєстрація
+          <i class="fas fa-user-plus"></i> Sign Up
         </button>
         <button class="btn-primary" onclick="signIn()">
-          <i class="fas fa-sign-in-alt"></i> Вхід
+          <i class="fas fa-sign-in-alt"></i> Sign In
         </button>
       </div>
       
       <div class="reset-link">
-        <a onclick="resetPassword()">Забули пароль?</a>
+        <a onclick="resetPassword()">Forgot password?</a>
       </div>
       
       <div id="message"></div>
     </div>
     
     <div class="footer">
-      <p>© 2025 ImageOpt Pro. Усі права захищено.</p>
+      <p>© 2025 ImageOpt Pro. All rights reserved.</p>
     </div>
   </div>
 </body>
