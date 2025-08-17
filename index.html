@@ -181,6 +181,12 @@
                     <span>Image Quality Boost</span>
                 </button>
                 
+                <!-- Новая кнопка Preview/Mockup Generator -->
+                <button class="pdf-btn" id="previewMockupBtn" title="Preview/Mockup Generator">
+                    <i class="fas fa-th-large"></i>
+                    <span>Preview/Mockup</span>
+                </button>
+                
                 <button class="history-toggle" id="historyToggle" title="Processing history">
                     <i class="fas fa-history"></i>
                 </button>
@@ -763,6 +769,11 @@
         // Новый обработчик для кнопки улучшения качества
         document.getElementById('improveQualityBtn').addEventListener('click', function() {
             window.location.href = 'Improved image quality.html';
+        });
+        
+        // Новый обработчик для кнопки Preview/Mockup Generator
+        document.getElementById('previewMockupBtn').addEventListener('click', function() {
+            window.location.href = 'Preview Mockup Generator.html';
         });
     </script>
     

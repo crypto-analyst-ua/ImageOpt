@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview/Mockup Generator — mobile, presets, banner, rotation</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#121821; --panel2:#0e141c; --text:#e7eef7; --muted:#9bb0c9; --accent:#5cc8ff; --border:#223044;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:linear-gradient(180deg,#0b0f14,#0a0d12 50%,#0b0f14); color:var(--text)}
+    header{padding:.9rem 1rem; background:var(--panel2); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; display:flex; gap:.75rem; align-items:center}
+    header h1{font-size:1rem; margin:0; letter-spacing:.3px}
+    .container{display:grid; grid-template-columns: 380px 1fr; gap:12px; padding:12px; height:calc(100% - 58px)}
+    .controls{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:10px; overflow:auto}
+    .preview{background:radial-gradient(1200px 60% at 60% 30%, rgba(92,200,255,.12), transparent 40%), radial-gradient(800px 40% at 20% 80%, rgba(180, 92, 255, .12), transparent 40%); border:1px solid var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; min-height:300px}
+    .toolbar{display:flex; gap:8px; align-items:center;}
+    .grow{flex:1}
+    .section{border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; background:rgba(255,255,255,.02)}
+    .section h3{margin:0 0 8px; font-size:.78rem; text-transform:uppercase; color:var(--muted); letter-spacing:.2px}
+    label{font-size:.9rem}
+    input[type="text"], input[type="number"], input[type="file"], select{width:100%; padding:8px 10px; border-radius:10px; background:#0c1118; border:1px solid var(--border); color:var(--text)}
+    input[type="range"]{width:100%}
+    input[type="color"]{width:100%; height:36px; border-radius:10px; background:#0000; border:1px solid var(--border)}
+    .row{display:grid; grid-template-columns: 1fr 110px; gap:8px; align-items:center; margin:8px 0}
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .btn{appearance:none; border:1px solid var(--border); background:#0e1520; color:var(--text); border-radius:12px; padding:8px 12px; cursor:pointer; font-weight:600}
+    .btn.primary{background:linear-gradient(180deg,#2a84ff,#2163ff); border-color:#1e3ea8}
+    .btn.ghost{background:transparent}
+    .chip{padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0d131c; cursor:pointer; font-size:.85rem}
+    .chip.active{border-color:var(--accent); box-shadow:0 0 0 2px rgba(92,200,255,.15) inset}
+    canvas{max-width:calc(100% - 16px); max-height:calc(100% - 16px); border-radius:16px; background: #0a0f16}
+    .hint{font-size:.8rem; color:var(--muted)}
+    .sticky{position:sticky; bottom:0; background:linear-gradient(180deg,#0f141c, #0b0f14); border-top:1px solid var(--border); padding:8px; display:flex; gap:8px}@media (max-width: 960px){
+  .container{grid-template-columns: 1fr; height:auto}
+  .preview{order:-1; min-height:50vh}
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="toolbar">
+      <h1>Preview/Mockup Generator</h1>
+    </div>
+    <div class="grow"></div>
+    <div class="toolbar">
+      <button class="btn ghost" id="zoomOut">−</button>
+      <span class="hint" id="zoomLabel">100%</span>
+      <button class="btn ghost" id="zoomIn">＋</button>
+      <button class="btn" id="fitToScreen">Fit to screen</button>
+    </div>
+  </header>  <div class="container">
+    <aside class="controls" id="controls">
+      <div class="section">
+        <h3>Images (batch)</h3>
+        <input type="file" id="imageInput" multiple accept="image/*"/>
+        <div class="row"><label>Rotation (°)</label><input id="rotation" type="range" min="-180" max="180" value="0"></div>
+      </div><div class="section">
+    <h3>Device</h3>
+    <select id="deviceSelect">
+      <option value="phone">📱 Phone</option>
+      <option value="browser">🌐 Browser</option>
+      <option value="laptop">💻 Laptop</option>
+      <option value="card">🖼️ Card</option>
+      <option value="tablet">📲 Tablet</option>
+      <option value="watch">⌚ Smartwatch</option>
+      <option value="monitor">🖥️ Monitor</option>
+    </select>
+    <div class="grid-2">
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Corner Radius</label><input id="radius" type="range" min="0" max="60" value="24"></div>
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Shadow</label><input id="shadow" type="range" min="0" max="60" value="24"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Background</h3>
+    <select id="bgMode">
+      <option value="solid">Solid</option>
+      <option value="gradient">Gradient</option>
+      <option value="image">Image</option>
+      <option value="dark">Dark</option>
+    </select>
+    <div class="grid-2" style="margin-top:8px">
+      <div><div class="hint">Color A</div><input id="bgA" type="color" value="#0b0f14"></div>
+      <div><div class="hint">Color B</div><input id="bgB" type="color" value="#1c2431"></div>
+    </div>
+    <div class="row"><label>Angle (gradient)</label><input id="bgAngle" type="range" min="0" max="360" value="35"></div>
+    <div class="row"><label>Background Image</label><input id="bgImage" type="file" accept="image/*"></div>
+    <div class="row"><label>Background Blur</label><input id="bgBlur" type="range" min="0" max="80" value="0"></div>
+  </div>
+
+  <div class="section">
+    <h3>Banner (ad)</h3>
+    <div class="grid-2">
+      <div><label><input id="bannerEnabled" type="checkbox" checked> Enable</label></div>
+      <div>
+        <select id="bannerType">
+          <option value="text">Text</option>
+          <option value="image">Image</option>
+        </select>
+      </div>
+    </div>
+    <div id="bannerTextFields">
+      <div class="row"><label>Text</label><input id="bannerText" type="text" placeholder="50% discount today!"></div>
+      <div class="grid-2">
+        <div><div class="hint">Text Color</div><input id="bannerTextColor" type="color" value="#ffffff"></div>
+        <div><div class="hint">Background</div><input id="bannerBgColor" type="color" value="#ff3366"></div>
+      </div>
+      <div class="grid-2">
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Font Size</label><input id="bannerFont" type="range" min="12" max="72" value="24"></div>
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Corner Radius</label><input id="bannerRadius" type="range" min="0" max="32" value="12"></div>
+      </div>
+      <div class="grid-2">
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Padding</label><input id="bannerPad" type="range" min="0" max="40" value="10"></div>
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Opacity</label><input id="bannerAlpha" type="range" min="0" max="100" value="90"></div>
+      </div>
+    </div>
+    <div id="bannerImageFields" style="display:none">
+      <div class="row"><label>Banner File</label><input id="bannerImage" type="file" accept="image/*"></div>
+      <div class="grid-2">
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Size (%)</label><input id="bannerScale" type="range" min="10" max="200" value="100"></div>
+        <div class="row" style="grid-template-columns:1fr 100px"><label>Opacity</label><input id="bannerImgAlpha" type="range" min="0" max="100" value="90"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Position X</label><input id="bannerX" type="range" min="-100" max="100" value="0"></div>
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Position Y</label><input id="bannerY" type="range" min="-100" max="100" value="80"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Canvas Size</h3>
+    <select id="preset">
+      <option value="1080x1080">Instagram 1080×1080</option>
+      <option value="1920x1080">HD 1920×1080</option>
+      <option value="1600x900">16:9 1600×900</option>
+      <option value="1200x630">Open Graph 1200×630</option>
+      <option value="1280x720">YouTube 1280×720</option>
+      <option value="800x600">4:3 800×600</option>
+      <option value="custom">Custom...</option>
+    </select>
+    <div class="grid-2" style="margin-top:8px">
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Width</label><input id="cw" type="number" min="200" max="4000" value="1080"></div>
+      <div class="row" style="grid-template-columns:1fr 100px"><label>Height</label><input id="ch" type="number" min="200" max="4000" value="1080"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Presets</h3>
+    <div class="grid-2">
+      <input id="presetName" type="text" placeholder="Preset name"/>
+      <button class="btn" id="savePreset">Save</button>
+    </div>
+    <div class="grid-2" style="margin-top:6px">
+      <select id="presetList"></select>
+      <button class="btn" id="loadPreset">Load</button>
+    </div>
+    <div class="grid-2" style="margin-top:6px">
+      <button class="btn ghost" id="exportPreset">Export JSON</button>
+      <input id="importPreset" type="file" accept="application/json"/>
+    </div>
+  </div>
+
+  <div class="sticky">
+    <button class="btn" id="reset">Reset</button>
+    <button class="btn" id="copyState">Copy Settings</button>
+    <button class="btn primary" id="exportPNG">PNG</button>
+    <button class="btn" id="exportWebP">WebP</button>
+    <button class="btn" id="exportSVG">SVG</button>
+  </div>
+</aside>
+
+<main class="preview" id="preview">
+  <canvas id="canvas" width="1080" height="1080"></canvas>
+</main>
+
+  </div>  <script>
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const canvas = $('#canvas');
+    const ctx = canvas.getContext('2d');
+
+    const state = {
+      canvasW:1080, canvasH:1080, zoom:1,
+      images:[], rotation:0,
+      device:'phone', radius:24, shadow:24,
+      bgMode:'solid', bgA:'#0b0f14', bgB:'#1c2431', bgAngle:35, bgImage:null, bgBlur:0,
+      bannerEnabled:true, bannerType:'text',
+      bannerText:'50% discount today!', bannerTextColor:'#ffffff', bannerBgColor:'#ff3366', bannerFont:24, bannerRadius:12, bannerPad:10, bannerAlpha:.9,
+      bannerImage:null, bannerScale:1, bannerImgAlpha:.9,
+      bannerX:0, bannerY:80,
+    };
+
+    // HiDPI
+    function resizeCanvas(){
+      const dpr = window.devicePixelRatio || 1;
+      canvas.style.width = Math.round(state.canvasW*state.zoom) + 'px';
+      canvas.style.height = Math.round(state.canvasH*state.zoom) + 'px';
+      canvas.width = Math.round(state.canvasW * dpr);
+      canvas.height = Math.round(state.canvasH * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+
+    function fillBackground(){
+      const {canvasW:w, canvasH:h, bgMode, bgA, bgB, bgAngle, bgImage, bgBlur} = state;
+      if(bgMode==='solid'){
+        ctx.fillStyle = bgA; ctx.fillRect(0,0,w,h);
+      } else if(bgMode==='dark'){
+        ctx.fillStyle = '#0a0f16'; ctx.fillRect(0,0,w,h);
+      } else if(bgMode==='gradient'){
+        const ang = bgAngle * Math.PI/180; const x=Math.cos(ang), y=Math.sin(ang); const cx=w/2, cy=h/2; const r=Math.hypot(w,h)/2;
+        const g = ctx.createLinearGradient(cx-x*r, cy-y*r, cx+x*r, cy+y*r);
+        g.addColorStop(0,bgA); g.addColorStop(1,bgB); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      } else if(bgMode==='image' && bgImage){
+        const iw = bgImage.naturalWidth, ih = bgImage.naturalHeight; const scale = Math.max(w/iw, h/ih);
+        const dw=iw*scale, dh=ih*scale; ctx.save(); if(bgBlur>0) ctx.filter = `blur(${bgBlur}px)`; ctx.drawImage(bgImage,(w-dw)/2,(h-dh)/2,dw,dh); ctx.restore();
+      } else { ctx.fillStyle = bgA; ctx.fillRect(0,0,w,h); }
+    }
+
+    function rr(x,y,w,h,r){
+      const p=new Path2D(); const rr=Math.min(r,w/2,h/2); p.moveTo(x+rr,y); p.arcTo(x+w,y,x+w,y+h,rr); p.arcTo(x+w,y+h,x,y+h,rr); p.arcTo(x,y+h,x,y,rr); p.arcTo(x,y,x+w,y,rr); p.closePath(); return p;
+    }
+
+    function framePhone(x,y,w,h,r){
+      ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow;
+      ctx.fillStyle='#0e1118'; ctx.fill(rr(x,y,w,h,r+8)); ctx.restore();
+      const pad=12; const screen = rr(x+pad,y+pad,w-2*pad,h-2*pad,r);
+      ctx.fillStyle='#000'; ctx.fill(screen); return screen;
+    }
+    function frameBrowser(x,y,w,h,r){
+      ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow;
+      ctx.fillStyle='#0e1118'; ctx.fill(rr(x,y,w,h,r)); ctx.restore();
+      const barH=40; ctx.fillStyle='#151a22'; ctx.fill(rr(x,y,w,barH,r));
+      const screen = rr(x+8,y+barH+8,w-16,h-barH-16,Math.max(0,r-6)); ctx.fillStyle='#000'; ctx.fill(screen); return screen;
+    }
+    function frameLaptop(x,y,w,h,r){
+      ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow;
+      ctx.fillStyle='#0d1117'; ctx.fill(rr(x,y,w,h-36,r)); ctx.restore();
+      const baseW=w*1.08, baseH=26; const bx=x-(baseW-w)/2, by=y+h-40; ctx.fillStyle='#111521'; ctx.fill(rr(bx,by,baseW,baseH,14));
+      const screen = rr(x+10,y+10,w-20,h-56,Math.max(0,r-6)); ctx.fillStyle='#000'; ctx.fill(screen); return screen;
+    }
+    function frameCard(x,y,w,h,r){ ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow; ctx.fillStyle='#0e121b'; ctx.fill(rr(x,y,w,h,r)); ctx.restore(); const s=rr(x+10,y+10,w-20,h-20,Math.max(0,r-6)); ctx.fillStyle='#000'; ctx.fill(s); return s; }
+    function frameTablet(x,y,w,h,r){ ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow; ctx.fillStyle='#0f131b'; ctx.fill(rr(x,y,w,h,r+4)); ctx.restore(); const s=rr(x+14,y+14,w-28,h-28,r); ctx.fillStyle='#000'; ctx.fill(s); return s; }
+    function frameWatch(x,y,w,h,r){ ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow; ctx.fillStyle='#0f131b'; ctx.fill(rr(x,y,w,h,Math.max(r,40))); ctx.restore(); const s=rr(x+18,y+18,w-36,h-36,Math.max(r-10,20)); ctx.fillStyle='#000'; ctx.fill(s); return s; }
+    function frameMonitor(x,y,w,h,r){ ctx.save(); ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=state.shadow; ctx.shadowOffsetX=state.shadow; ctx.shadowOffsetY=state.shadow; ctx.fillStyle='#0e1118'; ctx.fill(rr(x,y,w,h-30,r)); ctx.restore(); const standW=w*0.18, standH=20; const bx=x+w/2-standW/2, by=y+h-30; ctx.fillStyle='#111521'; ctx.fill(rr(bx,by,standW,standH,8)); const s=rr(x+10,y+10,w-20,h-50,Math.max(0,r-6)); ctx.fillStyle='#000'; ctx.fill(s); return s; }
+
+    function contentBounds(){
+      // Leave room for banner, center device
+      const pad=32; const w=state.canvasW- pad*2; const h=state.canvasH- pad*2; const frameW= w*0.9; const frameH=h*0.75; const fx = (state.canvasW-frameW)/2; const fy = (state.canvasH-frameH)/2 - 10; return [fx,fy,frameW,frameH];
+    }
+
+    function mask(path, fn){ ctx.save(); ctx.clip(path); fn(); ctx.restore(); }
+
+    function drawMainImageIn(rect){
+      const [x,y,w,h]=rect; if(state.images.length===0) return;
+      state.images.forEach((img,i)=>{
+        const iw=img.naturalWidth, ih=img.naturalHeight; const scale=Math.max(w/iw, h/ih)*0.98; const dw=iw*scale, dh=ih*scale; const dx=x+(w-dw)/2; const dy=y+(h-dh)/2 + i*0; // identical
+        ctx.save();
+        const cx = dx+dw/2, cy = dy+dh/2;
+        ctx.translate(cx,cy); ctx.rotate(state.rotation * Math.PI/180); ctx.translate(-cx,-cy);
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.restore();
+      });
+    }
+
+    function drawBanner(){ if(!state.bannerEnabled) return; const {bannerType, bannerX, bannerY} = state; const w=state.canvasW, h=state.canvasH; const cx = w/2 + (bannerX/100)*(w/2-40); const cy = h/2 + (bannerY/100)*(h/2-40);
+      if(bannerType==='text'){
+        const {bannerText, bannerTextColor, bannerBgColor, bannerFont, bannerRadius, bannerPad, bannerAlpha} = state;
+        ctx.save(); ctx.font = `700 ${bannerFont}px system-ui, Arial`; const textW = ctx.measureText(bannerText).width; const pad=bannerPad; const boxW = textW + pad*2; const boxH = bannerFont + pad*2*0.9; const x = cx - boxW/2; const y = cy - boxH/2; ctx.globalAlpha = bannerAlpha; ctx.fillStyle=bannerBgColor; ctx.fill(rr(x,y,boxW,boxH,bannerRadius)); ctx.fillStyle=bannerTextColor; ctx.textBaseline='middle'; ctx.textAlign='center'; ctx.globalAlpha=1*bannerAlpha; ctx.fillText(bannerText, cx, cy+1);
+        ctx.restore();
+      } else if(state.bannerImage){
+        const img = state.bannerImage; const size = Math.min(w,h)* (state.bannerScale/100); const bw = size; const bh = size* (img.naturalHeight/img.naturalWidth);
+        ctx.save(); ctx.globalAlpha = state.bannerImgAlpha; ctx.drawImage(img, cx-bw/2, cy-bh/2, bw, bh); ctx.restore();
+      }
+    }
+
+    function render(){
+      resizeCanvas();
+      fillBackground();
+      const [fx,fy,fw,fh] = contentBounds();
+      let screen;
+      if(state.device==='phone') screen = framePhone(fx,fy,fw,fh,state.radius);
+      else if(state.device==='browser') screen = frameBrowser(fx,fy,fw,fh,state.radius);
+      else if(state.device==='laptop') screen = frameLaptop(fx,fy,fw,fh,state.radius);
+      else if(state.device==='card') screen = frameCard(fx,fy,fw,fh,state.radius);
+      else if(state.device==='tablet') screen = frameTablet(fx,fy,fw,fh,state.radius);
+      else if(state.device==='watch') screen = frameWatch(fx,fy,fw,fh,state.radius);
+      else screen = frameMonitor(fx,fy,fw,fh,state.radius);
+
+      mask(screen, ()=> drawMainImageIn([fx+10, fy+ (state.device==='browser'?48:10), fw-20, fh- (state.device==='browser'?58:20)]));
+      drawBanner();
+    }
+
+    // --- UI BINDINGS ---
+    function bindRange(id,key, map){ $(id).addEventListener('input', e=>{ state[key] = map? map(e.target.value): Number(e.target.value); render(); }); }
+    function bindSelect(id,key){ $(id).addEventListener('change', e=>{ state[key]=e.target.value; render(); }); }
+    function bindColor(id,key){ $(id).addEventListener('input', e=>{ state[key]=e.target.value; render(); }); }
+    function bindText(id,key){ $(id).addEventListener('input', e=>{ state[key]=e.target.value; render(); }); }
+
+    // Files
+    function loadImageFile(file, cb){ if(!file) return; const img=new Image(); img.onload=()=>cb(img); img.src = URL.createObjectURL(file); }
+    $('#imageInput').addEventListener('change', e=>{ state.images=[]; [...e.target.files].forEach(f=> loadImageFile(f, img=>{ state.images.push(img); render(); })); });
+    $('#bgImage').addEventListener('change', e=> loadImageFile(e.target.files[0], img=>{ state.bgImage=img; state.bgMode='image'; $('#bgMode').value='image'; render(); }));
+    $('#bannerImage').addEventListener('change', e=> loadImageFile(e.target.files[0], img=>{ state.bannerImage=img; render(); }));
+
+    // Binds
+    bindRange('#rotation','rotation');
+    bindSelect('#deviceSelect','device');
+    bindRange('#radius','radius'); bindRange('#shadow','shadow');
+    bindSelect('#bgMode','bgMode'); bindColor('#bgA','bgA'); bindColor('#bgB','bgB'); bindRange('#bgAngle','bgAngle'); bindRange('#bgBlur','bgBlur');
+
+    // Banner
+    $('#bannerEnabled').addEventListener('change', e=>{ state.bannerEnabled = e.target.checked; render(); });
+    $('#bannerType').addEventListener('change', e=>{ state.bannerType = e.target.value; $('#bannerTextFields').style.display = state.bannerType==='text'? 'block':'none'; $('#bannerImageFields').style.display = state.bannerType==='image'? 'block':'none'; render(); });
+    bindText('#bannerText','bannerText'); bindColor('#bannerTextColor','bannerTextColor'); bindColor('#bannerBgColor','bannerBgColor'); bindRange('#bannerFont','bannerFont'); bindRange('#bannerRadius','bannerRadius'); bindRange('#bannerPad','bannerPad'); bindRange('#bannerAlpha','bannerAlpha', v=> Number(v)/100);
+    bindRange('#bannerScale','bannerScale'); bindRange('#bannerImgAlpha','bannerImgAlpha', v=> Number(v)/100);
+    bindRange('#bannerX','bannerX'); bindRange('#bannerY','bannerY');
+
+    // Canvas size & presets
+    function applyPreset(){ const p=$('#preset').value; if(p==='custom') return; const [w,h]=p.split('x').map(Number); $('#cw').value=w; $('#ch').value=h; state.canvasW=w; state.canvasH=h; render(); }
+    $('#preset').addEventListener('change', applyPreset);
+    $('#cw').addEventListener('input', e=>{ state.canvasW = Number(e.target.value)||1080; render(); });
+    $('#ch').addEventListener('input', e=>{ state.canvasH = Number(e.target.value)||1080; render(); });
+
+    // Zoom & gestures
+    function setZoom(z){ state.zoom = Math.max(.25, Math.min(3, z)); $('#zoomLabel').textContent = Math.round(state.zoom*100)+'%'; render(); }
+    $('#zoomIn').addEventListener('click', ()=> setZoom(state.zoom*1.1));
+    $('#zoomOut').addEventListener('click', ()=> setZoom(state.zoom/1.1));
+    $('#fitToScreen').addEventListener('click', ()=> setZoom( Math.min( 1, Math.min(window.innerWidth/state.canvasW, (window.innerHeight-220)/state.canvasH) ) ));
+
+    let lastDist=0, baseZoom=1;
+    canvas.addEventListener('touchstart', e=>{ if(e.touches.length===2){ lastDist=dist(e.touches[0], e.touches[1]); baseZoom=state.zoom; }});
+    canvas.addEventListener('touchmove', e=>{ if(e.touches.length===2){ e.preventDefault(); const d=dist(e.touches[0], e.touches[1]); setZoom(baseZoom * (d/lastDist)); }} , {passive:false});
+    function dist(a,b){ const dx=a.clientX-b.clientX, dy=a.clientY-b.clientY; return Math.hypot(dx,dy); }
+
+    // Export
+    function exportImage(type){ const prev=state.zoom; state.zoom=1; resizeCanvas(); render(); const url = canvas.toDataURL(type); const a=document.createElement('a'); a.href=url; a.download = `mockup_${state.canvasW}x${state.canvasH}.${type==='image/png'?'png': type==='image/webp'?'webp':'png'}`; document.body.appendChild(a); a.click(); a.remove(); state.zoom=prev; resizeCanvas(); render(); }
+    $('#exportPNG').addEventListener('click', ()=> exportImage('image/png'));
+    $('#exportWebP').addEventListener('click', ()=> exportImage('image/webp'));
+    $('#exportSVG').addEventListener('click', ()=>{
+      const prev=state.zoom; state.zoom=1; resizeCanvas(); render();
+      const dataURL = canvas.toDataURL('image/png');
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${state.canvasW}' height='${state.canvasH}'><image href='${dataURL}' width='${state.canvasW}' height='${state.canvasH}'/></svg>`;
+      const blob = new Blob([svg], {type:'image/svg+xml'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`mockup_${state.canvasW}x${state.canvasH}.svg`; document.body.appendChild(a); a.click(); a.remove(); state.zoom=prev; resizeCanvas(); render();
+    });
+
+    // Reset & copy
+    $('#reset').addEventListener('click', ()=>{ Object.assign(state, {
+      rotation:0, device:'phone', radius:24, shadow:24,
+      bgMode:'solid', bgA:'#0b0f14', bgB:'#1c2431', bgAngle:35, bgImage:null, bgBlur:0,
+      bannerEnabled:true, bannerType:'text', bannerText:'50% discount today!', bannerTextColor:'#ffffff', bannerBgColor:'#ff3366', bannerFont:24, bannerRadius:12, bannerPad:10, bannerAlpha:.9,
+      bannerImage:null, bannerScale:100, bannerImgAlpha:.9, bannerX:0, bannerY:80
+    }); render(); });
+    $('#copyState').addEventListener('click', ()=>{ const s = JSON.stringify({ ...state, images: undefined, bgImage: !!state.bgImage, bannerImage: !!state.bannerImage }, null, 2); navigator.clipboard.writeText(s).then(()=> alert('Settings copied')); });
+
+    // Presets (localStorage)
+    function loadPresetList(){ const list = JSON.parse(localStorage.getItem('mockupPresets')||'{}'); const sel=$('#presetList'); sel.innerHTML=''; Object.keys(list).forEach(name=>{ const opt=document.createElement('option'); opt.value=name; opt.textContent=name; sel.appendChild(opt); }); }
+    $('#savePreset').addEventListener('click', ()=>{
+      const name = ($('#presetName').value||'').trim(); if(!name) return alert('Enter preset name');
+      const data = { ...state, images:[], bgImage:null, bannerImage:null };
+      const all = JSON.parse(localStorage.getItem('mockupPresets')||'{}'); all[name]=data; localStorage.setItem('mockupPresets', JSON.stringify(all)); loadPresetList(); alert('Saved!');
+    });
+    $('#loadPreset').addEventListener('click', ()=>{
+      const name = $('#presetList').value; if(!name) return; const all = JSON.parse(localStorage.getItem('mockupPresets')||'{}'); const data=all[name]; if(!data) return; Object.assign(state, data); // restore values
+      // partially update controls
+      $('#deviceSelect').value=state.device; $('#radius').value=state.radius; $('#shadow').value=state.shadow; $('#bgMode').value=state.bgMode; $('#bgA').value=state.bgA; $('#bgB').value=state.bgB; $('#bgAngle').value=state.bgAngle; $('#bgBlur').value=state.bgBlur; $('#rotation').value=state.rotation;
+      $('#bannerType').value=state.bannerType; $('#bannerText').value=state.bannerText; $('#bannerTextColor').value=state.bannerTextColor; $('#bannerBgColor').value=state.bannerBgColor; $('#bannerFont').value=state.bannerFont; $('#bannerRadius').value=state.bannerRadius; $('#bannerPad').value=state.bannerPad; $('#bannerAlpha').value=Math.round(state.bannerAlpha*100); $('#bannerScale').value=state.bannerScale; $('#bannerImgAlpha').value=Math.round(state.bannerImgAlpha*100); $('#bannerX').value=state.bannerX; $('#bannerY').value=state.bannerY; $('#bannerEnabled').checked=state.bannerEnabled;
+      $('#bannerTextFields').style.display = state.bannerType==='text'? 'block':'none'; $('#bannerImageFields').style.display = state.bannerType==='image'? 'block':'none';
+      render();
+    });
+    $('#exportPreset').addEventListener('click', ()=>{
+      const data = { ...state, images:[], bgImage:null, bannerImage:null };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`preset_${Date.now()}.json`; document.body.appendChild(a); a.click(); a.remove();
+    });
+    $('#importPreset').addEventListener('change', e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const data=JSON.parse(fr.result); Object.assign(state, data); render(); alert('Preset loaded'); }catch{ alert('Invalid JSON'); } }; fr.readAsText(f); });
+
+    // Init
+    loadPresetList();
+    render();
+    window.addEventListener('resize', ()=>{ if(window.innerWidth<960) { /* keep */ } });
+  </script></body>
+</html>
