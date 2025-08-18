@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -363,8 +363,8 @@
         
         <div class="upload-area" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">🖼️</div>
-            <div class="upload-text">Загрузите изображение</div>
-            <div class="upload-subtext">Перетащите файл сюда или нажмите для выбора</div>
+            <div class="upload-text">Upload an Image</div>
+            <div class="upload-subtext">Drag & drop file here or click to select</div>
             <input type="file" id="fileInput" accept="image/*">
         </div>
 
@@ -374,32 +374,32 @@
 
         <div class="controls">
             <div class="control-group">
-                <label for="colorCount">Количество цветов:</label>
+                <label for="colorCount">Number of Colors:</label>
                 <input type="range" id="colorCount" min="3" max="12" value="6" step="1">
                 <span id="colorCountValue">6</span>
             </div>
             <div class="control-group">
-                <label for="quality">Качество анализа:</label>
+                <label for="quality">Analysis Quality:</label>
                 <input type="range" id="quality" min="1" max="10" value="5" step="1">
                 <span id="qualityValue">5</span>
             </div>
             <div class="control-group">
-                <button class="extract-btn" id="extractBtn" disabled>Извлечь палитру</button>
+                <button class="extract-btn" id="extractBtn" disabled>Extract Palette</button>
             </div>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Анализируем изображение...</p>
+            <p>Analyzing image...</p>
         </div>
 
         <div class="palette-container" id="paletteContainer">
-            <div class="palette-title">Извлеченная палитра</div>
+            <div class="palette-title">Extracted Palette</div>
             <div class="palette" id="palette"></div>
             <div class="export-options">
-                <button class="export-btn" onclick="exportPalette('hex')">Экспорт HEX</button>
-                <button class="export-btn" onclick="exportPalette('rgb')">Экспорт RGB</button>
-                <button class="export-btn" onclick="exportPalette('css')">Экспорт CSS</button>
+                <button class="export-btn" onclick="exportPalette('hex')">Export HEX</button>
+                <button class="export-btn" onclick="exportPalette('rgb')">Export RGB</button>
+                <button class="export-btn" onclick="exportPalette('css')">Export CSS</button>
             </div>
         </div>
     </div>
@@ -410,7 +410,7 @@
         let currentImage = null;
         let currentPalette = [];
 
-        // Обработка загрузки файла
+        // File upload handling
         const fileInput = document.getElementById('fileInput');
         const uploadArea = document.querySelector('.upload-area');
         const imagePreview = document.getElementById('imagePreview');
@@ -444,7 +444,7 @@
 
         function handleFileSelect(file) {
             if (!file.type.startsWith('image/')) {
-                showNotification('Пожалуйста, выберите файл изображения', 'error');
+                showNotification('Please select an image file', 'error');
                 return;
             }
 
@@ -455,13 +455,13 @@
                 extractBtn.disabled = false;
                 currentImage = e.target.result;
                 
-                // Скрываем палитру при загрузке нового изображения
+                // Hide palette when uploading a new image
                 document.getElementById('paletteContainer').style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
 
-        // Обновление значений слайдеров
+        // Update slider values
         const colorCountSlider = document.getElementById('colorCount');
         const qualitySlider = document.getElementById('quality');
         const colorCountValue = document.getElementById('colorCountValue');
@@ -475,7 +475,7 @@
             qualityValue.textContent = qualitySlider.value;
         });
 
-        // Извлечение палитры
+        // Extract palette
         extractBtn.addEventListener('click', extractPalette);
 
         function extractPalette() {
@@ -487,13 +487,13 @@
             loading.style.display = 'block';
             paletteContainer.style.display = 'none';
 
-            // Создаем canvas для анализа изображения
+            // Create canvas for image analysis
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
 
             img.onload = () => {
-                // Уменьшаем размер для более быстрого анализа
+                // Reduce size for faster processing
                 const maxSize = 200;
                 let { width, height } = img;
                 
@@ -513,11 +513,11 @@
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Получаем данные пикселей
+                // Get pixel data
                 const imageData = ctx.getImageData(0, 0, width, height);
                 const pixels = imageData.data;
 
-                // Извлекаем цвета
+                // Extract colors
                 const colors = extractColorsFromPixels(pixels, parseInt(colorCountSlider.value), parseInt(qualitySlider.value));
                 currentPalette = colors;
 
@@ -533,25 +533,25 @@
             const colorMap = new Map();
             const step = Math.max(1, Math.floor(10 / quality));
 
-            // Собираем все уникальные цвета
+            // Collect all unique colors
             for (let i = 0; i < pixels.length; i += 4 * step) {
                 const r = pixels[i];
                 const g = pixels[i + 1];
                 const b = pixels[i + 2];
                 const a = pixels[i + 3];
 
-                if (a < 128) continue; // Пропускаем прозрачные пиксели
+                if (a < 128) continue; // Skip transparent pixels
 
                 const key = `${r},${g},${b}`;
                 colorMap.set(key, (colorMap.get(key) || 0) + 1);
             }
 
-            // Конвертируем в массив и сортируем по частоте
+            // Convert to array and sort by frequency
             const sortedColors = Array.from(colorMap.entries())
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, colorCount * 3); // Берем больше цветов для лучшей фильтрации
+                .slice(0, colorCount * 3); // Take more colors for better filtering
 
-            // Применяем кластеризацию для получения более разнообразных цветов
+            // Apply clustering to get more diverse colors
             const clusteredColors = clusterColors(sortedColors.map(([rgb]) => rgb.split(',').map(Number)), colorCount);
 
             return clusteredColors.map(rgb => ({
@@ -563,10 +563,10 @@
         function clusterColors(colors, clusterCount) {
             if (colors.length <= clusterCount) return colors;
 
-            // Простая k-means кластеризация
+            // Simple k-means clustering
             let centroids = [];
             
-            // Инициализация центроидов
+            // Initialize centroids
             for (let i = 0; i < clusterCount; i++) {
                 const index = Math.floor(i * colors.length / clusterCount);
                 centroids.push([...colors[index]]);
@@ -575,7 +575,7 @@
             for (let iteration = 0; iteration < 10; iteration++) {
                 const clusters = Array.from({ length: clusterCount }, () => []);
 
-                // Назначение точек к кластерам
+                // Assign points to clusters
                 colors.forEach(color => {
                     let minDistance = Infinity;
                     let closestCluster = 0;
@@ -596,7 +596,7 @@
                     clusters[closestCluster].push(color);
                 });
 
-                // Обновление центроидов
+                // Update centroids
                 centroids = clusters.map(cluster => {
                     if (cluster.length === 0) return centroids[0];
 
@@ -633,7 +633,7 @@
                     <div class="color-info">
                         <div class="hex-value">${color.hex}</div>
                         <div class="rgb-value">RGB(${color.rgb.join(', ')})</div>
-                        <button class="copy-btn" onclick="copyColor('${color.hex}', this)">Копировать</button>
+                        <button class="copy-btn" onclick="copyColor('${color.hex}', this)">Copy</button>
                     </div>
                 `;
                 palette.appendChild(colorCard);
@@ -642,13 +642,13 @@
 
         function copyColor(colorValue, button) {
             navigator.clipboard.writeText(colorValue).then(() => {
-                button.textContent = 'Скопировано!';
+                button.textContent = 'Copied!';
                 button.classList.add('copied');
                 setTimeout(() => {
-                    button.textContent = 'Копировать';
+                    button.textContent = 'Copy';
                     button.classList.remove('copied');
                 }, 2000);
-                showNotification(`Цвет ${colorValue} скопирован!`);
+                showNotification(`Color ${colorValue} copied to clipboard!`);
             });
         }
 
@@ -675,7 +675,7 @@
                     break;
             }
 
-            showNotification(`Палитра экспортирована в формате ${format.toUpperCase()}`);
+            showNotification(`Palette exported in ${format.toUpperCase()} format`);
         }
 
         function downloadFile(filename, content) {
