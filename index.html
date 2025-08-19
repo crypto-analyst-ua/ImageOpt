@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- SEO-теги -->
+<!-- SEO tags -->
 <meta name="description" content="ImageOpt Pro - online image optimization, PDF creation and editing. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files with our free tools.">
 <meta name="keywords" content="image optimization, photo compression, reduce image size, pdf editor, pdf creator, pdf tools, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
 <meta name="author" content="ImageOpt Pro Team">
@@ -63,7 +63,7 @@
             margin-left: 5px;
         }
         
-        /* Добавленные стили для футера */
+        /* Added styles for footer */
         body {
             display: flex;
             flex-direction: column;
@@ -84,7 +84,7 @@
             margin-top: auto;
         }
         
-        /* Обновленные стили для кнопок PDF */
+        /* Updated styles for PDF buttons */
         .pdf-btn {
             background: rgba(255, 255, 255, 0.15);
             border: none;
@@ -105,7 +105,7 @@
             transform: scale(1.05);
         }
 
-        /* Адаптация для мобильных */
+        /* Mobile adaptation */
         @media (max-width: 768px) {
             .pdf-btn span {
                 display: none;
@@ -117,7 +117,7 @@
             }
         }
 
-        /* Увеличим отступы между кнопками */
+        /* Increased spacing between buttons */
         .header-actions {
             gap: 12px;
         }
@@ -136,7 +136,7 @@
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Обновленные кнопки PDF с уникальными иконками -->
+                <!-- Updated PDF buttons with unique icons -->
                 <button class="pdf-btn" id="createPdfBtn" title="Create PDF">
                     <i class="fas fa-file-pdf"></i>
                     <span>Create PDF</span>
@@ -158,7 +158,7 @@
                     <span>PDF to Word/Excel</span>
                 </button>
                 
-                <!-- Новые кнопки с уникальными иконками -->
+                <!-- New buttons with unique icons -->
                 <button class="pdf-btn" id="batchRenameBtn" title="Batch Rename Files">
                     <i class="fas fa-font"></i>
                     <span>Batch Rename</span>
@@ -184,10 +184,16 @@
                     <span>Color Palette</span>
                 </button>
                 
-                <!-- Добавленная кнопка Professional SVG Converter -->
+                <!-- Added Professional SVG Converter button with unique icon -->
                 <button class="pdf-btn" id="svgConverterBtn" title="Professional SVG Converter">
-                    <i class="fas fa-exchange-alt"></i>
+                    <i class="fas fa-file-code"></i>
                     <span>SVG Converter</span>
+                </button>
+                
+                <!-- Added Multi-format Image Converter button with unique icon -->
+                <button class="pdf-btn" id="multiFormatConverterBtn" title="Multi-format Image Converter">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Multi-format Converter</span>
                 </button>
                 
                 <button class="history-toggle" id="historyToggle" title="Processing history">
@@ -219,7 +225,7 @@
                     <h2>Upload Images</h2>
                 </div>
                 
-                <!-- Обновленное информационное сообщение -->
+                <!-- Updated information message -->
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
                     You can upload up to 15 images at once. Supported formats: JPG, PNG, WebP, AVIF, HEIC, TIFF.
@@ -298,7 +304,7 @@
                             <i class="fas fa-adjust"></i>
                             <span>Adjust</span>
                         </div>
-                        <!-- Добавленная кнопка Auto -->
+                        <!-- Added Auto button -->
                         <div class="editor-btn" id="autoAdjustBtn">
                             <i class="fas fa-magic"></i>
                             <span>Auto</span>
@@ -309,7 +315,7 @@
                         </div>
                     </div>
                     
-                    <!-- Ваш добавленный блок информации -->
+                    <!-- Your added information block -->
                     <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
                         <span class="explanation-icon">i</span>
                         Auto adjustment applies moderate enhancements. For best results, 
@@ -333,13 +339,13 @@
                         <div class="touch-btn" id="touchAdjust">
                             <i class="fas fa-adjust"></i>
                         </div>
-                        <!-- Добавленная кнопка Auto для мобильных -->
+                        <!-- Added Auto button for mobile -->
                         <div class="touch-btn" id="touchAutoAdjust">
                             <i class="fas fa-magic"></i>
                         </div>
                     </div>
                     
-                    <!-- Crop controls (обновленная версия) -->
+                    <!-- Crop controls (updated version) -->
                     <div class="crop-controls" id="cropControls">
                         <div class="crop-header">
                             <h3><i class="fas fa-crop-alt"></i> Crop Image</h3>
@@ -421,17 +427,17 @@
                     </div>
                 </div>
                 
-                <!-- Watermarks - ОБНОВЛЕННЫЙ БЛОК -->
+                <!-- Watermarks - UPDATED BLOCK -->
                 <div class="watermark-controls" id="watermarkControls">
                     <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
                     
-                    <!-- Переключатель типа -->
+                    <!-- Type switch -->
                     <div class="watermark-type-toggle">
                         <button class="watermark-type-btn active" data-type="text">Text</button>
                         <button class="watermark-type-btn" data-type="image">Image</button>
                     </div>
                     
-                    <!-- Текстовый водяной знак -->
+                    <!-- Text watermark -->
                     <div class="watermark-text-section">
                         <div class="watermark-row">
                             <input type="text" id="watermarkText" placeholder="Watermark text">
@@ -444,7 +450,7 @@
                         </div>
                     </div>
                     
-                    <!-- Изображение водяного знака -->
+                    <!-- Image watermark -->
                     <div class="watermark-image-section" style="display: none;">
                         <div class="watermark-row">
                             <input type="file" id="watermarkImageInput" accept="image/*">
@@ -456,7 +462,7 @@
                         </div>
                     </div>
                     
-                    <!-- Общие настройки -->
+                    <!-- Common settings -->
                     <div class="watermark-row">
                         <label>Opacity:</label>
                         <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
@@ -652,9 +658,9 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Новый футер -->
+    <!-- New footer in English -->
     <footer style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); color: #fff; padding: 45px 15px 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; font-size: 12px;">
-      <!-- Градиентная линия сверху -->
+      <!-- Gradient line at the top -->
       <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #ffcc00, #ff9900);"></div>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
@@ -709,7 +715,7 @@
         </div>
         
         <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 ImageOpt Pro. All rights reserved.</p>
-        <!-- Счетчик просмотров -->
+        <!-- Views counter -->
         <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
       </div>
     </footer>
@@ -722,13 +728,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Добавлена библиотека для работы с HEIC -->
+    <!-- Added library for HEIC support -->
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
-    <!-- Добавлена библиотека для работы с TIFF -->
+    <!-- Added library for TIFF support -->
     <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
     <script src="script.js"></script>
     
-    <!-- Добавленный обработчик для кнопок PDF -->
+    <!-- Added handler for PDF buttons -->
     <script>
         document.getElementById('createPdfBtn').addEventListener('click', function() {
             window.location.href = 'PDF.html';
@@ -740,9 +746,9 @@
         });
     </script>
     
-    <!-- Обработчики для новых кнопок -->
+    <!-- Handlers for new buttons -->
     <script>
-        // Обработчики для новых кнопок
+        // Handlers for new buttons
         document.getElementById('pdfCompressorBtn').addEventListener('click', function() {
             window.location.href = 'PDF Compressor.html';
         });
@@ -751,12 +757,12 @@
             window.location.href = 'PDF Merger.html';
         });
         
-        // Обработчик для новой кнопки PDF to Word/Excel
+        // Handler for new PDF to Word/Excel button
         document.getElementById('pdfToWordExcelBtn').addEventListener('click', function() {
             window.location.href = 'PDF to Word or Excel.html';
         });
         
-        // Обработчики для новых кнопок инструментов
+        // Handlers for new tool buttons
         document.getElementById('batchRenameBtn').addEventListener('click', function() {
             window.location.href = 'Batch rename files.html';
         });
@@ -769,30 +775,35 @@
             window.location.href = 'Photo Collage Maker.html';
         });
         
-        // Новый обработчик для кнопки улучшения качества
+        // New handler for quality improvement button
         document.getElementById('improveQualityBtn').addEventListener('click', function() {
             window.location.href = 'Improved image quality.html';
         });
         
-        // Новый обработчик для кнопки Preview/Mockup Generator
+        // New handler for Preview/Mockup Generator button
         document.getElementById('previewMockupBtn').addEventListener('click', function() {
             window.location.href = 'Preview Mockup Generator.html';
         });
         
-        // Обработчик для новой кнопки Color Palette Extractor
+        // Handler for new Color Palette Extractor button
         document.getElementById('colorPaletteBtn').addEventListener('click', function() {
             window.location.href = 'Color Palette Extractor.html';
         });
         
-        // Новый обработчик для кнопки SVG Converter
+        // New handler for SVG Converter button
         document.getElementById('svgConverterBtn').addEventListener('click', function() {
             window.location.href = 'Professional SVG Converter.html';
         });
+        
+        // New handler for Multi-format Image Converter button
+        document.getElementById('multiFormatConverterBtn').addEventListener('click', function() {
+            window.location.href = 'Multi-format Image Converter.html';
+        });
     </script>
     
-    <!-- Скрипт для счетчика просмотров -->
+    <!-- Script for views counter -->
     <script>
-        // Создаем параметры для счетчика
+        // Create parameters for counter
         const params = new URLSearchParams({
             style: 'flat-square',
             label: 'Views',
@@ -800,13 +811,13 @@
             logo: 'firebase'
         });
         
-        // Получаем текущий путь страницы
+        // Get current page path
         const currentPath = window.location.pathname;
         
-        // Формируем URL для счетчика
+        // Form URL for counter
         const counterURL = `https://hits.sh/imageopt-pro.web.app${currentPath}.svg?${params.toString()}`;
         
-        // Устанавливаем источник для изображения
+        // Set source for image
         document.getElementById('page-views').src = counterURL;
     </script>
 </body>
