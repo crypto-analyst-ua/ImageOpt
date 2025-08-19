@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- SEO tags -->
-<meta name="description" content="ImageOpt Pro - online image optimization, PDF creation and editing. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files with our free tools.">
-<meta name="keywords" content="image optimization, photo compression, reduce image size, pdf editor, pdf creator, pdf tools, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
-<meta name="author" content="ImageOpt Pro Team">
-
-<link rel="canonical" href="https://imageopt-pro.web.app/">
-
-<!-- Open Graph / Social Media -->
-<meta property="og:title" content="ImageOpt Pro - Online Image Optimizer & PDF Editor">
-<meta property="og:description" content="Free tool for compressing and optimizing images, creating and editing PDF documents. Reduce file sizes without quality loss!">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://imageopt-pro.web.app/">
-<meta property="og:image" content="https://imageopt-pro.web.app/preview.jpg">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ImageOpt Pro - Image Optimizer & PDF Editor">
-<meta name="twitter:description" content="Optimize images and edit PDFs online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
-<meta name="twitter:image" content="https://imageopt-pro.web.app/twitter-preview.jpg">
-
-<!-- Structured Data -->
-<script type="application/ld+json">
-{
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO tags -->
+  <meta name="description" content="ImageOpt Pro - online image optimization, PDF creation and editing. Reduce size of JPG, PNG, WebP, AVIF without quality loss. Edit PDF files with our free tools.">
+  <meta name="keywords" content="image optimization, photo compression, reduce image size, pdf editor, pdf creator, pdf tools, image converter, picture optimizer, JPG compression, PNG compression, webp optimization">
+  <meta name="author" content="ImageOpt Pro Team">
+  
+  <link rel="canonical" href="https://imageopt-pro.web.app/">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="ImageOpt Pro - Online Image Optimizer & PDF Editor">
+  <meta property="og:description" content="Free tool for compressing and optimizing images, creating and editing PDF documents. Reduce file sizes without quality loss!">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://imageopt-pro.web.app/">
+  <meta property="og:image" content="https://imageopt-pro.web.app/preview.jpg">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ImageOpt Pro - Image Optimizer & PDF Editor">
+  <meta name="twitter:description" content="Optimize images and edit PDFs online for free. Reduce file sizes of JPG, PNG, WebP, AVIF while preserving quality.">
+  <meta name="twitter:image" content="https://imageopt-pro.web.app/twitter-preview.jpg">
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "ImageOpt Pro",
@@ -34,791 +34,789 @@
     "applicationCategory": "Multimedia",
     "operatingSystem": "Windows, macOS, Linux, Android, iOS",
     "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
     },
     "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "124"
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "124"
     },
     "url": "https://imageopt-pro.web.app/"
-}
-</script>
+  }
+  </script>
+  
+  <title>ImageOpt Pro - Image Optimizer & PDF Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Cropper.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .pdf-tag {
+      font-size: 0.6em;
+      background: linear-gradient(135deg, #4a6bff, #8a2be2);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      vertical-align: super;
+      margin-left: 5px;
+    }
     
-    <title>ImageOpt Pro - Image Optimizer & PDF Editor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Cropper.js CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .pdf-tag {
-            font-size: 0.6em;
-            background: linear-gradient(135deg, #4a6bff, #8a2be2);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            vertical-align: super;
-            margin-left: 5px;
-        }
-        
-        /* Added styles for footer */
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-        }
-        
-        .container {
-            flex: 1;
-            padding-bottom: 20px;
-        }
-        
-        footer {
-            width: 100%;
-            padding: 15px 0;
-            background: var(--dark-bg);
-            text-align: center;
-            margin-top: auto;
-        }
-        
-        /* Updated styles for PDF buttons */
-        .pdf-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            height: 40px;
-            gap: 8px;
-        }
-
-        .pdf-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.05);
-        }
-
-        /* Mobile adaptation */
-        @media (max-width: 768px) {
-            .pdf-btn span {
-                display: none;
-            }
-            .pdf-btn {
-                padding: 10px;
-                width: 40px;
-                justify-content: center;
-            }
-        }
-
-        /* Increased spacing between buttons */
-        .header-actions {
-            gap: 12px;
-        }
-    </style>
+    /* Added styles for footer */
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+    }
+    
+    .container {
+      flex: 1;
+      padding-bottom: 20px;
+    }
+    
+    footer {
+      width: 100%;
+      padding: 15px 0;
+      background: var(--dark-bg);
+      text-align: center;
+      margin-top: auto;
+    }
+    
+    /* Updated styles for PDF buttons */
+    .pdf-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 8px 15px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      height: 40px;
+      gap: 8px;
+    }
+    
+    .pdf-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+    
+    /* Mobile adaptation */
+    @media (max-width: 768px) {
+      .pdf-btn span {
+        display: none;
+      }
+      .pdf-btn {
+        padding: 10px;
+        width: 40px;
+        justify-content: center;
+      }
+    }
+    
+    /* Increased spacing between buttons */
+    .header-actions {
+      gap: 12px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-left">
-                <div class="logo">
-                    <i class="fas fa-image"></i>
-                </div>
-                <div class="header-text">
-                    <h1>ImageOpt Pro <span class="pdf-tag">+ PDF Editor</span></h1>
-                    <div class="subtitle">Advanced Image Optimization & PDF Tools</div>
-                </div>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <div class="logo">
+          <i class="fas fa-image"></i>
+        </div>
+        <div class="header-text">
+          <h1>ImageOpt Pro <span class="pdf-tag">+ PDF Editor</span></h1>
+          <div class="subtitle">Advanced Image Optimization & PDF Tools</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Updated PDF buttons with unique icons -->
+        <button class="pdf-btn" id="createPdfBtn" title="Create PDF">
+          <i class="fas fa-file-pdf"></i>
+          <span>Create PDF</span>
+        </button>
+        <button class="pdf-btn" id="extractPdfImagesBtn" title="Extract Images from PDF">
+          <i class="fas fa-file-export"></i>
+          <span>Extract Images</span>
+        </button>
+        <button class="pdf-btn" id="pdfCompressorBtn" title="PDF Compressor">
+          <i class="fas fa-file-contract"></i>
+          <span>Compress PDF</span>
+        </button>
+        <button class="pdf-btn" id="pdfMergerBtn" title="PDF Merger">
+          <i class="fas fa-file-medical"></i>
+          <span>Merge PDF</span>
+        </button>
+        <button class="pdf-btn" id="pdfToWordExcelBtn" title="PDF to Word/Excel">
+          <i class="fas fa-file-word"></i>
+          <span>PDF to Word/Excel</span>
+        </button>
+        
+        <!-- New buttons with unique icons -->
+        <button class="pdf-btn" id="batchRenameBtn" title="Batch Rename Files">
+          <i class="fas fa-font"></i>
+          <span>Batch Rename</span>
+        </button>
+        <button class="pdf-btn" id="exifEditorBtn" title="EXIF Editor">
+          <i class="fas fa-camera"></i>
+          <span>EXIF Editor</span>
+        </button>
+        <button class="pdf-btn" id="collageMakerBtn" title="Photo Collage Maker">
+          <i class="fas fa-th"></i>
+          <span>Collage Maker</span>
+        </button>
+        <button class="pdf-btn" id="improveQualityBtn" title="Improve Image Quality">
+          <i class="fas fa-medal"></i>
+          <span>Image Quality Boost</span>
+        </button>
+        <button class="pdf-btn" id="previewMockupBtn" title="Create product mockups and design presentations">
+          <i class="fas fa-laptop"></i>
+          <span>Sample Design Creator</span>
+        </button>
+        <button class="pdf-btn" id="colorPaletteBtn" title="Color Palette Extractor">
+          <i class="fas fa-palette"></i>
+          <span>Color Palette</span>
+        </button>
+        
+        <button class="pdf-btn" id="svgConverterBtn" title="Professional SVG Converter">
+          <i class="fas fa-project-diagram"></i>
+          <span>SVG Converter</span>
+        </button>
+               
+        <button class="pdf-btn" id="multiFormatConverterBtn" title="Multi-format Image Converter">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Multi-format Converter</span>
+        </button>
+        
+        <button class="history-toggle" id="historyToggle" title="Processing history">
+          <i class="fas fa-history"></i>
+        </button>
+      </div>
+      <div class="user-info">
+        <div id="premiumStatus" class="premium-badge">Basic</div>
+        <div id="dailyCounter" class="daily-counter">
+          <i class="fas fa-images"></i>
+          <span id="dailyCount">0</span>/<span id="dailyLimit">15</span>
+        </div>
+        <div class="premium-tooltip-container">
+          <button id="upgradeBtn" class="btn-premium">
+            <i class="fas fa-crown"></i> Premium
+          </button>
+        </div>
+        <span id="userEmail" style="margin: 0 10px; color: white;"></span>
+        <button id="logoutBtn" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
+    
+    <div class="main-grid">
+      <div class="card">
+        <div class="section-title">
+          <i class="fas fa-upload"></i>
+          <h2>Upload Images</h2>
+        </div>
+        
+        <!-- Updated information message -->
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          You can upload up to 15 images at once. Supported formats: JPG, PNG, WebP, AVIF, HEIC, TIFF.
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+          <div class="upload-text">Drag & drop images here</div>
+          <div class="upload-subtext">or click to select files</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,.heic,.heif,.tiff,.tif" multiple>
+        
+        <div class="file-previews" id="filePreviews"></div>
+        
+        <div class="section-title" style="margin-top: 30px;">
+          <i class="fas fa-edit"></i>
+          <h2>Edit Mode</h2>
+        </div>
+        
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          Select edit mode: apply changes to all images or only to the current one.
+        </div>
+        
+        <div class="batch-controls">
+          <div class="batch-btn" id="editSingleBtn">
+            <i class="fas fa-file-image"></i> Edit Single
+          </div>
+          <div class="batch-btn active" id="editAllBtn">
+            <i class="fas fa-layer-group"></i> Apply to All
+          </div>
+        </div>
+        <div class="batch-edit-notice" id="batchEditNotice">
+          <i class="fas fa-info-circle"></i> Changes applied to all images
+        </div>
+        
+        <!-- Image editor -->
+        <div class="editor-container" id="editorContainer">
+          <div class="section-title">
+            <i class="fas fa-crop-alt"></i>
+            <h2>Image Editor</h2>
+          </div>
+          
+          <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            Use the tools below to edit the image. Changes are only displayed in the preview.
+          </div>
+          
+          <div class="editor-preview">
+            <img id="previewImage" src="" alt="Preview">
+            <div class="crop-overlay" id="cropOverlay"></div>
+          </div>
+          
+          <div class="edit-notification" id="editNotification">
+            <i class="fas fa-info-circle"></i> Changes are only displayed in preview
+          </div>
+          
+          <div class="editor-controls">
+            <div class="editor-btn" id="cropBtn">
+              <i class="fas fa-crop-alt"></i>
+              <span>Crop</span>
             </div>
-            <div class="header-actions">
-                <!-- Updated PDF buttons with unique icons -->
-                <button class="pdf-btn" id="createPdfBtn" title="Create PDF">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Create PDF</span>
-                </button>
-                <button class="pdf-btn" id="extractPdfImagesBtn" title="Extract Images from PDF">
-                    <i class="fas fa-file-export"></i>
-                    <span>Extract Images</span>
-                </button>
-                <button class="pdf-btn" id="pdfCompressorBtn" title="PDF Compressor">
-                    <i class="fas fa-file-contract"></i>
-                    <span>Compress PDF</span>
-                </button>
-                <button class="pdf-btn" id="pdfMergerBtn" title="PDF Merger">
-                    <i class="fas fa-file-medical"></i>
-                    <span>Merge PDF</span>
-                </button>
-                <button class="pdf-btn" id="pdfToWordExcelBtn" title="PDF to Word/Excel">
-                    <i class="fas fa-file-word"></i>
-                    <span>PDF to Word/Excel</span>
-                </button>
-                
-                <!-- New buttons with unique icons -->
-                <button class="pdf-btn" id="batchRenameBtn" title="Batch Rename Files">
-                    <i class="fas fa-font"></i>
-                    <span>Batch Rename</span>
-                </button>
-                <button class="pdf-btn" id="exifEditorBtn" title="EXIF Editor">
-                    <i class="fas fa-camera"></i>
-                    <span>EXIF Editor</span>
-                </button>
-                <button class="pdf-btn" id="collageMakerBtn" title="Photo Collage Maker">
-                    <i class="fas fa-th"></i>
-                    <span>Collage Maker</span>
-                </button>
-                <button class="pdf-btn" id="improveQualityBtn" title="Improve Image Quality">
-                    <i class="fas fa-medal"></i>
-                    <span>Image Quality Boost</span>
-                </button>
-                <button class="pdf-btn" id="previewMockupBtn" title="Create product mockups and design presentations">
-                    <i class="fas fa-laptop"></i>
-                    <span>Sample Design Creator</span>
-                </button>
-                <button class="pdf-btn" id="colorPaletteBtn" title="Color Palette Extractor">
-                    <i class="fas fa-palette"></i>
-                    <span>Color Palette</span>
-                </button>
-                
-                <!-- Added Professional SVG Converter button with unique icon -->
-                <button class="pdf-btn" id="svgConverterBtn" title="Professional SVG Converter">
-                    <i class="fas fa-file-code"></i>
-                    <span>SVG Converter</span>
-                </button>
-                
-                <!-- Added Multi-format Image Converter button with unique icon -->
-                <button class="pdf-btn" id="multiFormatConverterBtn" title="Multi-format Image Converter">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Multi-format Converter</span>
-                </button>
-                
-                <button class="history-toggle" id="historyToggle" title="Processing history">
-                    <i class="fas fa-history"></i>
-                </button>
+            <div class="editor-btn" id="rotateLeftBtn">
+              <i class="fas fa-undo"></i>
+              <span>Rotate Left</span>
             </div>
-            <div class="user-info">
-                <div id="premiumStatus" class="premium-badge">Basic</div>
-                <div id="dailyCounter" class="daily-counter">
-                    <i class="fas fa-images"></i>
-                    <span id="dailyCount">0</span>/<span id="dailyLimit">15</span>
-                </div>
-                <div class="premium-tooltip-container">
-                    <button id="upgradeBtn" class="btn-premium">
-                        <i class="fas fa-crown"></i> Premium
-                    </button>
-                </div>
-                <span id="userEmail" style="margin: 0 10px; color: white;"></span>
-                <button id="logoutBtn" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+            <div class="editor-btn" id="rotateRightBtn">
+              <i class="fas fa-redo"></i>
+              <span>Rotate Right</span>
             </div>
-        </header>
-
-        <div class="main-grid">
-            <div class="card">
-                <div class="section-title">
-                    <i class="fas fa-upload"></i>
-                    <h2>Upload Images</h2>
-                </div>
-                
-                <!-- Updated information message -->
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    You can upload up to 15 images at once. Supported formats: JPG, PNG, WebP, AVIF, HEIC, TIFF.
-                </div>
-                
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                    <div class="upload-text">Drag & drop images here</div>
-                    <div class="upload-subtext">or click to select files</div>
-                </div>
-                <input type="file" id="fileInput" accept="image/*,.heic,.heif,.tiff,.tif" multiple>
-                
-                <div class="file-previews" id="filePreviews"></div>
-                
-                <div class="section-title" style="margin-top: 30px;">
-                    <i class="fas fa-edit"></i>
-                    <h2>Edit Mode</h2>
-                </div>
-                
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    Select edit mode: apply changes to all images or only to the current one.
-                </div>
-                
-                <div class="batch-controls">
-                    <div class="batch-btn" id="editSingleBtn">
-                        <i class="fas fa-file-image"></i> Edit Single
-                    </div>
-                    <div class="batch-btn active" id="editAllBtn">
-                        <i class="fas fa-layer-group"></i> Apply to All
-                    </div>
-                </div>
-                <div class="batch-edit-notice" id="batchEditNotice">
-                    <i class="fas fa-info-circle"></i> Changes applied to all images
-                </div>
-                
-                <!-- Image editor -->
-                <div class="editor-container" id="editorContainer">
-                    <div class="section-title">
-                        <i class="fas fa-crop-alt"></i>
-                        <h2>Image Editor</h2>
-                    </div>
-                    
-                    <div class="info-box">
-                        <i class="fas fa-info-circle"></i>
-                        Use the tools below to edit the image. Changes are only displayed in the preview.
-                    </div>
-                    
-                    <div class="editor-preview">
-                        <img id="previewImage" src="" alt="Preview">
-                        <div class="crop-overlay" id="cropOverlay"></div>
-                    </div>
-                    
-                    <div class="edit-notification" id="editNotification">
-                        <i class="fas fa-info-circle"></i> Changes are only displayed in preview
-                    </div>
-                    
-                    <div class="editor-controls">
-                        <div class="editor-btn" id="cropBtn">
-                            <i class="fas fa-crop-alt"></i>
-                            <span>Crop</span>
-                        </div>
-                        <div class="editor-btn" id="rotateLeftBtn">
-                            <i class="fas fa-undo"></i>
-                            <span>Rotate Left</span>
-                        </div>
-                        <div class="editor-btn" id="rotateRightBtn">
-                            <i class="fas fa-redo"></i>
-                            <span>Rotate Right</span>
-                        </div>
-                        <div class="editor-btn" id="flipHBtn">
-                            <i class="fas fa-arrows-alt-h"></i>
-                            <span>Flip</span>
-                        </div>
-                        <div class="editor-btn" id="adjustBtn">
-                            <i class="fas fa-adjust"></i>
-                            <span>Adjust</span>
-                        </div>
-                        <!-- Added Auto button -->
-                        <div class="editor-btn" id="autoAdjustBtn">
-                            <i class="fas fa-magic"></i>
-                            <span>Auto</span>
-                        </div>
-                        <div class="editor-btn" id="resetEditBtn">
-                            <i class="fas fa-times"></i>
-                            <span>Reset</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Your added information block -->
-                    <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
-                        <span class="explanation-icon">i</span>
-                        Auto adjustment applies moderate enhancements. For best results, 
-                        manually fine-tune after using auto mode.
-                    </div>
-                    
-                    <!-- Touch controls for mobile -->
-                    <div class="touch-controls">
-                        <div class="touch-btn" id="touchRotateLeft">
-                            <i class="fas fa-undo"></i>
-                        </div>
-                        <div class="touch-btn" id="touchRotateRight">
-                            <i class="fas fa-redo"></i>
-                        </div>
-                        <div class="touch-btn" id="touchFlipH">
-                            <i class="fas fa-arrows-alt-h"></i>
-                        </div>
-                        <div class="touch-btn" id="touchCrop">
-                            <i class="fas fa-crop-alt"></i>
-                        </div>
-                        <div class="touch-btn" id="touchAdjust">
-                            <i class="fas fa-adjust"></i>
-                        </div>
-                        <!-- Added Auto button for mobile -->
-                        <div class="touch-btn" id="touchAutoAdjust">
-                            <i class="fas fa-magic"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Crop controls (updated version) -->
-                    <div class="crop-controls" id="cropControls">
-                        <div class="crop-header">
-                            <h3><i class="fas fa-crop-alt"></i> Crop Image</h3>
-                            <div class="crop-actions">
-                                <button class="btn" id="applyCropBtn">
-                                    <i class="fas fa-check"></i> Apply
-                                </button>
-                                <button class="btn btn-secondary" id="cancelCropBtn">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="crop-ratios">
-                            <div class="crop-ratio active" data-ratio="free">
-                                <i class="fas fa-vector-square"></i> Free
-                            </div>
-                            <div class="crop-ratio" data-ratio="1:1">
-                                <i class="fas fa-square"></i> 1:1
-                            </div>
-                            <div class="crop-ratio" data-ratio="4:3">
-                                <i class="fas fa-rectangle-portrait"></i> 4:3
-                            </div>
-                            <div class="crop-ratio" data-ratio="16:9">
-                                <i class="fas fa-desktop"></i> 16:9
-                            </div>
-                            <div class="crop-ratio" data-ratio="9:16">
-                                <i class="fas fa-mobile-alt"></i> 9:16
-                            </div>
-                            <div class="crop-ratio" data-ratio="5:7">
-                                <i class="fas fa-camera"></i> 5:7
-                            </div>
-                        </div>
-                        
-                        <div class="crop-tips">
-                            <i class="fas fa-info-circle"></i>
-                            Drag to move, drag corners to resize, scroll to zoom
-                        </div>
-                    </div>
-                    
-                    <!-- Adjustment controls -->
-                    <div class="adjust-controls" id="adjustControls">
-                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> Image Adjustments</h3>
-                        
-                        <div class="adjust-row">
-                            <label>Brightness</label>
-                            <input type="range" id="brightnessRange" min="-100" max="100" value="0">
-                            <span id="brightnessValue">0%</span>
-                        </div>
-                        <div class="adjust-row">
-                            <label>Contrast</label>
-                            <input type="range" id="contrastRange" min="-100" max="100" value="0">
-                            <span id="contrastValue">0%</span>
-                        </div>
-                        <div class="adjust-row">
-                            <label>Saturation</label>
-                            <input type="range" id="saturationRange" min="-100" max="100" value="0">
-                            <span id="saturationValue">0%</span>
-                        </div>
-                        <div class="adjust-row">
-                            <label>Sharpness</label>
-                            <input type="range" id="sharpnessRange" min="0" max="100" value="0">
-                            <span id="sharpnessValue">0%</span>
-                        </div>
-                        <div class="adjust-row">
-                            <label>Temperature</label>
-                            <input type="range" id="temperatureRange" min="-100" max="100" value="0">
-                            <span id="temperatureValue">0%</span>
-                        </div>
-                        
-                        <div class="adjust-actions">
-                            <button class="btn" id="applyAdjustBtn">
-                                <i class="fas fa-check"></i> Apply
-                            </button>
-                            <button class="btn btn-secondary" id="resetAdjustBtn">
-                                <i class="fas fa-times"></i> Reset
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Watermarks - UPDATED BLOCK -->
-                <div class="watermark-controls" id="watermarkControls">
-                    <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
-                    
-                    <!-- Type switch -->
-                    <div class="watermark-type-toggle">
-                        <button class="watermark-type-btn active" data-type="text">Text</button>
-                        <button class="watermark-type-btn" data-type="image">Image</button>
-                    </div>
-                    
-                    <!-- Text watermark -->
-                    <div class="watermark-text-section">
-                        <div class="watermark-row">
-                            <input type="text" id="watermarkText" placeholder="Watermark text">
-                            <input type="color" id="watermarkColor" value="#ffffff">
-                        </div>
-                        <div class="watermark-row">
-                            <label>Size:</label>
-                            <input type="range" id="watermarkSize" min="10" max="50" value="24">
-                            <span id="watermarkSizeValue">24px</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Image watermark -->
-                    <div class="watermark-image-section" style="display: none;">
-                        <div class="watermark-row">
-                            <input type="file" id="watermarkImageInput" accept="image/*">
-                        </div>
-                        <div class="watermark-row">
-                            <label>Scale (%):</label>
-                            <input type="range" id="watermarkImageScale" min="5" max="50" value="20">
-                            <span id="watermarkImageScaleValue">20%</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Common settings -->
-                    <div class="watermark-row">
-                        <label>Opacity:</label>
-                        <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
-                        <span id="watermarkOpacityValue">70%</span>
-                    </div>
-                    
-                    <div class="watermark-row">
-                        <label>Position:</label>
-                        <select id="watermarkPosition">
-                            <option value="bottom-right">Bottom Right</option>
-                            <option value="bottom-left">Bottom Left</option>
-                            <option value="top-right">Top Right</option>
-                            <option value="top-left">Top Left</option>
-                            <option value="center">Center</option>
-                        </select>
-                    </div>
-                    
-                    <div class="watermark-preview">
-                        <span id="watermarkPreview">Watermark Preview</span>
-                        <img id="watermarkImagePreview" style="display: none; max-width: 100%; max-height: 100px;">
-                    </div>
-                </div>
-                
-                <div class="section-title">
-                    <i class="fas fa-sliders-h"></i>
-                    <h2>Optimization Settings</h2>
-                </div>
-                
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    Configure compression settings to achieve the optimal balance between quality and file size.
-                </div>
-                
-                <div class="controls">
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span class="control-label-text">Quality:</span>
-                            <span class="quality-value control-value" id="qualityValue">80%</span>
-                        </div>
-                        <input type="range" id="quality" min="10" max="100" value="80">
-                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
-                            <span class="explanation-icon">i</span>
-                            Higher quality = larger file size. We recommend 60-80% for optimal results.
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span class="control-label-text">Output Format:</span>
-                        </div>
-                        <select id="format">
-                            <option value="jpeg">JPEG</option>
-                            <option value="png">PNG</option>
-                            <option value="webp">WebP</option>
-                            <option value="avif">AVIF</option>
-                        </select>
-                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
-                            <span class="explanation-icon">i</span>
-                            WebP and AVIF provide the best compression without quality loss.
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span class="control-label-text">Max Width (px):</span>
-                        </div>
-                        <select id="maxWidth">
-                            <option value="">No resize</option>
-                            <option value="640">640px (for mobile)</option>
-                            <option value="800">800px (for tablets)</option>
-                            <option value="1024">1024px (for laptops)</option>
-                            <option value="1200">1200px (for monitors)</option>
-                            <option value="1920">1920px (4K)</option>
-                        </select>
-                        <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
-                            <span class="explanation-icon">i</span>
-                            Reducing width significantly decreases file size.
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="auto-optimize">Auto Optimization</label>
-                        <div class="auto-optimize">
-                            <input type="checkbox" id="autoOptimizeCheckbox">
-                            <span>Optimize immediately after upload</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Advanced settings -->
-                <div class="settings-toggle">
-                    <button class="settings-toggle-btn" id="toggleAdvancedSettings">
-                        <i class="fas fa-cog"></i> Advanced Settings
-                    </button>
-                </div>
-                
-                <div class="advanced-settings" id="advancedSettings">
-                    <div class="control-group">
-                        <label>Advanced JPEG Settings</label>
-                        <div class="progressive-toggle">
-                            <input type="checkbox" id="progressiveJpeg">
-                            <span>Progressive JPEG (better quality)</span>
-                        </div>
-                        <div class="metadata-toggle">
-                            <input type="checkbox" id="removeMetadata" checked>
-                            <span>Remove metadata (EXIF, GPS, etc.)</span>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>PNG Settings</label>
-                        <select id="pngCompression">
-                            <option value="auto">Auto compression (recommended)</option>
-                            <option value="lossless">Lossless (best quality)</option>
-                            <option value="lossy">Lossy (better compression)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label>Watermark</label>
-                        <div class="watermark-control">
-                            <input type="checkbox" id="enableWatermark">
-                            <span>Add watermark to images</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="info-box" style="margin-top: 20px;">
-                    <i class="fas fa-bolt"></i>
-                    After setting parameters, click "Optimize Images" to start processing.
-                </div>
-                
-                <button class="btn" id="processBtn">
-                    <i class="fas fa-cogs"></i> Optimize Images
+            <div class="editor-btn" id="flipHBtn">
+              <i class="fas fa-arrows-alt-h"></i>
+              <span>Flip</span>
+            </div>
+            <div class="editor-btn" id="adjustBtn">
+              <i class="fas fa-adjust"></i>
+              <span>Adjust</span>
+            </div>
+            <!-- Added Auto button -->
+            <div class="editor-btn" id="autoAdjustBtn">
+              <i class="fas fa-magic"></i>
+              <span>Auto</span>
+            </div>
+            <div class="editor-btn" id="resetEditBtn">
+              <i class="fas fa-times"></i>
+              <span>Reset</span>
+            </div>
+          </div>
+          
+          <!-- Your added information block -->
+          <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+            <span class="explanation-icon">i</span>
+            Auto adjustment applies moderate enhancements. For best results, 
+            manually fine-tune after using auto mode.
+          </div>
+          
+          <!-- Touch controls for mobile -->
+          <div class="touch-controls">
+            <div class="touch-btn" id="touchRotateLeft">
+              <i class="fas fa-undo"></i>
+            </div>
+            <div class="touch-btn" id="touchRotateRight">
+              <i class="fas fa-redo"></i>
+            </div>
+            <div class="touch-btn" id="touchFlipH">
+              <i class="fas fa-arrows-alt-h"></i>
+            </div>
+            <div class="touch-btn" id="touchCrop">
+              <i class="fas fa-crop-alt"></i>
+            </div>
+            <div class="touch-btn" id="touchAdjust">
+              <i class="fas fa-adjust"></i>
+            </div>
+            <!-- Added Auto button for mobile -->
+            <div class="touch-btn" id="touchAutoAdjust">
+              <i class="fas fa-magic"></i>
+            </div>
+          </div>
+          
+          <!-- Crop controls (updated version) -->
+          <div class="crop-controls" id="cropControls">
+            <div class="crop-header">
+              <h3><i class="fas fa-crop-alt"></i> Crop Image</h3>
+              <div class="crop-actions">
+                <button class="btn" id="applyCropBtn">
+                  <i class="fas fa-check"></i> Apply
                 </button>
+                <button class="btn btn-secondary" id="cancelCropBtn">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              </div>
             </div>
             
-            <div class="card">
-                <div class="section-title">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <h2>Optimization Results</h2>
-                </div>
-                
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    Results will be displayed here after optimization. You can compare original and optimized images.
-                </div>
-                
-                <div class="processing" id="processing">
-                    <div class="spinner"></div>
-                    <p>Processing images...</p>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="progressBar"></div>
-                    </div>
-                    <div class="progress-text" id="progressText">0%</div>
-                </div>
-                
-                <div class="preview-section" id="previewSection">
-                    <div class="stats" id="stats"></div>
-                    
-                    <div class="preview-container" id="previewContainer"></div>
-                    
-                    <div class="info-box" style="margin-top: 20px;">
-                        <i class="fas fa-download"></i>
-                        After optimization, you can download results or save settings for future use.
-                    </div>
-                    
-                    <div class="buttons">
-                        <button class="btn" id="downloadBtn" disabled>
-                            <i class="fas fa-download"></i> Download
-                        </button>
-                        <button class="btn btn-secondary" id="resetBtn">
-                            <i class="fas fa-redo"></i> New Project
-                        </button>
-                        <button class="btn" id="saveSettingsBtn">
-                            <i class="fas fa-save"></i> Save Profile
-                        </button>
-                    </div>
-                </div>
+            <div class="crop-ratios">
+              <div class="crop-ratio active" data-ratio="free">
+                <i class="fas fa-vector-square"></i> Free
+              </div>
+              <div class="crop-ratio" data-ratio="1:1">
+                <i class="fas fa-square"></i> 1:1
+              </div>
+              <div class="crop-ratio" data-ratio="4:3">
+                <i class="fas fa-rectangle-portrait"></i> 4:3
+              </div>
+              <div class="crop-ratio" data-ratio="16:9">
+                <i class="fas fa-desktop"></i> 16:9
+              </div>
+              <div class="crop-ratio" data-ratio="9:16">
+                <i class="fas fa-mobile-alt"></i> 9:16
+              </div>
+              <div class="crop-ratio" data-ratio="5:7">
+                <i class="fas fa-camera"></i> 5:7
+              </div>
             </div>
+            
+            <div class="crop-tips">
+              <i class="fas fa-info-circle"></i>
+              Drag to move, drag corners to resize, scroll to zoom
+            </div>
+          </div>
+          
+          <!-- Adjustment controls -->
+          <div class="adjust-controls" id="adjustControls">
+            <h3 class="card-title"><i class="fas fa-sliders-h"></i> Image Adjustments</h3>
+            
+            <div class="adjust-row">
+              <label>Brightness</label>
+              <input type="range" id="brightnessRange" min="-100" max="100" value="0">
+              <span id="brightnessValue">0%</span>
+            </div>
+            <div class="adjust-row">
+              <label>Contrast</label>
+              <input type="range" id="contrastRange" min="-100" max="100" value="0">
+              <span id="contrastValue">0%</span>
+            </div>
+            <div class="adjust-row">
+              <label>Saturation</label>
+              <input type="range" id="saturationRange" min="-100" max="100" value="0">
+              <span id="saturationValue">0%</span>
+            </div>
+            <div class="adjust-row">
+              <label>Sharpness</label>
+              <input type="range" id="sharpnessRange" min="0" max="100" value="0">
+              <span id="sharpnessValue">0%</span>
+            </div>
+            <div class="adjust-row">
+              <label>Temperature</label>
+              <input type="range" id="temperatureRange" min="-100" max="100" value="0">
+              <span id="temperatureValue">0%</span>
+            </div>
+            
+            <div class="adjust-actions">
+              <button class="btn" id="applyAdjustBtn">
+                <i class="fas fa-check"></i> Apply
+              </button>
+              <button class="btn btn-secondary" id="resetAdjustBtn">
+                <i class="fas fa-times"></i> Reset
+              </button>
+            </div>
+          </div>
         </div>
-    </div>
-    
-    <div class="history-panel" id="historyPanel">
-        <div class="history-header">
-            <h3 class="history-title"><i class="fas fa-history"></i> Processing History</h3>
-            <button class="close-history" id="closeHistory"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="historyList">
-            <p style="text-align: center; padding: 20px; color: var(--gray);">History is empty</p>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <!-- New footer in English -->
-    <footer style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); color: #fff; padding: 45px 15px 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; font-size: 12px;">
-      <!-- Gradient line at the top -->
-      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #ffcc00, #ff9900);"></div>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
         
-        <!-- About Us -->
-        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
-          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
-          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">About Us</h3>
-          <p style="line-height: 1.5; color: #e6e6e6;">ImageOpt Pro is an online service for fast and high-quality image optimization. Created by an independent developer from Ukraine.</p>
+        <!-- Watermarks - UPDATED BLOCK -->
+        <div class="watermark-controls" id="watermarkControls">
+          <h3 class="card-title"><i class="fas fa-water"></i> Watermark</h3>
+          
+          <!-- Type switch -->
+          <div class="watermark-type-toggle">
+            <button class="watermark-type-btn active" data-type="text">Text</button>
+            <button class="watermark-type-btn" data-type="image">Image</button>
+          </div>
+          
+          <!-- Text watermark -->
+          <div class="watermark-text-section">
+            <div class="watermark-row">
+              <input type="text" id="watermarkText" placeholder="Watermark text">
+              <input type="color" id="watermarkColor" value="#ffffff">
+            </div>
+            <div class="watermark-row">
+              <label>Size:</label>
+              <input type="range" id="watermarkSize" min="10" max="50" value="24">
+              <span id="watermarkSizeValue">24px</span>
+            </div>
+          </div>
+          
+          <!-- Image watermark -->
+          <div class="watermark-image-section" style="display: none;">
+            <div class="watermark-row">
+              <input type="file" id="watermarkImageInput" accept="image/*">
+            </div>
+            <div class="watermark-row">
+              <label>Scale (%):</label>
+              <input type="range" id="watermarkImageScale" min="5" max="50" value="20">
+              <span id="watermarkImageScaleValue">20%</span>
+            </div>
+          </div>
+          
+          <!-- Common settings -->
+          <div class="watermark-row">
+            <label>Opacity:</label>
+            <input type="range" id="watermarkOpacity" min="10" max="100" value="70">
+            <span id="watermarkOpacityValue">70%</span>
+          </div>
+          
+          <div class="watermark-row">
+            <label>Position:</label>
+            <select id="watermarkPosition">
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
+              <option value="center">Center</option>
+            </select>
+          </div>
+          
+          <div class="watermark-preview">
+            <span id="watermarkPreview">Watermark Preview</span>
+            <img id="watermarkImagePreview" style="display: none; max-width: 100%; max-height: 100px;">
+          </div>
         </div>
         
-        <!-- Payment -->
-        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
-          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
-          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Payment</h3>
-          <p style="line-height: 1.5; color: #e6e6e6;">We accept payments via PayPal — fast, convenient, and secure. Pay with your bank card or PayPal balance.</p>
+        <div class="section-title">
+          <i class="fas fa-sliders-h"></i>
+          <h2>Optimization Settings</h2>
         </div>
         
-        <!-- Privacy Policy -->
-        <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
-          <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
-          <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Privacy</h3>
-          <p style="line-height: 1.5; color: #e6e6e6;">We respect your privacy. Uploaded images are not stored after processing. We use cookies for settings and analytics.</p>
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          Configure compression settings to achieve the optimal balance between quality and file size.
         </div>
         
+        <div class="controls">
+          <div class="control-group">
+            <div class="control-label">
+              <span class="control-label-text">Quality:</span>
+              <span class="quality-value control-value" id="qualityValue">80%</span>
+            </div>
+            <input type="range" id="quality" min="10" max="100" value="80">
+            <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+              <span class="explanation-icon">i</span>
+              Higher quality = larger file size. We recommend 60-80% for optimal results.
+            </div>
+          </div>
+          
+          <div class="control-group">
+            <div class="control-label">
+              <span class="control-label-text">Output Format:</span>
+            </div>
+            <select id="format">
+              <option value="jpeg">JPEG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WebP</option>
+              <option value="avif">AVIF</option>
+            </select>
+            <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+              <span class="explanation-icon">i</span>
+              WebP and AVIF provide the best compression without quality loss.
+            </div>
+          </div>
+          
+          <div class="control-group">
+            <div class="control-label">
+              <span class="control-label-text">Max Width (px):</span>
+            </div>
+            <select id="maxWidth">
+              <option value="">No resize</option>
+              <option value="640">640px (for mobile)</option>
+              <option value="800">800px (for tablets)</option>
+              <option value="1024">1024px (for laptops)</option>
+              <option value="1200">1200px (for monitors)</option>
+              <option value="1920">1920px (4K)</option>
+            </select>
+            <div class="info-box" style="margin-top: 10px; font-size: 0.9rem;">
+              <span class="explanation-icon">i</span>
+              Reducing width significantly decreases file size.
+            </div>
+          </div>
+          
+          <div class="control-group">
+            <label for="auto-optimize">Auto Optimization</label>
+            <div class="auto-optimize">
+              <input type="checkbox" id="autoOptimizeCheckbox">
+              <span>Optimize immediately after upload</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Advanced settings -->
+        <div class="settings-toggle">
+          <button class="settings-toggle-btn" id="toggleAdvancedSettings">
+            <i class="fas fa-cog"></i> Advanced Settings
+          </button>
+        </div>
+        
+        <div class="advanced-settings" id="advancedSettings">
+          <div class="control-group">
+            <label>Advanced JPEG Settings</label>
+            <div class="progressive-toggle">
+              <input type="checkbox" id="progressiveJpeg">
+              <span>Progressive JPEG (better quality)</span>
+            </div>
+            <div class="metadata-toggle">
+              <input type="checkbox" id="removeMetadata" checked>
+              <span>Remove metadata (EXIF, GPS, etc.)</span>
+            </div>
+          </div>
+          
+          <div class="control-group">
+            <label>PNG Settings</label>
+            <select id="pngCompression">
+              <option value="auto">Auto compression (recommended)</option>
+              <option value="lossless">Lossless (best quality)</option>
+              <option value="lossy">Lossy (better compression)</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label>Watermark</label>
+            <div class="watermark-control">
+              <input type="checkbox" id="enableWatermark">
+              <span>Add watermark to images</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="info-box" style="margin-top: 20px;">
+          <i class="fas fa-bolt"></i>
+          After setting parameters, click "Optimize Images" to start processing.
+        </div>
+        
+        <button class="btn" id="processBtn">
+          <i class="fas fa-cogs"></i> Optimize Images
+        </button>
       </div>
       
-      <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, #444, transparent); margin: 30px auto 15px; max-width: 1100px;">
+      <div class="card">
+        <div class="section-title">
+          <i class="fas fa-tachometer-alt"></i>
+          <h2>Optimization Results</h2>
+        </div>
+        
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          Results will be displayed here after optimization. You can compare original and optimized images.
+        </div>
+        
+        <div class="processing" id="processing">
+          <div class="spinner"></div>
+          <p>Processing images...</p>
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="progress-text" id="progressText">0%</div>
+        </div>
+        
+        <div class="preview-section" id="previewSection">
+          <div class="stats" id="stats"></div>
+          
+          <div class="preview-container" id="previewContainer"></div>
+          
+          <div class="info-box" style="margin-top: 20px;">
+            <i class="fas fa-download"></i>
+            After optimization, you can download results or save settings for future use.
+          </div>
+          
+          <div class="buttons">
+            <button class="btn" id="downloadBtn" disabled>
+              <i class="fas fa-download"></i> Download
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">
+              <i class="fas fa-redo"></i> New Project
+            </button>
+            <button class="btn" id="saveSettingsBtn">
+              <i class="fas fa-save"></i> Save Profile
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header">
+      <h3 class="history-title"><i class="fas fa-history"></i> Processing History</h3>
+      <button class="close-history" id="closeHistory"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="historyList">
+      <p style="text-align: center; padding: 20px; color: var(--gray);">History is empty</p>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <!-- New footer in English -->
+  <footer style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%); color: #fff; padding: 45px 15px 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; font-size: 12px;">
+    <!-- Gradient line at the top -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #ffcc00, #ff9900);"></div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
       
-      <!-- Contacts & Social -->
-      <div style="text-align: center; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
-        <div style="display: inline-flex; align-items: center; background: rgba(40,40,40,0.6); padding: 8px 18px; border-radius: 25px; margin-bottom: 12px; backdrop-filter: blur(5px);">
-          <svg style="width: 16px; height: 16px; margin-right: 6px; fill: #ffcc00;" viewBox="0 0 24 24">
-            <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
+      <!-- About Us -->
+      <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+        <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+        <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">About Us</h3>
+        <p style="line-height: 1.5; color: #e6e6e6;">ImageOpt Pro is an online service for fast and high-quality image optimization. Created by an independent developer from Ukraine.</p>
+      </div>
+      
+      <!-- Payment -->
+      <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+        <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+        <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Payment</h3>
+        <p style="line-height: 1.5; color: #e6e6e6;">We accept payments via PayPal — fast, convenient, and secure. Pay with your bank card or PayPal balance.</p>
+      </div>
+      
+      <!-- Privacy Policy -->
+      <div style="position: relative; padding: 18px; border-radius: 10px; background: rgba(30,30,30,0.7); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+        <div style="position: absolute; top: -13px; left: 13px; width: 32px; height: 32px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;"></div>
+        <h3 style="color:#ffcc00; font-size: 13px; margin-top: 14px; margin-bottom: 12px; font-weight: 600;">Privacy</h3>
+        <p style="line-height: 1.5; color: #e6e6e6;">We respect your privacy. Uploaded images are not stored after processing. We use cookies for settings and analytics.</p>
+      </div>
+      
+    </div>
+    
+    <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, #444, transparent); margin: 30px auto 15px; max-width: 1100px;">
+    
+    <!-- Contacts & Social -->
+    <div style="text-align: center; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2;">
+      <div style="display: inline-flex; align-items: center; background: rgba(40,40,40,0.6); padding: 8px 18px; border-radius: 25px; margin-bottom: 12px; backdrop-filter: blur(5px);">
+        <svg style="width: 16px; height: 16px; margin-right: 6px; fill: #ffcc00;" viewBox="0 0 24 24">
+          <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
+        </svg>
+        <a href="mailto:korovinkonstantin0@gmail.com" style="color:#ffcc00; text-decoration: none; font-weight: 500;">korovinkonstantin0@gmail.com</a>
+      </div>
+      
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-bottom: 15px; font-size: 12px;">
+        <a href="https://x.com/KKorovin71519" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
+          <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1DA1F2;" viewBox="0 0 24 24">
+            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.170-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
           </svg>
-          <a href="mailto:korovinkonstantin0@gmail.com" style="color:#ffcc00; text-decoration: none; font-weight: 500;">korovinkonstantin0@gmail.com</a>
-        </div>
-        
-        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-bottom: 15px; font-size: 12px;">
-          <a href="https://x.com/KKorovin71519" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
-            <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1DA1F2;" viewBox="0 0 24 24">
-              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-            </svg>
-            X.com
-          </a>
-          <a href="https://m.facebook.com/konstantin.korovin.433091/" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
-            <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1877F2;" viewBox="0 0 24 24">
-              <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
-            </svg>
-            Facebook
-          </a>
-        </div>
-        
-        <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 ImageOpt Pro. All rights reserved.</p>
-        <!-- Views counter -->
-        <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
+          X.com
+        </a>
+        <a href="https://m.facebook.com/konstantin.korovin.433091/" style="color:#fff; text-decoration: none; display: inline-flex; align-items: center; padding: 5px 12px; background: rgba(40,40,40,0.6); border-radius: 25px; transition: all 0.3s; backdrop-filter: blur(5px);">
+          <svg style="width: 14px; height: 14px; margin-right: 5px; fill: #1877F2;" viewBox="0 0 24 24">
+            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+          </svg>
+          Facebook
+        </a>
       </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- Cropper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Added library for HEIC support -->
-    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
-    <!-- Added library for TIFF support -->
-    <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
-    <script src="script.js"></script>
+      
+      <p style="color: #aaa; letter-spacing: 0.5px;">© 2025 ImageOpt Pro. All rights reserved.</p>
+      <!-- Views counter -->
+      <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
+    </div>
+  </footer>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- Added library for HEIC support -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
+  <!-- Added library for TIFF support -->
+  <script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.min.js"></script>
+  <script src="script.js"></script>
+  
+  <!-- Added handler for PDF buttons -->
+  <script>
+    document.getElementById('createPdfBtn').addEventListener('click', function() {
+      window.location.href = 'PDF.html';
+    });
     
-    <!-- Added handler for PDF buttons -->
-    <script>
-        document.getElementById('createPdfBtn').addEventListener('click', function() {
-            window.location.href = 'PDF.html';
-        });
-        
-        // New handler for extract images button
-        document.getElementById('extractPdfImagesBtn').addEventListener('click', function() {
-            window.location.href = 'PDF2.html';
-        });
-    </script>
+    // New handler for extract images button
+    document.getElementById('extractPdfImagesBtn').addEventListener('click', function() {
+      window.location.href = 'PDF2.html';
+    });
+  </script>
+  
+  <!-- Handlers for new buttons -->
+  <script>
+    // Handlers for new buttons
+    document.getElementById('pdfCompressorBtn').addEventListener('click', function() {
+      window.location.href = 'PDF Compressor.html';
+    });
     
-    <!-- Handlers for new buttons -->
-    <script>
-        // Handlers for new buttons
-        document.getElementById('pdfCompressorBtn').addEventListener('click', function() {
-            window.location.href = 'PDF Compressor.html';
-        });
-        
-        document.getElementById('pdfMergerBtn').addEventListener('click', function() {
-            window.location.href = 'PDF Merger.html';
-        });
-        
-        // Handler for new PDF to Word/Excel button
-        document.getElementById('pdfToWordExcelBtn').addEventListener('click', function() {
-            window.location.href = 'PDF to Word or Excel.html';
-        });
-        
-        // Handlers for new tool buttons
-        document.getElementById('batchRenameBtn').addEventListener('click', function() {
-            window.location.href = 'Batch rename files.html';
-        });
-        
-        document.getElementById('exifEditorBtn').addEventListener('click', function() {
-            window.location.href = 'EXIF editor.html';
-        });
-        
-        document.getElementById('collageMakerBtn').addEventListener('click', function() {
-            window.location.href = 'Photo Collage Maker.html';
-        });
-        
-        // New handler for quality improvement button
-        document.getElementById('improveQualityBtn').addEventListener('click', function() {
-            window.location.href = 'Improved image quality.html';
-        });
-        
-        // New handler for Preview/Mockup Generator button
-        document.getElementById('previewMockupBtn').addEventListener('click', function() {
-            window.location.href = 'Preview Mockup Generator.html';
-        });
-        
-        // Handler for new Color Palette Extractor button
-        document.getElementById('colorPaletteBtn').addEventListener('click', function() {
-            window.location.href = 'Color Palette Extractor.html';
-        });
-        
-        // New handler for SVG Converter button
-        document.getElementById('svgConverterBtn').addEventListener('click', function() {
-            window.location.href = 'Professional SVG Converter.html';
-        });
-        
-        // New handler for Multi-format Image Converter button
-        document.getElementById('multiFormatConverterBtn').addEventListener('click', function() {
-            window.location.href = 'Multi-format Image Converter.html';
-        });
-    </script>
+    document.getElementById('pdfMergerBtn').addEventListener('click', function() {
+      window.location.href = 'PDF Merger.html';
+    });
     
-    <!-- Script for views counter -->
-    <script>
-        // Create parameters for counter
-        const params = new URLSearchParams({
-            style: 'flat-square',
-            label: 'Views',
-            color: 'blue',
-            logo: 'firebase'
-        });
-        
-        // Get current page path
-        const currentPath = window.location.pathname;
-        
-        // Form URL for counter
-        const counterURL = `https://hits.sh/imageopt-pro.web.app${currentPath}.svg?${params.toString()}`;
-        
-        // Set source for image
-        document.getElementById('page-views').src = counterURL;
-    </script>
+    // Handler for new PDF to Word/Excel button
+    document.getElementById('pdfToWordExcelBtn').addEventListener('click', function() {
+      window.location.href = 'PDF to Word or Excel.html';
+    });
+    
+    // Handlers for new tool buttons
+    document.getElementById('batchRenameBtn').addEventListener('click', function() {
+      window.location.href = 'Batch rename files.html';
+    });
+    
+    document.getElementById('exifEditorBtn').addEventListener('click', function() {
+      window.location.href = 'EXIF editor.html';
+    });
+    
+    document.getElementById('collageMakerBtn').addEventListener('click', function() {
+      window.location.href = 'Photo Collage Maker.html';
+    });
+    
+    // New handler for quality improvement button
+    document.getElementById('improveQualityBtn').addEventListener('click', function() {
+      window.location.href = 'Improved image quality.html';
+    });
+    
+    // New handler for Preview/Mockup Generator button
+    document.getElementById('previewMockupBtn').addEventListener('click', function() {
+      window.location.href = 'Preview Mockup Generator.html';
+    });
+    
+    // Handler for new Color Palette Extractor button
+    document.getElementById('colorPaletteBtn').addEventListener('click', function() {
+      window.location.href = 'Color Palette Extractor.html';
+    });
+    
+    // New handler for SVG Converter button
+    document.getElementById('svgConverterBtn').addEventListener('click', function() {
+      window.location.href = 'Professional SVG Converter.html';
+    });
+    
+    // New handler for Multi-format Image Converter button
+    document.getElementById('multiFormatConverterBtn').addEventListener('click', function() {
+      window.location.href = 'Multi-format Image Converter.html';
+    });
+  </script>
+  
+  <!-- Script for views counter -->
+  <script>
+    // Create parameters for counter
+    const params = new URLSearchParams({
+      style: 'flat-square',
+      label: 'Views',
+      color: 'blue',
+      logo: 'firebase'
+    });
+    
+    // Get current page path
+    const currentPath = window.location.pathname;
+    
+    // Form URL for counter
+    const counterURL = `https://hits.sh/imageopt-pro.web.app${currentPath}.svg?${params.toString()}`;
+    
+    // Set source for image
+    document.getElementById('page-views').src = counterURL;
+  </script>
 </body>
 </html>
