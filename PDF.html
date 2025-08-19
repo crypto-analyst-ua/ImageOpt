@@ -3,43 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced PDF Editor</title>
+    <title>Modern PDF Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #fca311;
+            --danger: #e63946;
+            --dark: #14213d;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --border: #dee2e6;
+            --card-bg: #ffffff;
+            --sidebar-bg: #1e293b;
+            --toolbar-bg: #2d3748;
+            --canvas-bg: #edf2f7;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            color: #333;
+            background: linear-gradient(135deg, var(--dark), #1a2a6c);
+            color: var(--dark);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .header {
-            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
-            padding: 20px 30px;
+            padding: 16px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            z-index: 10;
         }
         
         .logo {
@@ -50,31 +74,61 @@
         
         .logo-icon {
             font-size: 2.5rem;
-            color: #ffcc00;
+            color: var(--warning);
         }
         
         .logo h1 {
-            font-weight: 700;
+            font-weight: 800;
             font-size: 2.2rem;
-            letter-spacing: 1px;
+            letter-spacing: -0.5px;
         }
         
         .logo span {
-            color: #ffcc00;
+            color: var(--warning);
             font-weight: 800;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .header-btn i {
+            font-size: 1.1rem;
         }
         
         .main-content {
             display: flex;
-            height: calc(100vh - 180px);
+            flex: 1;
+            height: calc(100% - 80px);
+            overflow: hidden;
         }
         
         /* Toolbar Styles */
         .toolbar {
-            width: 250px;
-            background: #2c3e50;
+            width: 260px;
+            background: var(--sidebar-bg);
             color: white;
-            padding: 20px 10px;
+            padding: 20px 0;
             display: flex;
             flex-direction: column;
             gap: 25px;
@@ -82,22 +136,23 @@
         }
         
         .toolbar-group {
-            border-bottom: 1px solid #3d5168;
-            padding-bottom: 20px;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .toolbar-group:last-child {
             border-bottom: none;
+            padding-bottom: 10px;
         }
         
         .toolbar h3 {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            padding-left: 10px;
-            color: #ffcc00;
+            color: var(--warning);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-weight: 600;
         }
         
         .toolbar-btn {
@@ -105,7 +160,7 @@
             align-items: center;
             gap: 12px;
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px 16px;
             background: transparent;
             border: none;
             border-radius: 8px;
@@ -113,29 +168,33 @@
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-align: left;
+            margin-bottom: 5px;
         }
         
         .toolbar-btn i {
             font-size: 1.2rem;
             min-width: 25px;
+            width: 24px;
+            text-align: center;
         }
         
         .toolbar-btn:hover {
-            background: #34495e;
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .toolbar-btn.active {
-            background: #3498db;
+            background: var(--primary);
             color: white;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
         }
         
         .color-picker {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            padding: 10px;
+            padding: 10px 0;
         }
         
         .color-item {
@@ -144,7 +203,8 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         
         .color-item:hover {
@@ -154,7 +214,7 @@
         .color-item.active {
             border-color: white;
             transform: scale(1.15);
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         
         /* Editor Area */
@@ -162,8 +222,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #ecf0f1;
-            padding: 20px;
+            background: var(--canvas-bg);
             position: relative;
             overflow: hidden;
         }
@@ -172,56 +231,105 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #bdc3c7;
+            padding: 15px 25px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            z-index: 5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
         
         .editor-header h2 {
-            color: #2c3e50;
-            font-size: 1.8rem;
+            color: var(--dark);
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
         }
         
         .editor-header h2 i {
-            color: #e74c3c;
+            color: var(--accent);
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .editor-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: var(--dark);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .editor-btn:hover {
+            background: #f8f9fa;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .editor-btn i {
+            font-size: 0.9rem;
         }
         
         .page-thumbnails {
             display: flex;
             gap: 15px;
             overflow-x: auto;
-            padding: 10px 5px;
+            padding: 15px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border);
         }
         
         .page-thumbnail {
-            width: 80px;
-            height: 100px;
+            width: 90px;
+            height: 115px;
             background: white;
-            border: 2px solid #95a5a6;
-            border-radius: 8px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 1.2rem;
-            color: #7f8c8d;
+            color: var(--gray);
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
         }
         
         .page-thumbnail:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .page-thumbnail.active {
-            border-color: #3498db;
-            color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            z-index: 2;
         }
         
         .canvas-container {
@@ -229,21 +337,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #7f8c8d;
-            border-radius: 10px;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
             overflow: auto;
-            padding: 20px;
+            position: relative;
         }
         
         #pdf-canvas-container {
             background: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
         }
         
         #pdf-canvas {
-            border: 1px solid #bdc3c7;
+            display: block;
         }
         
         /* Properties Panel */
@@ -252,40 +361,80 @@
             top: 20px;
             right: 20px;
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            width: 280px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 300px;
             z-index: 100;
+            border: 1px solid var(--border);
         }
         
         .panel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--dark);
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .close-panel {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
             font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ecf0f1;
+            transition: color 0.2s;
+        }
+        
+        .close-panel:hover {
+            color: var(--danger);
         }
         
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #34495e;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
         }
         
         .form-group select, 
         .form-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #bdc3c7;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             font-size: 1rem;
+            background: white;
+            transition: border 0.2s;
+        }
+        
+        .form-group select:focus, 
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
         }
         
         /* Toast Notification */
@@ -293,42 +442,110 @@
             position: fixed;
             bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(44, 62, 80, 0.9);
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark);
             color: white;
             padding: 15px 30px;
-            border-radius: 50px;
+            border-radius: 12px;
             font-weight: 500;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.4s ease;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
         .toast.show {
             opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast.success {
+            background: var(--success);
+        }
+        
+        .toast.error {
+            background: var(--danger);
+        }
+        
+        .toast.warning {
+            background: var(--warning);
         }
         
         /* Footer */
         .footer {
-            background: #2c3e50;
+            background: var(--dark);
             color: #ecf0f1;
             text-align: center;
             padding: 15px;
             font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .footer a {
-            color: #3498db;
+            color: var(--success);
             text-decoration: none;
+            font-weight: 500;
         }
         
         .footer a:hover {
             text-decoration: underline;
         }
         
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        .zoom-btn {
+            background: none;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .zoom-value {
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+        
         /* Responsive design */
         @media (max-width: 1200px) {
+            .toolbar {
+                width: 220px;
+            }
+            
+            .page-thumbnail {
+                width: 80px;
+                height: 105px;
+            }
+        }
+        
+        @media (max-width: 992px) {
             .main-content {
                 flex-direction: column;
                 height: auto;
@@ -339,6 +556,7 @@
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 10px;
+                padding: 15px;
             }
             
             .toolbar-group {
@@ -347,6 +565,10 @@
                 flex: 1;
                 min-width: 200px;
             }
+            
+            .canvas-container {
+                min-height: 500px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -354,15 +576,40 @@
                 flex-direction: column;
                 text-align: center;
                 gap: 15px;
+                padding: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
             }
             
             .toolbar-group {
-                min-width: 150px;
+                min-width: 100%;
             }
             
             .editor-header {
                 flex-direction: column;
                 gap: 15px;
+            }
+            
+            .editor-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            #properties-panel {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90%;
+                max-width: 400px;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
@@ -372,40 +619,34 @@
         <div class="header">
             <div class="logo">
                 <i class="fas fa-file-pdf logo-icon"></i>
-                <h1>Advanced <span>PDF</span> Editor</h1>
+                <h1>Modern <span>PDF</span> Editor</h1>
             </div>
-            <div class="header-info">
-                <p>Create, edit, and export PDF documents with ease</p>
+            <div class="header-actions">
+                <button class="header-btn" id="new-pdf-btn">
+                    <i class="fas fa-file"></i>
+                    <span>New PDF</span>
+                </button>
+                <button class="header-btn" id="open-pdf-btn">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Open PDF</span>
+                </button>
+                <button class="header-btn" id="save-pdf-btn">
+                    <i class="fas fa-save"></i>
+                    <span>Save PDF</span>
+                </button>
+                <button class="header-btn" id="export-pdf-btn">
+                    <i class="fas fa-file-export"></i>
+                    <span>Export</span>
+                </button>
             </div>
         </div>
         
         <div class="main-content">
             <!-- Left Toolbar -->
             <div class="toolbar">
-                <!-- File Operations -->
-                <div class="toolbar-group">
-                    <h3><i class="fas fa-folder-open"></i> File</h3>
-                    <button id="new-pdf-btn" class="toolbar-btn">
-                        <i class="fas fa-file"></i>
-                        <span>New PDF</span>
-                    </button>
-                    <button id="open-pdf-btn" class="toolbar-btn">
-                        <i class="fas fa-folder-open"></i>
-                        <span>Open PDF</span>
-                    </button>
-                    <button id="save-pdf-btn" class="toolbar-btn">
-                        <i class="fas fa-save"></i>
-                        <span>Save PDF</span>
-                    </button>
-                    <button id="export-pdf-btn" class="toolbar-btn">
-                        <i class="fas fa-file-export"></i>
-                        <span>Export PDF</span>
-                    </button>
-                </div>
-
                 <!-- Editing Tools -->
                 <div class="toolbar-group">
-                    <h3><i class="fas fa-pencil-alt"></i> Tools</h3>
+                    <h3><i class="fas fa-pencil-alt"></i> Editing Tools</h3>
                     <button id="text-tool" class="toolbar-btn active">
                         <i class="fas fa-font"></i>
                         <span>Text</span>
@@ -430,6 +671,10 @@
                         <i class="fas fa-signature"></i>
                         <span>Signature</span>
                     </button>
+                    <button id="highlight-tool" class="toolbar-btn">
+                        <i class="fas fa-highlighter"></i>
+                        <span>Highlight</span>
+                    </button>
                 </div>
 
                 <!-- Page Management -->
@@ -446,6 +691,10 @@
                     <button id="duplicate-page-btn" class="toolbar-btn">
                         <i class="fas fa-copy"></i>
                         <span>Duplicate Page</span>
+                    </button>
+                    <button id="rotate-page-btn" class="toolbar-btn">
+                        <i class="fas fa-sync"></i>
+                        <span>Rotate Page</span>
                     </button>
                 </div>
 
@@ -464,18 +713,9 @@
                         <i class="fas fa-eraser"></i>
                         <span>Delete</span>
                     </button>
-                </div>
-
-                <!-- Zoom Controls -->
-                <div class="toolbar-group">
-                    <h3><i class="fas fa-search"></i> Zoom</h3>
-                    <button id="zoom-in-btn" class="toolbar-btn">
-                        <i class="fas fa-search-plus"></i>
-                        <span>Zoom In</span>
-                    </button>
-                    <button id="zoom-out-btn" class="toolbar-btn">
-                        <i class="fas fa-search-minus"></i>
-                        <span>Zoom Out</span>
+                    <button id="clear-btn" class="toolbar-btn">
+                        <i class="fas fa-broom"></i>
+                        <span>Clear Page</span>
                     </button>
                 </div>
 
@@ -489,6 +729,22 @@
                         <div class="color-item" data-color="#0000ff" style="background-color: #0000ff"></div>
                         <div class="color-item" data-color="#ffff00" style="background-color: #ffff00"></div>
                         <div class="color-item" data-color="#ff00ff" style="background-color: #ff00ff"></div>
+                        <div class="color-item" data-color="#ff9900" style="background-color: #ff9900"></div>
+                        <div class="color-item" data-color="#00ffff" style="background-color: #00ffff"></div>
+                        <div class="color-item" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ddd"></div>
+                    </div>
+                </div>
+
+                <!-- Line Width -->
+                <div class="toolbar-group">
+                    <h3><i class="fas fa-sliders-h"></i> Line Width</h3>
+                    <div class="form-group">
+                        <input type="range" id="line-width" min="1" max="20" value="2">
+                        <div class="slider-container">
+                            <span>1</span>
+                            <input type="range" id="line-width" min="1" max="20" value="2" class="slider">
+                            <span class="slider-value">2px</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -497,12 +753,22 @@
             <div class="editor-area">
                 <div class="editor-header">
                     <h2><i class="fas fa-edit"></i> PDF Editor Canvas</h2>
-                    <div class="page-controls">
-                        <h3>Pages</h3>
-                        <div class="page-thumbnails" id="page-thumbnails">
-                            <!-- Page thumbnails will be generated here -->
-                        </div>
+                    <div class="editor-actions">
+                        <button class="editor-btn" id="zoom-out-btn">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="editor-btn" id="zoom-reset-btn">
+                            <i class="fas fa-search"></i>
+                            <span>100%</span>
+                        </button>
+                        <button class="editor-btn" id="zoom-in-btn">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
                     </div>
+                </div>
+                
+                <div class="page-thumbnails" id="page-thumbnails">
+                    <!-- Page thumbnails will be generated here -->
                 </div>
                 
                 <div class="canvas-container">
@@ -514,7 +780,12 @@
             
             <!-- Properties Panel (initially hidden) -->
             <div id="properties-panel" style="display: none;">
-                <div class="panel-header">Text Properties</div>
+                <div class="panel-header">
+                    <span>Properties</span>
+                    <button class="close-panel" id="close-panel-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
                 <div class="form-group">
                     <label for="font-family">Font Family</label>
                     <select id="font-family">
@@ -523,27 +794,54 @@
                         <option value="Georgia">Georgia</option>
                         <option value="Times New Roman">Times New Roman</option>
                         <option value="Courier New">Courier New</option>
+                        <option value="Impact">Impact</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="font-size">Font Size</label>
-                    <input type="number" id="font-size" min="8" max="72" value="16">
+                    <input type="number" id="font-size" min="8" max="72" value="24">
                 </div>
                 <div class="form-group">
                     <label for="font-color">Text Color</label>
                     <input type="color" id="font-color" value="#000000">
                 </div>
+                <div class="form-group">
+                    <label for="opacity">Opacity</label>
+                    <div class="slider-container">
+                        <span>0%</span>
+                        <input type="range" id="opacity" min="0" max="100" value="100">
+                        <span class="slider-value">100%</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="line-width-panel">Line Width</label>
+                    <div class="slider-container">
+                        <span>1px</span>
+                        <input type="range" id="line-width-panel" min="1" max="20" value="2">
+                        <span class="slider-value">2px</span>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>Advanced PDF Editor &copy; 2025 | Created with HTML, CSS, and JavaScript</p>
+            <p>Modern PDF Editor &copy; 2025 | Created with HTML, CSS, and JavaScript</p>
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="footer-zoom-out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span class="zoom-value" id="zoom-value">100%</span>
+                <button class="zoom-btn" id="footer-zoom-in">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
-    <button id="download-btn" style="display: none;"></button>
-
+    <input type="file" id="file-input" style="display: none;" accept="application/pdf, image/*">
+    
     <script>
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
@@ -560,7 +858,8 @@
                 currentHistoryIndex: -1,
                 isDrawing: false,
                 drawingObject: null,
-                originalPdfBytes: null
+                originalPdfBytes: null,
+                lineWidth: 2
             };
 
             const elements = {
@@ -571,7 +870,12 @@
                 propertiesPanel: document.getElementById('properties-panel'),
                 fontFamily: document.getElementById('font-family'),
                 fontSize: document.getElementById('font-size'),
-                fontColor: document.getElementById('font-color')
+                fontColor: document.getElementById('font-color'),
+                opacity: document.getElementById('opacity'),
+                lineWidth: document.getElementById('line-width'),
+                lineWidthPanel: document.getElementById('line-width-panel'),
+                zoomValue: document.getElementById('zoom-value'),
+                fileInput: document.getElementById('file-input')
             };
 
             function initCanvas() {
@@ -580,41 +884,90 @@
                     height: 1000,
                     backgroundColor: '#ffffff',
                     selection: true,
-                    preserveObjectStacking: true
+                    preserveObjectStacking: true,
+                    allowTouchScrolling: true
                 });
 
+                // Event handlers
                 state.canvas.on('object:selected', handleObjectSelected);
                 state.canvas.on('selection:cleared', handleSelectionCleared);
                 state.canvas.on('object:modified', saveState);
                 state.canvas.on('object:added', saveState);
+                state.canvas.on('object:removed', saveState);
                 
                 // Add drawing handlers
                 state.canvas.on('mouse:down', startDrawing);
                 state.canvas.on('mouse:move', continueDrawing);
                 state.canvas.on('mouse:up', stopDrawing);
+                
+                // Set initial line width
+                state.lineWidth = 2;
             }
 
             function startDrawing(options) {
-                if (state.currentTool !== 'signature') return;
+                if (!['signature', 'line', 'highlight'].includes(state.currentTool)) return;
                 
                 state.isDrawing = true;
                 const pointer = state.canvas.getPointer(options.e);
-                state.drawingObject = new fabric.Path(`M ${pointer.x} ${pointer.y}`, {
-                    stroke: state.currentColor,
-                    strokeWidth: 2,
-                    fill: '',
-                    strokeLineCap: 'round',
-                    strokeLineJoin: 'round'
-                });
-                state.canvas.add(state.drawingObject);
+                
+                if (state.currentTool === 'signature') {
+                    state.drawingObject = new fabric.Path(`M ${pointer.x} ${pointer.y}`, {
+                        stroke: state.currentColor,
+                        strokeWidth: state.lineWidth,
+                        fill: '',
+                        strokeLineCap: 'round',
+                        strokeLineJoin: 'round'
+                    });
+                    state.canvas.add(state.drawingObject);
+                }
+                else if (state.currentTool === 'line') {
+                    state.drawingObject = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
+                        stroke: state.currentColor,
+                        strokeWidth: state.lineWidth
+                    });
+                    state.canvas.add(state.drawingObject);
+                }
+                else if (state.currentTool === 'highlight') {
+                    state.drawingObject = new fabric.Rect({
+                        left: pointer.x,
+                        top: pointer.y,
+                        width: 100,
+                        height: 20,
+                        fill: state.currentColor + '80', // Add opacity
+                        stroke: 'transparent',
+                        selectable: true
+                    });
+                    state.canvas.add(state.drawingObject);
+                }
             }
 
             function continueDrawing(options) {
                 if (!state.isDrawing || !state.drawingObject) return;
                 
                 const pointer = state.canvas.getPointer(options.e);
-                state.drawingObject.path.push(['L', pointer.x, pointer.y]);
-                state.drawingObject.set('dirty', true);
+                
+                if (state.currentTool === 'signature') {
+                    state.drawingObject.path.push(['L', pointer.x, pointer.y]);
+                    state.drawingObject.set('dirty', true);
+                }
+                else if (state.currentTool === 'line') {
+                    state.drawingObject.set({
+                        x2: pointer.x,
+                        y2: pointer.y
+                    });
+                }
+                else if (state.currentTool === 'highlight') {
+                    const width = pointer.x - state.drawingObject.left;
+                    const height = pointer.y - state.drawingObject.top;
+                    
+                    state.drawingObject.set({
+                        width: Math.abs(width),
+                        height: Math.abs(height),
+                        originX: width < 0 ? 'right' : 'left',
+                        originY: height < 0 ? 'bottom' : 'top'
+                    });
+                }
+                
                 state.canvas.requestRenderAll();
             }
 
@@ -625,7 +978,8 @@
             }
 
             function setupToolSelection() {
-                const tools = ['text-tool', 'image-tool', 'rectangle-tool', 'circle-tool', 'line-tool', 'signature-tool'];
+                const tools = ['text-tool', 'image-tool', 'rectangle-tool', 'circle-tool', 
+                              'line-tool', 'signature-tool', 'highlight-tool'];
                 
                 tools.forEach(tool => {
                     document.getElementById(tool).addEventListener('click', () => {
@@ -637,7 +991,7 @@
                         state.currentTool = tool.split('-')[0];
                         
                         state.canvas.discardActiveObject().renderAll();
-                        elements.propertiesPanel.style.display = 'block';
+                        elements.propertiesPanel.style.display = state.currentTool === 'text' ? 'block' : 'none';
                     });
                 });
             }
@@ -651,6 +1005,21 @@
                         
                         item.classList.add('active');
                         state.currentColor = item.dataset.color;
+                        
+                        // Update active object color if it's a shape
+                        const activeObject = state.canvas.getActiveObject();
+                        if (activeObject) {
+                            if (activeObject.type === 'textbox') {
+                                activeObject.set('fill', state.currentColor);
+                            } else {
+                                activeObject.set('stroke', state.currentColor);
+                                if (state.currentTool === 'highlight') {
+                                    activeObject.set('fill', state.currentColor + '80');
+                                }
+                            }
+                            state.canvas.renderAll();
+                            saveState();
+                        }
                     });
                 });
             }
@@ -673,6 +1042,7 @@
                         state.canvas.add(text);
                         state.canvas.setActiveObject(text);
                         text.enterEditing();
+                        saveState();
                     }
                 });
 
@@ -684,12 +1054,13 @@
                             top: options.pointer.y,
                             width: 100,
                             height: 50,
-                            fill: 'rgba(255, 255, 255, 0.3)',
+                            fill: 'transparent',
                             stroke: state.currentColor,
-                            strokeWidth: 2
+                            strokeWidth: state.lineWidth
                         });
                         
                         state.canvas.add(rect);
+                        saveState();
                     }
                 });
 
@@ -700,34 +1071,21 @@
                             left: options.pointer.x,
                             top: options.pointer.y,
                             radius: 30,
-                            fill: 'rgba(255, 255, 255, 0.3)',
+                            fill: 'transparent',
                             stroke: state.currentColor,
-                            strokeWidth: 2
+                            strokeWidth: state.lineWidth
                         });
                         
                         state.canvas.add(circle);
-                    }
-                });
-
-                // Line tool
-                state.canvas.on('mouse:down', (options) => {
-                    if (state.currentTool === 'line' && !options.target) {
-                        const line = new fabric.Line([options.pointer.x, options.pointer.y, options.pointer.x + 100, options.pointer.y], {
-                            stroke: state.currentColor,
-                            strokeWidth: 2
-                        });
-                        
-                        state.canvas.add(line);
+                        saveState();
                     }
                 });
 
                 // Image tool
                 state.canvas.on('mouse:down', (options) => {
                     if (state.currentTool === 'image' && !options.target) {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.onchange = (e) => {
+                        elements.fileInput.accept = 'image/*';
+                        elements.fileInput.onchange = (e) => {
                             const file = e.target.files[0];
                             if (file) {
                                 const reader = new FileReader();
@@ -737,16 +1095,20 @@
                                             left: options.pointer.x,
                                             top: options.pointer.y,
                                             scaleX: 0.5,
-                                            scaleY: 0.5
+                                            scaleY: 0.5,
+                                            opacity: parseInt(elements.opacity.value) / 100
                                         });
                                         state.canvas.add(img);
                                         saveState();
                                     });
                                 };
+                                reader.onerror = () => {
+                                    showToast('Error loading image', 'error');
+                                };
                                 reader.readAsDataURL(file);
                             }
                         };
-                        input.click();
+                        elements.fileInput.click();
                     }
                 });
             }
@@ -760,6 +1122,10 @@
                     elements.fontSize.value = obj.fontSize;
                     elements.fontColor.value = obj.fill;
                 }
+                
+                if (obj.type === 'image') {
+                    elements.opacity.value = Math.round(obj.opacity * 100);
+                }
             }
 
             function handleSelectionCleared() {
@@ -767,6 +1133,7 @@
             }
 
             function setupPropertyListeners() {
+                // Font family
                 elements.fontFamily.addEventListener('change', () => {
                     const obj = state.canvas.getActiveObject();
                     if (obj && obj.type === 'textbox') {
@@ -776,6 +1143,7 @@
                     }
                 });
 
+                // Font size
                 elements.fontSize.addEventListener('change', () => {
                     const obj = state.canvas.getActiveObject();
                     if (obj && obj.type === 'textbox') {
@@ -785,6 +1153,7 @@
                     }
                 });
 
+                // Font color
                 elements.fontColor.addEventListener('change', () => {
                     const obj = state.canvas.getActiveObject();
                     if (obj && obj.type === 'textbox') {
@@ -792,6 +1161,45 @@
                         state.canvas.renderAll();
                         saveState();
                     }
+                });
+
+                // Opacity
+                elements.opacity.addEventListener('input', () => {
+                    const obj = state.canvas.getActiveObject();
+                    if (obj) {
+                        obj.set('opacity', elements.opacity.value / 100);
+                        state.canvas.renderAll();
+                    }
+                });
+                
+                elements.opacity.addEventListener('change', () => {
+                    saveState();
+                });
+
+                // Line width
+                elements.lineWidth.addEventListener('input', () => {
+                    state.lineWidth = parseInt(elements.lineWidth.value);
+                    document.querySelector('.slider-value').textContent = `${state.lineWidth}px`;
+                });
+                
+                elements.lineWidthPanel.addEventListener('input', () => {
+                    state.lineWidth = parseInt(elements.lineWidthPanel.value);
+                    document.querySelectorAll('.slider-value')[1].textContent = `${state.lineWidth}px`;
+                    
+                    const obj = state.canvas.getActiveObject();
+                    if (obj && obj.type !== 'textbox' && obj.type !== 'image') {
+                        obj.set('strokeWidth', state.lineWidth);
+                        state.canvas.renderAll();
+                    }
+                });
+                
+                elements.lineWidthPanel.addEventListener('change', () => {
+                    saveState();
+                });
+
+                // Close properties panel
+                document.getElementById('close-panel-btn').addEventListener('click', () => {
+                    elements.propertiesPanel.style.display = 'none';
                 });
             }
 
@@ -806,6 +1214,7 @@
                 renderPageThumbnails();
                 showPage(0);
                 
+                // Add page
                 document.getElementById('add-page-btn').addEventListener('click', () => {
                     state.pages.push(JSON.stringify({
                         objects: [],
@@ -815,8 +1224,10 @@
                     }));
                     renderPageThumbnails();
                     showPage(state.pages.length - 1);
+                    showToast('Page added', 'success');
                 });
                 
+                // Delete page
                 document.getElementById('delete-page-btn').addEventListener('click', () => {
                     if (state.pages.length > 1) {
                         const currentIndex = state.currentPage;
@@ -825,58 +1236,121 @@
                         const newIndex = currentIndex === 0 ? 0 : currentIndex - 1;
                         renderPageThumbnails();
                         showPage(newIndex);
+                        showToast('Page deleted', 'warning');
                     } else {
-                        showToast('Cannot delete the only page!');
+                        showToast('Cannot delete the only page!', 'error');
                     }
                 });
                 
+                // Duplicate page
                 document.getElementById('duplicate-page-btn').addEventListener('click', () => {
                     const currentPageData = JSON.parse(state.pages[state.currentPage]);
                     state.pages.push(JSON.stringify(currentPageData));
                     renderPageThumbnails();
                     showPage(state.pages.length - 1);
+                    showToast('Page duplicated', 'success');
+                });
+                
+                // Rotate page
+                document.getElementById('rotate-page-btn').addEventListener('click', () => {
+                    saveCurrentPage();
+                    const pageData = JSON.parse(state.pages[state.currentPage]);
+                    
+                    // Swap width and height
+                    const temp = pageData.width;
+                    pageData.width = pageData.height;
+                    pageData.height = temp;
+                    
+                    // Rotate all objects
+                    if (pageData.objects && pageData.objects.length > 0) {
+                        pageData.objects.forEach(obj => {
+                            if (obj.angle === undefined) obj.angle = 0;
+                            obj.angle = (obj.angle + 90) % 360;
+                            
+                            // Adjust position
+                            const centerX = pageData.width / 2;
+                            const centerY = pageData.height / 2;
+                            
+                            if (obj.left !== undefined && obj.top !== undefined) {
+                                const relX = obj.left - centerX;
+                                const relY = obj.top - centerY;
+                                
+                                // Rotate 90 degrees clockwise
+                                obj.left = centerX - relY;
+                                obj.top = centerY + relX;
+                            }
+                        });
+                    }
+                    
+                    state.pages[state.currentPage] = JSON.stringify(pageData);
+                    showPage(state.currentPage);
+                    showToast('Page rotated', 'success');
                 });
             }
 
             function showPage(index) {
-                // Save current state before switching
-                if (state.currentPage !== index) {
-                    saveCurrentPage();
-                }
-                
-                state.currentPage = index;
-                const pageData = JSON.parse(state.pages[index]);
-                
-                state.canvas.clear();
-                
-                // Load background if exists
-                if (pageData.background && typeof pageData.background === 'string') {
-                    fabric.Image.fromURL(pageData.background, (img) => {
-                        // Scale image to fit canvas
-                        const scaleX = state.canvas.width / img.width;
-                        const scaleY = state.canvas.height / img.height;
-                        const scale = Math.min(scaleX, scaleY);
-                        
-                        img.set({
-                            scaleX: scale,
-                            scaleY: scale,
-                            left: state.canvas.width / 2,
-                            top: state.canvas.height / 2,
-                            originX: 'center',
-                            originY: 'center',
-                            selectable: false,
-                            evented: false
-                        });
-                        
-                        state.canvas.setBackgroundImage(img, () => {
+                try {
+                    // Save current state before switching
+                    if (state.currentPage !== index) {
+                        saveCurrentPage();
+                    }
+                    
+                    state.currentPage = index;
+                    const pageData = JSON.parse(state.pages[index]);
+                    
+                    // Set canvas dimensions
+                    state.canvas.setWidth(pageData.width || 800);
+                    state.canvas.setHeight(pageData.height || 1000);
+                    state.canvas.clear();
+                    
+                    // Load background if exists
+                    if (pageData.background && typeof pageData.background === 'string') {
+                        if (pageData.background.startsWith('#')) {
+                            state.canvas.setBackgroundColor(pageData.background, () => {
+                                state.canvas.loadFromJSON(pageData, () => {
+                                    state.canvas.renderAll();
+                                    updateActiveThumbnail();
+                                });
+                            });
+                        } else {
+                            fabric.Image.fromURL(pageData.background, (img) => {
+                                // Scale image to fit canvas
+                                const scaleX = (pageData.width || 800) / img.width;
+                                const scaleY = (pageData.height || 1000) / img.height;
+                                const scale = Math.min(scaleX, scaleY);
+                                
+                                img.set({
+                                    scaleX: scale,
+                                    scaleY: scale,
+                                    left: pageData.width / 2 || 400,
+                                    top: pageData.height / 2 || 500,
+                                    originX: 'center',
+                                    originY: 'center',
+                                    selectable: false,
+                                    evented: false
+                                });
+                                
+                                state.canvas.setBackgroundImage(img, () => {
+                                    state.canvas.loadFromJSON(pageData, () => {
+                                        state.canvas.renderAll();
+                                        updateActiveThumbnail();
+                                    });
+                                });
+                            }, null, { crossOrigin: 'anonymous' });
+                        }
+                    } else {
+                        state.canvas.setBackgroundColor('#ffffff', () => {
                             state.canvas.loadFromJSON(pageData, () => {
                                 state.canvas.renderAll();
                                 updateActiveThumbnail();
                             });
                         });
-                    });
-                } else {
-                    state.canvas.loadFromJSON(pageData, () => {
+                    }
+                } catch (error) {
+                    console.error('Error loading page:', error);
+                    showToast('Error loading page! Using blank canvas', 'error');
+                    // Fallback to blank canvas
+                    state.canvas.setBackgroundColor('#ffffff', () => {
                         state.canvas.renderAll();
                         updateActiveThumbnail();
                     });
@@ -892,11 +1366,13 @@
                         format: 'jpeg',
                         quality: 0.8
                     });
+                } else if (state.canvas.backgroundColor) {
+                    canvasData.background = state.canvas.backgroundColor;
                 }
                 
                 // Save dimensions
-                canvasData.width = 800;
-                canvasData.height = 1000;
+                canvasData.width = state.canvas.width;
+                canvasData.height = state.canvas.height;
                 
                 state.pages[state.currentPage] = JSON.stringify(canvasData);
             }
@@ -911,7 +1387,7 @@
                         thumbnail.classList.add('active');
                     }
                     
-                    thumbnail.innerHTML = `<span>${index + 1}</span>`;
+                    thumbnail.innerHTML = `<span>Page ${index + 1}</span><div class="page-number">${index + 1}</div>`;
                     thumbnail.addEventListener('click', () => showPage(index));
                     
                     elements.pageThumbnails.appendChild(thumbnail);
@@ -929,12 +1405,31 @@
             }
 
             function setupZoomControls() {
+                // Zoom in
                 document.getElementById('zoom-in-btn').addEventListener('click', () => {
                     state.zoomLevel = Math.min(2.0, state.zoomLevel + 0.1);
                     applyZoom();
                 });
                 
+                // Zoom out
                 document.getElementById('zoom-out-btn').addEventListener('click', () => {
+                    state.zoomLevel = Math.max(0.5, state.zoomLevel - 0.1);
+                    applyZoom();
+                });
+                
+                // Zoom reset
+                document.getElementById('zoom-reset-btn').addEventListener('click', () => {
+                    state.zoomLevel = 1.0;
+                    applyZoom();
+                });
+                
+                // Footer zoom controls
+                document.getElementById('footer-zoom-in').addEventListener('click', () => {
+                    state.zoomLevel = Math.min(2.0, state.zoomLevel + 0.1);
+                    applyZoom();
+                });
+                
+                document.getElementById('footer-zoom-out').addEventListener('click', () => {
                     state.zoomLevel = Math.max(0.5, state.zoomLevel - 0.1);
                     applyZoom();
                 });
@@ -943,6 +1438,7 @@
             function applyZoom() {
                 elements.pdfCanvasContainer.style.transform = `scale(${state.zoomLevel})`;
                 elements.pdfCanvasContainer.style.transformOrigin = 'top left';
+                elements.zoomValue.textContent = `${Math.round(state.zoomLevel * 100)}%`;
             }
 
             function saveState() {
@@ -968,6 +1464,7 @@
                         state.canvas.loadFromJSON(historyState, () => {
                             state.canvas.renderAll();
                             saveCurrentPage();
+                            showToast('Undo action', 'success');
                         });
                     }
                 });
@@ -979,24 +1476,39 @@
                         state.canvas.loadFromJSON(historyState, () => {
                             state.canvas.renderAll();
                             saveCurrentPage();
+                            showToast('Redo action', 'success');
                         });
                     }
                 });
             }
 
             function setupDeleteButton() {
+                // Delete selected object
                 document.getElementById('delete-btn').addEventListener('click', () => {
                     const activeObject = state.canvas.getActiveObject();
                     if (activeObject) {
                         state.canvas.remove(activeObject);
                         saveState();
+                        showToast('Object deleted', 'warning');
+                    }
+                });
+                
+                // Clear entire page
+                document.getElementById('clear-btn').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear this page?')) {
+                        state.canvas.clear();
+                        state.canvas.setBackgroundColor('#ffffff', () => {
+                            state.canvas.renderAll();
+                            saveState();
+                            showToast('Page cleared', 'warning');
+                        });
                     }
                 });
             }
 
             async function openPdf(file) {
                 try {
-                    showToast('Opening PDF...');
+                    showToast('Opening PDF...', 'success');
                     
                     // Read file
                     const arrayBuffer = await file.arrayBuffer();
@@ -1012,7 +1524,7 @@
                     // Render each page
                     for (let i = 1; i <= numPages; i++) {
                         const page = await pdfDoc.getPage(i);
-                        const viewport = page.getViewport({ scale: 1.5 });
+                        const viewport = page.getViewport({ scale: 1.0 });
                         
                         // Create canvas for rendering
                         const canvas = document.createElement('canvas');
@@ -1020,10 +1532,15 @@
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
                         
-                        await page.render({ canvasContext: context, viewport }).promise;
+                        // Render page with white background
+                        await page.render({ 
+                            canvasContext: context, 
+                            viewport,
+                            background: 'rgba(255, 255, 255, 1)'
+                        }).promise;
                         
-                        // Save as data URL
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                        // Optimize image quality
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                         
                         // Add to state
                         state.pages.push(JSON.stringify({
@@ -1032,27 +1549,30 @@
                             width: viewport.width,
                             height: viewport.height
                         }));
+
+                        // Clean up
+                        page.cleanup();
                     }
                     
                     // Show first page
                     state.currentPage = 0;
                     renderPageThumbnails();
                     showPage(0);
-                    showToast('PDF opened successfully!');
+                    showToast('PDF opened successfully!', 'success');
                 } catch (error) {
                     console.error('Error opening PDF:', error);
-                    showToast('Error opening PDF!');
+                    showToast('Error opening PDF!', 'error');
                 }
             }
 
             async function savePdf() {
                 if (!state.originalPdfBytes && state.pages.length === 0) {
-                    showToast('No document to save!');
+                    showToast('No document to save!', 'error');
                     return;
                 }
                 
                 try {
-                    showToast('Saving PDF...');
+                    showToast('Saving PDF...', 'success');
                     let pdfDoc;
                     let pages = [];
 
@@ -1075,8 +1595,8 @@
                         
                         // Create temporary canvas
                         const tempCanvas = new fabric.StaticCanvas(null, {
-                            width: 800,
-                            height: 1000
+                            width: pageData.width || 800,
+                            height: pageData.height || 1000
                         });
                         
                         // Add background if exists
@@ -1084,15 +1604,18 @@
                             await new Promise(resolve => {
                                 fabric.Image.fromURL(pageData.background, img => {
                                     // Scale image to fit
-                                    const scale = Math.min(800 / img.width, 1000 / img.height);
+                                    const scale = Math.min(
+                                        tempCanvas.width / img.width, 
+                                        tempCanvas.height / img.height
+                                    );
                                     tempCanvas.setBackgroundImage(img, () => {
                                         tempCanvas.renderAll();
                                         resolve();
                                     }, {
                                         scaleX: scale,
                                         scaleY: scale,
-                                        left: 400,
-                                        top: 500,
+                                        left: tempCanvas.width / 2,
+                                        top: tempCanvas.height / 2,
                                         originX: 'center',
                                         originY: 'center'
                                     });
@@ -1111,7 +1634,7 @@
                         // Convert to image
                         const dataUrl = tempCanvas.toDataURL({
                             format: 'jpeg',
-                            quality: 0.95
+                            quality: 0.9
                         });
                         
                         // Add to PDF page
@@ -1123,15 +1646,18 @@
                             width: page.getWidth(),
                             height: page.getHeight()
                         });
+
+                        // Clean up
+                        tempCanvas.dispose();
                     }
                     
                     // Save modified PDF
                     const modifiedPdf = await pdfDoc.save();
                     downloadFile(modifiedPdf, 'edited-document.pdf');
-                    showToast('PDF saved successfully!');
+                    showToast('PDF saved successfully!', 'success');
                 } catch (error) {
                     console.error('Error saving PDF:', error);
-                    showToast('Error saving PDF!');
+                    showToast('Error saving PDF!', 'error');
                 }
             }
 
@@ -1144,7 +1670,7 @@
             }
 
             async function exportPdf() {
-                showToast('Generating PDF...');
+                showToast('Generating PDF...', 'success');
                 
                 try {
                     // Save current page
@@ -1158,15 +1684,15 @@
                         
                         const pageData = JSON.parse(state.pages[i]);
                         const tempCanvas = new fabric.StaticCanvas(null, {
-                            width: 800,
-                            height: 1000
+                            width: pageData.width || 800,
+                            height: pageData.height || 1000
                         });
                         
                         // Add background if exists
                         if (pageData.background) {
                             await new Promise(resolve => {
                                 fabric.Image.fromURL(pageData.background, img => {
-                                    img.scaleToWidth(800);
+                                    img.scaleToWidth(tempCanvas.width);
                                     tempCanvas.setBackgroundImage(img, resolve);
                                 });
                             });
@@ -1189,55 +1715,68 @@
                         const pdfWidth = pdf.internal.pageSize.getWidth();
                         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                         
-                        pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                        // Center the image on the page
+                        const x = (pdf.internal.pageSize.getWidth() - pdfWidth) / 2;
+                        const y = (pdf.internal.pageSize.getHeight() - pdfHeight) / 2;
+                        
+                        pdf.addImage(dataUrl, 'JPEG', x, y, pdfWidth, pdfHeight);
+                        
+                        // Clean up
+                        tempCanvas.dispose();
                     }
                     
                     pdf.save('exported-document.pdf');
-                    showToast('PDF exported successfully!');
+                    showToast('PDF exported successfully!', 'success');
                 } catch (error) {
                     console.error('Error generating PDF:', error);
-                    showToast('Error generating PDF!');
+                    showToast('Error generating PDF!', 'error');
                 }
             }
 
-            function showToast(message, duration = 3000) {
+            function showToast(message, type = 'info') {
                 elements.toast.textContent = message;
+                elements.toast.className = 'toast';
+                elements.toast.classList.add(type);
                 elements.toast.classList.add('show');
                 
                 setTimeout(() => {
                     elements.toast.classList.remove('show');
-                }, duration);
+                }, 3000);
             }
 
             function setupFileOperations() {
+                // New PDF
                 document.getElementById('new-pdf-btn').addEventListener('click', () => {
-                    state.originalPdfBytes = null;
-                    state.pages = [JSON.stringify({
-                        objects: [],
-                        background: '#ffffff',
-                        width: 800,
-                        height: 1000
-                    })];
-                    state.currentPage = 0;
-                    renderPageThumbnails();
-                    showPage(0);
-                    showToast('New PDF created');
+                    if (confirm('Create new document? All unsaved changes will be lost.')) {
+                        state.originalPdfBytes = null;
+                        state.pages = [JSON.stringify({
+                            objects: [],
+                            background: '#ffffff',
+                            width: 800,
+                            height: 1000
+                        })];
+                        state.currentPage = 0;
+                        renderPageThumbnails();
+                        showPage(0);
+                        showToast('New PDF created', 'success');
+                    }
                 });
 
+                // Open PDF
                 document.getElementById('open-pdf-btn').addEventListener('click', () => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'application/pdf';
-                    input.onchange = (e) => {
+                    elements.fileInput.accept = 'application/pdf';
+                    elements.fileInput.onchange = (e) => {
                         if (e.target.files[0]) {
                             openPdf(e.target.files[0]);
                         }
                     };
-                    input.click();
+                    elements.fileInput.click();
                 });
 
+                // Save PDF
                 document.getElementById('save-pdf-btn').addEventListener('click', savePdf);
 
+                // Export PDF
                 document.getElementById('export-pdf-btn').addEventListener('click', exportPdf);
             }
 
@@ -1249,6 +1788,7 @@
                 setupPropertyListeners();
                 setupPageManagement();
                 setupZoomControls();
+                applyZoom(); // Apply initial zoom
                 setupUndoRedo();
                 setupDeleteButton();
                 setupFileOperations();
@@ -1267,16 +1807,18 @@
                 
                 // Add a welcome text
                 setTimeout(() => {
-                    const welcomeText = new fabric.Textbox('Welcome to PDF Editor!\nAdd text, shapes, and images\nusing the toolbar on the left.', {
+                    const welcomeText = new fabric.Textbox('Welcome to Modern PDF Editor!\nAdd text, shapes, and images\nusing the toolbar on the left.', {
                         left: 400,
                         top: 500,
-                        fontSize: 28,
+                        fontSize: 32,
                         fontFamily: 'Arial',
-                        fill: '#1a2a6c',
+                        fill: '#4361ee',
                         width: 600,
                         textAlign: 'center',
                         originX: 'center',
-                        originY: 'center'
+                        originY: 'center',
+                        fontWeight: 'bold',
+                        shadow: 'rgba(0, 0, 0, 0.2) 2px 2px 4px'
                     });
                     state.canvas.add(welcomeText);
                     saveState();
