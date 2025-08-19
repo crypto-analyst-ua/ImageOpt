@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Modern PDF Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
@@ -39,11 +39,12 @@
             background: linear-gradient(135deg, var(--dark), #1a2a6c);
             color: var(--dark);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             overflow-x: hidden;
         }
         
         .container {
+            width: 100%;
             max-width: 1800px;
             margin: 0 auto;
             background: var(--card-bg);
@@ -58,28 +59,30 @@
         .header {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
-            padding: 16px 28px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: relative;
             z-index: 10;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         
         .logo-icon {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             color: var(--warning);
         }
         
         .logo h1 {
             font-weight: 800;
-            font-size: 2.2rem;
+            font-size: 1.5rem;
             letter-spacing: -0.5px;
         }
         
@@ -90,14 +93,14 @@
         
         .header-actions {
             display: flex;
-            gap: 12px;
+            gap: 8px;
         }
         
         .header-btn {
             background: rgba(255, 255, 255, 0.15);
             border: none;
             border-radius: 8px;
-            padding: 10px 18px;
+            padding: 8px 12px;
             color: white;
             font-weight: 600;
             cursor: pointer;
@@ -107,13 +110,17 @@
             transition: all 0.2s ease;
         }
         
+        .header-btn span {
+            display: inline-block;
+        }
+        
         .header-btn:hover {
             background: rgba(255, 255, 255, 0.25);
             transform: translateY(-2px);
         }
         
         .header-btn i {
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .main-content {
@@ -121,60 +128,70 @@
             flex: 1;
             height: calc(100% - 80px);
             overflow: hidden;
+            flex-direction: column;
         }
         
         /* Toolbar Styles */
         .toolbar {
-            width: 260px;
             background: var(--sidebar-bg);
             color: white;
-            padding: 20px 0;
             display: flex;
-            flex-direction: column;
-            gap: 25px;
-            overflow-y: auto;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 12px 0;
+            z-index: 20;
         }
         
         .toolbar-group {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 15px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-width: max-content;
         }
         
         .toolbar-group:last-child {
-            border-bottom: none;
-            padding-bottom: 10px;
+            border-right: none;
         }
         
         .toolbar h3 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
             color: var(--warning);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 600;
+            text-align: center;
+        }
+        
+        .toolbar-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
         }
         
         .toolbar-btn {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 12px 16px;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 10px;
             background: transparent;
             border: none;
             border-radius: 8px;
             color: #ecf0f1;
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            text-align: left;
-            margin-bottom: 5px;
+            min-width: 70px;
+            text-align: center;
         }
         
         .toolbar-btn i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             min-width: 25px;
             width: 24px;
             text-align: center;
@@ -193,13 +210,14 @@
         .color-picker {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
-            padding: 10px 0;
+            gap: 8px;
+            padding: 5px 0;
+            justify-content: center;
         }
         
         .color-item {
-            width: 32px;
-            height: 32px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
@@ -231,19 +249,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 25px;
+            padding: 12px 15px;
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
             z-index: 5;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .editor-header h2 {
             color: var(--dark);
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 700;
         }
         
@@ -253,21 +273,22 @@
         
         .editor-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .editor-btn {
             background: white;
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 8px 15px;
+            padding: 6px 10px;
             color: var(--dark);
             font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             transition: all 0.2s ease;
+            font-size: 0.9rem;
         }
         
         .editor-btn:hover {
@@ -277,29 +298,29 @@
         }
         
         .editor-btn i {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .page-thumbnails {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             overflow-x: auto;
-            padding: 15px 20px;
+            padding: 12px 15px;
             background: white;
             border-bottom: 1px solid var(--border);
         }
         
         .page-thumbnail {
-            width: 90px;
-            height: 115px;
+            width: 70px;
+            height: 95px;
             background: white;
             border: 2px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--gray);
             cursor: pointer;
             transition: all 0.3s ease;
@@ -326,9 +347,9 @@
             right: 5px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 10px;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 8px;
             z-index: 2;
         }
         
@@ -337,9 +358,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 30px;
+            padding: 15px;
             overflow: auto;
             position: relative;
+            touch-action: none;
         }
         
         #pdf-canvas-container {
@@ -362,19 +384,19 @@
             right: 20px;
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            width: 300px;
+            width: 280px;
             z-index: 100;
             border: 1px solid var(--border);
         }
         
         .panel-header {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: var(--dark);
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -386,7 +408,7 @@
             border: none;
             color: var(--gray);
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: color 0.2s;
         }
         
@@ -395,24 +417,24 @@
         }
         
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: var(--dark);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .form-group select, 
         .form-group input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             background: white;
             transition: border 0.2s;
         }
@@ -427,25 +449,26 @@
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
         
         .slider-value {
-            min-width: 40px;
+            min-width: 35px;
             text-align: center;
             font-weight: 600;
             color: var(--dark);
+            font-size: 0.9rem;
         }
         
         /* Toast Notification */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: var(--dark);
             color: white;
-            padding: 15px 30px;
+            padding: 12px 25px;
             border-radius: 12px;
             font-weight: 500;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -454,7 +477,9 @@
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            max-width: 90%;
+            font-size: 0.9rem;
         }
         
         .toast.show {
@@ -463,7 +488,7 @@
         }
         
         .toast i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         
         .toast.success {
@@ -483,11 +508,13 @@
             background: var(--dark);
             color: #ecf0f1;
             text-align: center;
-            padding: 15px;
-            font-size: 0.9rem;
+            padding: 12px;
+            font-size: 0.85rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .footer a {
@@ -503,9 +530,9 @@
         .zoom-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 20px;
         }
         
@@ -513,14 +540,15 @@
             background: none;
             border: none;
             color: white;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 0.9rem;
         }
         
         .zoom-btn:hover {
@@ -528,88 +556,238 @@
         }
         
         .zoom-value {
-            font-size: 0.9rem;
-            min-width: 40px;
+            font-size: 0.85rem;
+            min-width: 35px;
             text-align: center;
         }
         
-        /* Responsive design */
-        @media (max-width: 1200px) {
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .mobile-actions {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            border-radius: 50px;
+            padding: 10px;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .mobile-action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin: 0 5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Media Queries for Responsiveness */
+        @media (min-width: 1200px) {
+            .main-content {
+                flex-direction: row;
+            }
+            
             .toolbar {
-                width: 220px;
+                width: 260px;
+                flex-direction: column;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 20px 0;
+                gap: 25px;
+            }
+            
+            .toolbar-group {
+                padding: 0 20px 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .toolbar-group:last-child {
+                border-bottom: none;
+                padding-bottom: 10px;
+            }
+            
+            .toolbar h3 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+                text-align: left;
+            }
+            
+            .toolbar-buttons {
+                display: block;
+            }
+            
+            .toolbar-btn {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 1rem;
+                min-width: auto;
+                text-align: left;
+                margin-bottom: 5px;
+            }
+            
+            .color-picker {
+                gap: 12px;
+                padding: 10px 0;
+                justify-content: flex-start;
+            }
+            
+            .color-item {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .header {
+                padding: 16px 28px;
+            }
+            
+            .logo-icon {
+                font-size: 2.5rem;
+            }
+            
+            .logo h1 {
+                font-size: 2.2rem;
+            }
+            
+            .header-btn {
+                padding: 10px 18px;
+            }
+            
+            .editor-header {
+                padding: 15px 25px;
+            }
+            
+            .editor-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .editor-btn {
+                padding: 8px 15px;
             }
             
             .page-thumbnail {
-                width: 80px;
-                height: 105px;
+                width: 90px;
+                height: 115px;
+            }
+            
+            .canvas-container {
+                padding: 30px;
             }
         }
         
         @media (max-width: 992px) {
-            .main-content {
-                flex-direction: column;
+            .container {
                 height: auto;
-            }
-            
-            .toolbar {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 10px;
-                padding: 15px;
-            }
-            
-            .toolbar-group {
-                border-bottom: none;
-                padding: 0;
-                flex: 1;
-                min-width: 200px;
-            }
-            
-            .canvas-container {
-                min-height: 500px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .toolbar-group {
-                min-width: 100%;
-            }
-            
-            .editor-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .editor-actions {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            #properties-panel {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 90%;
-                max-width: 400px;
+                min-height: 100vh;
             }
             
             .footer {
                 flex-direction: column;
-                gap: 10px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-btn span {
+                display: none;
+            }
+            
+            .header-btn {
+                padding: 10px;
+            }
+            
+            .editor-btn span {
+                display: none;
+            }
+            
+            .editor-btn {
+                padding: 8px;
+            }
+            
+            .toolbar-group {
+                min-width: 160px;
+            }
+            
+            .toolbar-btn span {
+                font-size: 0.75rem;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .mobile-actions {
+                display: flex;
+            }
+            
+            #properties-panel {
+                width: 90%;
+                max-width: 320px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .toolbar-group {
+                min-width: 140px;
+            }
+            
+            .toolbar-btn {
+                min-width: 60px;
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+            
+            .toolbar-btn i {
+                font-size: 1rem;
+            }
+            
+            .color-picker {
+                gap: 6px;
+            }
+            
+            .color-item {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .page-thumbnail {
+                width: 60px;
+                height: 80px;
+                font-size: 0.9rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.3rem;
+            }
+            
+            .mobile-action-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -621,6 +799,9 @@
                 <i class="fas fa-file-pdf logo-icon"></i>
                 <h1>Modern <span>PDF</span> Editor</h1>
             </div>
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="header-actions">
                 <button class="header-btn" id="new-pdf-btn">
                     <i class="fas fa-file"></i>
@@ -643,80 +824,86 @@
         
         <div class="main-content">
             <!-- Left Toolbar -->
-            <div class="toolbar">
+            <div class="toolbar" id="toolbar">
                 <!-- Editing Tools -->
                 <div class="toolbar-group">
-                    <h3><i class="fas fa-pencil-alt"></i> Editing Tools</h3>
-                    <button id="text-tool" class="toolbar-btn active">
-                        <i class="fas fa-font"></i>
-                        <span>Text</span>
-                    </button>
-                    <button id="image-tool" class="toolbar-btn">
-                        <i class="fas fa-image"></i>
-                        <span>Image</span>
-                    </button>
-                    <button id="rectangle-tool" class="toolbar-btn">
-                        <i class="fas fa-square"></i>
-                        <span>Rectangle</span>
-                    </button>
-                    <button id="circle-tool" class="toolbar-btn">
-                        <i class="fas fa-circle"></i>
-                        <span>Circle</span>
-                    </button>
-                    <button id="line-tool" class="toolbar-btn">
-                        <i class="fas fa-grip-lines"></i>
-                        <span>Line</span>
-                    </button>
-                    <button id="signature-tool" class="toolbar-btn">
-                        <i class="fas fa-signature"></i>
-                        <span>Signature</span>
-                    </button>
-                    <button id="highlight-tool" class="toolbar-btn">
-                        <i class="fas fa-highlighter"></i>
-                        <span>Highlight</span>
-                    </button>
+                    <h3><i class="fas fa-pencil-alt"></i> Editing</h3>
+                    <div class="toolbar-buttons">
+                        <button id="text-tool" class="toolbar-btn active">
+                            <i class="fas fa-font"></i>
+                            <span>Text</span>
+                        </button>
+                        <button id="image-tool" class="toolbar-btn">
+                            <i class="fas fa-image"></i>
+                            <span>Image</span>
+                        </button>
+                        <button id="rectangle-tool" class="toolbar-btn">
+                            <i class="fas fa-square"></i>
+                            <span>Rectangle</span>
+                        </button>
+                        <button id="circle-tool" class="toolbar-btn">
+                            <i class="fas fa-circle"></i>
+                            <span>Circle</span>
+                        </button>
+                        <button id="line-tool" class="toolbar-btn">
+                            <i class="fas fa-grip-lines"></i>
+                            <span>Line</span>
+                        </button>
+                        <button id="signature-tool" class="toolbar-btn">
+                            <i class="fas fa-signature"></i>
+                            <span>Signature</span>
+                        </button>
+                        <button id="highlight-tool" class="toolbar-btn">
+                            <i class="fas fa-highlighter"></i>
+                            <span>Highlight</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Page Management -->
                 <div class="toolbar-group">
                     <h3><i class="fas fa-copy"></i> Pages</h3>
-                    <button id="add-page-btn" class="toolbar-btn">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Page</span>
-                    </button>
-                    <button id="delete-page-btn" class="toolbar-btn">
-                        <i class="fas fa-trash"></i>
-                        <span>Delete Page</span>
-                    </button>
-                    <button id="duplicate-page-btn" class="toolbar-btn">
-                        <i class="fas fa-copy"></i>
-                        <span>Duplicate Page</span>
-                    </button>
-                    <button id="rotate-page-btn" class="toolbar-btn">
-                        <i class="fas fa-sync"></i>
-                        <span>Rotate Page</span>
-                    </button>
+                    <div class="toolbar-buttons">
+                        <button id="add-page-btn" class="toolbar-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Page</span>
+                        </button>
+                        <button id="delete-page-btn" class="toolbar-btn">
+                            <i class="fas fa-trash"></i>
+                            <span>Delete Page</span>
+                        </button>
+                        <button id="duplicate-page-btn" class="toolbar-btn">
+                            <i class="fas fa-copy"></i>
+                            <span>Duplicate</span>
+                        </button>
+                        <button id="rotate-page-btn" class="toolbar-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Rotate</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- History Controls -->
                 <div class="toolbar-group">
                     <h3><i class="fas fa-history"></i> History</h3>
-                    <button id="undo-btn" class="toolbar-btn">
-                        <i class="fas fa-undo"></i>
-                        <span>Undo</span>
-                    </button>
-                    <button id="redo-btn" class="toolbar-btn">
-                        <i class="fas fa-redo"></i>
-                        <span>Redo</span>
-                    </button>
-                    <button id="delete-btn" class="toolbar-btn">
-                        <i class="fas fa-eraser"></i>
-                        <span>Delete</span>
-                    </button>
-                    <button id="clear-btn" class="toolbar-btn">
-                        <i class="fas fa-broom"></i>
-                        <span>Clear Page</span>
-                    </button>
+                    <div class="toolbar-buttons">
+                        <button id="undo-btn" class="toolbar-btn">
+                            <i class="fas fa-undo"></i>
+                            <span>Undo</span>
+                        </button>
+                        <button id="redo-btn" class="toolbar-btn">
+                            <i class="fas fa-redo"></i>
+                            <span>Redo</span>
+                        </button>
+                        <button id="delete-btn" class="toolbar-btn">
+                            <i class="fas fa-eraser"></i>
+                            <span>Delete</span>
+                        </button>
+                        <button id="clear-btn" class="toolbar-btn">
+                            <i class="fas fa-broom"></i>
+                            <span>Clear</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Color Picker -->
@@ -739,9 +926,7 @@
                 <div class="toolbar-group">
                     <h3><i class="fas fa-sliders-h"></i> Line Width</h3>
                     <div class="form-group">
-                        <input type="range" id="line-width" min="1" max="20" value="2">
                         <div class="slider-container">
-                            <span>1</span>
                             <input type="range" id="line-width" min="1" max="20" value="2" class="slider">
                             <span class="slider-value">2px</span>
                         </div>
@@ -752,10 +937,11 @@
             <!-- Editor Area -->
             <div class="editor-area">
                 <div class="editor-header">
-                    <h2><i class="fas fa-edit"></i> PDF Editor Canvas</h2>
+                    <h2><i class="fas fa-edit"></i> PDF Editor</h2>
                     <div class="editor-actions">
                         <button class="editor-btn" id="zoom-out-btn">
                             <i class="fas fa-search-minus"></i>
+                            <span>Zoom Out</span>
                         </button>
                         <button class="editor-btn" id="zoom-reset-btn">
                             <i class="fas fa-search"></i>
@@ -763,6 +949,7 @@
                         </button>
                         <button class="editor-btn" id="zoom-in-btn">
                             <i class="fas fa-search-plus"></i>
+                            <span>Zoom In</span>
                         </button>
                     </div>
                 </div>
@@ -809,7 +996,6 @@
                 <div class="form-group">
                     <label for="opacity">Opacity</label>
                     <div class="slider-container">
-                        <span>0%</span>
                         <input type="range" id="opacity" min="0" max="100" value="100">
                         <span class="slider-value">100%</span>
                     </div>
@@ -817,12 +1003,24 @@
                 <div class="form-group">
                     <label for="line-width-panel">Line Width</label>
                     <div class="slider-container">
-                        <span>1px</span>
                         <input type="range" id="line-width-panel" min="1" max="20" value="2">
                         <span class="slider-value">2px</span>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Mobile Action Buttons -->
+        <div class="mobile-actions">
+            <button class="mobile-action-btn" id="mobile-undo-btn">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="mobile-action-btn" id="mobile-delete-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="mobile-action-btn" id="mobile-save-btn">
+                <i class="fas fa-save"></i>
+            </button>
         </div>
         
         <div class="footer">
@@ -859,7 +1057,8 @@
                 isDrawing: false,
                 drawingObject: null,
                 originalPdfBytes: null,
-                lineWidth: 2
+                lineWidth: 2,
+                isMobile: false
             };
 
             const elements = {
@@ -875,9 +1074,14 @@
                 lineWidth: document.getElementById('line-width'),
                 lineWidthPanel: document.getElementById('line-width-panel'),
                 zoomValue: document.getElementById('zoom-value'),
-                fileInput: document.getElementById('file-input')
+                fileInput: document.getElementById('file-input'),
+                toolbar: document.getElementById('toolbar'),
+                mobileMenuBtn: document.getElementById('mobile-menu-btn')
             };
 
+            // Detect mobile device
+            state.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             function initCanvas() {
                 state.canvas = new fabric.Canvas('pdf-canvas', {
                     width: 800,
@@ -885,7 +1089,9 @@
                     backgroundColor: '#ffffff',
                     selection: true,
                     preserveObjectStacking: true,
-                    allowTouchScrolling: true
+                    allowTouchScrolling: true,
+                    selectionBorderColor: '#4361ee',
+                    selectionLineWidth: 2
                 });
 
                 // Event handlers
@@ -1433,6 +1639,38 @@
                     state.zoomLevel = Math.max(0.5, state.zoomLevel - 0.1);
                     applyZoom();
                 });
+                
+                // Mobile pinch zoom
+                let lastDist = 0;
+                elements.pdfCanvasContainer.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        lastDist = Math.hypot(
+                            e.touches[0].pageX - e.touches[1].pageX,
+                            e.touches[0].pageY - e.touches[1].pageY
+                        );
+                    }
+                }, false);
+                
+                elements.pdfCanvasContainer.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        const dist = Math.hypot(
+                            e.touches[0].pageX - e.touches[1].pageX,
+                            e.touches[0].pageY - e.touches[1].pageY
+                        );
+                        
+                        if (lastDist > 0) {
+                            const diff = dist - lastDist;
+                            state.zoomLevel = Math.max(0.5, Math.min(2.0, state.zoomLevel + diff * 0.01));
+                            applyZoom();
+                        }
+                        
+                        lastDist = dist;
+                    }
+                }, false);
+                
+                elements.pdfCanvasContainer.addEventListener('touchend', () => {
+                    lastDist = 0;
+                }, false);
             }
 
             function applyZoom() {
@@ -1775,9 +2013,29 @@
 
                 // Save PDF
                 document.getElementById('save-pdf-btn').addEventListener('click', savePdf);
+                
+                // Mobile save
+                document.getElementById('mobile-save-btn').addEventListener('click', savePdf);
 
                 // Export PDF
                 document.getElementById('export-pdf-btn').addEventListener('click', exportPdf);
+            }
+            
+            function setupMobileControls() {
+                // Mobile menu toggle
+                elements.mobileMenuBtn.addEventListener('click', () => {
+                    elements.toolbar.style.display = elements.toolbar.style.display === 'none' ? 'flex' : 'none';
+                });
+                
+                // Mobile undo
+                document.getElementById('mobile-undo-btn').addEventListener('click', () => {
+                    document.getElementById('undo-btn').click();
+                });
+                
+                // Mobile delete
+                document.getElementById('mobile-delete-btn').addEventListener('click', () => {
+                    document.getElementById('delete-btn').click();
+                });
             }
 
             function init() {
@@ -1792,6 +2050,7 @@
                 setupUndoRedo();
                 setupDeleteButton();
                 setupFileOperations();
+                setupMobileControls();
                 
                 elements.propertiesPanel.style.display = 'none';
                 
@@ -1823,6 +2082,11 @@
                     state.canvas.add(welcomeText);
                     saveState();
                 }, 1000);
+                
+                // Hide toolbar on mobile initially
+                if (state.isMobile) {
+                    elements.toolbar.style.display = 'none';
+                }
             }
 
             init();
