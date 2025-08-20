@@ -1489,1910 +1489,127 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
     // Global variables
-    let originalImage = null;
-    let currentImage = null;
-    let historyStack = [];
-    let redoStack = [];
-    let isComparisonActive = false;
-    let currentTheme = 'light-mode';
-    let isCropping = false;
-    let cropStartX, cropStartY, cropWidth, cropHeight;
-    let isDrawing = false;
-    let currentTool = '';
-    let isRedEyeMode = false;
+let originalImage = null;
+let currentImage = null;
+let historyStack = [];
+let redoStack = [];
+let isComparisonActive = false;
+let currentTheme = 'light-mode';
+let isCropping = false;
+let cropStartX, cropStartY, cropWidth, cropHeight;
+let isDrawing = false;
+let currentTool = '';
+let isRedEyeMode = false;
+let isHealingMode = false;
+let isAddingText = false;
+let isShapeMode = false;
+let currentShape = '';
+let textElements = [];
+let shapeElements = [];
+let drawingElements = [];
+let currentTextElement = null;
+let currentShapeElement = null;
+let currentDrawingElement = null;
 
-    // New variables for enhanced cropping
-    let cropAspectRatio = 'free';
-    let isAspectRatioLocked = false;
-    let cropRotation = 0;
-    let originalCropBox = null;
-    let originalWidth = 0;
-    let originalHeight = 0;
+// New variables for enhanced cropping
+let cropAspectRatio = 'free';
+let isAspectRatioLocked = false;
+let cropRotation = 0;
+let originalCropBox = null;
+let originalWidth = 0;
+let originalHeight = 0;
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Materialize components
-        M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), {});
-        M.Tabs.init(document.querySelectorAll('.tabs'), {});
-        M.FormSelect.init(document.querySelectorAll('select'), {});
-        M.Modal.init(document.querySelectorAll('.modal'), {});
-        M.Tooltip.init(document.querySelectorAll('.tooltipped'), {});
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Materialize components
+    M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), {});
+    M.Tabs.init(document.querySelectorAll('.tabs'), {});
+    M.FormSelect.init(document.querySelectorAll('select'), {});
+    M.Modal.init(document.querySelectorAll('.modal'), {});
+    M.Tooltip.init(document.querySelectorAll('.tooltipped'), {});
+    M.Collapsible.init(document.querySelectorAll('.collapsible'), {});
 
-        // Event handlers
-        document.getElementById('imageInput').addEventListener('change', handleFileSelect);
-        document.getElementById('dropZone').addEventListener('click', () => document.getElementById('imageInput').click());
-        document.getElementById('dropZone').addEventListener('dragover', handleDragOver);
-        document.getElementById('dropZone').addEventListener('drop', handleDrop);
-        
-        // Initialize sliders
-        updateSliderValues();
-        
-        // Initialize comparison
-        initComparisonSlider();
-        
-        // Initialize size selector
-        document.getElementById('sizeSelect').addEventListener('change', function() {
-            if (this.value === 'custom') {
-                document.getElementById('customSizeContainer').style.display = 'block';
-            } else {
-                document.getElementById('customSizeContainer').style.display = 'none';
-            }
-        });
-
-        // Initialize resize inputs
-        document.getElementById('resizeWidth').addEventListener('input', function() {
-            if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
-                const ratio = originalHeight / originalWidth;
-                document.getElementById('resizeHeight').value = Math.round(this.value * ratio);
-            }
-        });
-
-        document.getElementById('resizeHeight').addEventListener('input', function() {
-            if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
-                const ratio = originalWidth / originalHeight;
-                document.getElementById('resizeWidth').value = Math.round(this.value * ratio);
-            }
-        });
+    // Event handlers
+    document.getElementById('imageInput').addEventListener('change', handleFileSelect);
+    document.getElementById('dropZone').addEventListener('click', () => document.getElementById('imageInput').click());
+    document.getElementById('dropZone').addEventListener('dragover', handleDragOver);
+    document.getElementById('dropZone').addEventListener('drop', handleDrop);
+    
+    // Initialize sliders
+    updateSliderValues();
+    
+    // Initialize comparison
+    initComparisonSlider();
+    
+    // Initialize size selector
+    document.getElementById('sizeSelect').addEventListener('change', function() {
+        if (this.value === 'custom') {
+            document.getElementById('customSizeContainer').style.display = 'block';
+        } else {
+            document.getElementById('customSizeContainer').style.display = 'none';
+        }
     });
 
-    // Function to update slider values
-    function updateSliderValues() {
-        updateSliderValue('brightness', 'brightnessValue', '%');
-        updateSliderValue('contrast', 'contrastValue', '%');
-        updateSliderValue('saturate', 'saturateValue', '%');
-        updateSliderValue('sharpen', 'sharpenValue', '%');
-        updateSliderValue('warmth', 'warmthValue', '');
-        updateSliderValue('hue', 'hueValue', '°');
-        updateSliderValue('exposure', 'exposureValue', '');
-        updateSliderValue('blur', 'blurValue', 'px');
-        updateSliderValue('vignette', 'vignetteValue', '%');
-    }
-
-    // Update slider value
-    function updateSliderValue(sliderId, valueId, suffix) {
-        const slider = document.getElementById(sliderId);
-        const valueElement = document.getElementById(valueId);
-        if (slider && valueElement) {
-            valueElement.textContent = slider.value + suffix;
+    // Initialize resize inputs
+    document.getElementById('resizeWidth').addEventListener('input', function() {
+        if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
+            const ratio = originalHeight / originalWidth;
+            document.getElementById('resizeHeight').value = Math.round(this.value * ratio);
         }
-    }
+    });
 
-    // Reset slider
-    function resetSlider(sliderId, defaultValue, valueId, suffix) {
-        const slider = document.getElementById(sliderId);
-        slider.value = defaultValue;
-        updateSliderValue(sliderId, valueId, suffix);
-        applyFilters();
-    }
-
-    // Handle file drag over
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.dataTransfer.dropEffect = 'copy';
-    }
-
-    // Handle file drop
-    function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = e.dataTransfer.files;
-        if (files.length) {
-            handleFile(files[0]);
+    document.getElementById('resizeHeight').addEventListener('input', function() {
+        if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
+            const ratio = originalWidth / originalHeight;
+            document.getElementById('resizeWidth').value = Math.round(this.value * ratio);
         }
-    }
+    });
 
-    // Handle file selection
-    function handleFileSelect(e) {
-        const files = e.target.files;
-        if (files.length) {
-            handleFile(files[0]);
-        }
-    }
-
-    // Main file handling function
-    function handleFile(file) {
-        if (!file || !file.type.startsWith('image/')) {
-            showToast('Error: Invalid file format.');
-            return;
-        }
-
-        // Check file size (max 20MB)
-        if (file.size > 20 * 1024 * 1024) {
-            showToast('Error: File is too large. Maximum size is 20MB.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                // Create canvas
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
+    // Initialize crop aspect ratio buttons
+    document.querySelectorAll('.crop-preset').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.crop-preset').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            cropAspectRatio = this.dataset.ratio;
+            
+            if (cropAspectRatio !== 'free') {
+                const [widthRatio, heightRatio] = cropAspectRatio.split(':').map(Number);
+                const ratio = widthRatio / heightRatio;
                 
-                // Set canvas dimensions
-                const maxWidth = 4000;
-                const maxHeight = 4000;
-                
-                if (img.width > maxWidth || img.height > maxHeight) {
-                    // Scale down very large images
-                    const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
-                    canvas.width = img.width * ratio;
-                    canvas.height = img.height * ratio;
-                } else {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                }
-                
-                // Draw image
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Save original image
-                originalImage = new Image();
-                originalImage.src = canvas.toDataURL();
-                currentImage = new Image();
-                currentImage.src = canvas.toDataURL();
-
-                // Save original dimensions for resize functionality
-                originalWidth = canvas.width;
-                originalHeight = canvas.height;
-                
-                // Update image info
-                updateImageInfo(file, canvas.width, canvas.height);
-                
-                // Hide placeholder
-                document.getElementById('placeholderText').style.display = 'none';
-                
-                // Enable compare button
-                document.getElementById('compareBtn').disabled = false;
-                
-                // Clear redo stack
-                redoStack = [];
-                
-                // Save to history
-                saveToHistory();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Update image information
-    function updateImageInfo(file, width, height) {
-        const imageInfo = document.getElementById('imageInfo');
-        const imageWidth = document.getElementById('imageWidth');
-        const imageHeight = document.getElementById('imageHeight');
-        const imageSize = document.getElementById('imageSize');
-        const imageFormat = document.getElementById('imageFormat');
-        
-        const sizeKB = Math.round(file.size / 1024);
-        imageInfo.innerHTML = `<span>${file.name}</span><span>${width} x ${height} px</span>`;
-        imageWidth.textContent = width;
-        imageHeight.textContent = height;
-        imageSize.textContent = `${sizeKB} KB`;
-        imageFormat.textContent = file.type.split('/')[1].toUpperCase();
-    }
-
-    // Apply filters
-    function applyFilters() {
-        if (!currentImage) return;
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw original image
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Get filter values
-        const brightness = document.getElementById('brightness').value;
-        const contrast = document.getElementById('contrast').value;
-        const saturate = document.getElementById('saturate').value;
-        const sharpen = document.getElementById('sharpen').value;
-        const warmth = document.getElementById('warmth').value;
-        const hue = document.getElementById('hue').value;
-        const exposure = document.getElementById('exposure').value;
-        const blur = document.getElementById('blur').value;
-        const vignette = document.getElementById('vignette').value;
-        
-        // Apply filters
-        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%) hue-rotate(${hue}deg) blur(${blur}px)`;
-        
-        // Redraw image
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Apply additional filters (sharpness, warmth, exposure, vignette)
-        applySharpness(ctx, sharpen);
-        applyWarmth(ctx, warmth);
-        applyExposure(ctx, exposure);
-        applyVignette(ctx, vignette);
-        
-        // Save current state
-        currentImage.src = canvas.toDataURL();
-    }
-
-    // Apply sharpness
-    function applySharpness(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        
-        // Create a copy for reading
-        const originalData = new Uint8ClampedArray(data);
-        
-        // Apply sharpening using a convolution kernel
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                for (let c = 0; c < 3; c++) {
-                    const idx = (y * width + x) * 4 + c;
-                    
-                    // Sharpening kernel
-                    data[idx] = Math.max(0, Math.min(255, 
-                        originalData[idx] * (1 + value/50) - 
-                        originalData[((y-1) * width + x) * 4 + c] * (value/200) -
-                        originalData[((y+1) * width + x) * 4 + c] * (value/200) -
-                        originalData[(y * width + (x-1)) * 4 + c] * (value/200) -
-                        originalData[(y * width + (x+1)) * 4 + c] * (value/200)
-                    ));
-                }
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply warmth
-    function applyWarmth(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Increase red and decrease blue for warm effect
-            data[i] = Math.min(255, Math.max(0, data[i] + value * 0.5));     // R
-            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] - value * 0.3)); // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply exposure
-    function applyExposure(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const factor = Math.pow(2, value / 50);
-        
-        for (let i = 0; i < data.length; i += 4) {
-            data[i] = Math.min(255, Math.max(0, data[i] * factor));         // R
-            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor)); // G
-            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor)); // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply vignette effect
-    function applyVignette(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-        const amount = value / 100;
-        
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const idx = (y * width + x) * 4;
-                const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-                const factor = 1 - (dist / maxDist) * amount;
-                
-                data[idx] = Math.min(255, Math.max(0, data[idx] * factor));         // R
-                data[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] * factor)); // G
-                data[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] * factor)); // B
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply preset
-    function applyPreset(presetName) {
-        // Reset all sliders
-        resetSlider('brightness', 100, 'brightnessValue', '%');
-        resetSlider('contrast', 100, 'contrastValue', '%');
-        resetSlider('saturate', 100, 'saturateValue', '%');
-        resetSlider('sharpen', 0, 'sharpenValue', '%');
-        resetSlider('warmth', 0, 'warmthValue', '');
-        resetSlider('hue', 0, 'hueValue', '°');
-        resetSlider('exposure', 0, 'exposureValue', '');
-        resetSlider('blur', 0, 'blurValue', 'px');
-        resetSlider('vignette', 0, 'vignetteValue', '%');
-        
-        // Apply preset settings
-        switch(presetName) {
-            case 'bright':
-                document.getElementById('brightness').value = 130;
-                document.getElementById('contrast').value = 120;
-                document.getElementById('saturate').value = 130;
-                break;
-            case 'bw':
-                document.getElementById('saturate').value = 0;
-                document.getElementById('contrast').value = 120;
-                break;
-            case 'vintage':
-                document.getElementById('warmth').value = 30;
-                document.getElementById('contrast').value = 90;
-                document.getElementById('brightness').value = 110;
-                document.getElementById('vignette').value = 40;
-                break;
-            case 'cool':
-                document.getElementById('warmth').value = -30;
-                document.getElementById('contrast').value = 110;
-                document.getElementById('hue').value = 200;
-                break;
-            case 'dramatic':
-                document.getElementById('contrast').value = 150;
-                document.getElementById('brightness').value = 90;
-                document.getElementById('saturate').value = 120;
-                document.getElementById('vignette').value = 60;
-                break;
-            case 'custom1':
-                // Custom settings
-                document.getElementById('brightness').value = 120;
-                document.getElementById('contrast').value = 110;
-                document.getElementById('saturate').value = 115;
-                document.getElementById('warmth').value = 10;
-                document.getElementById('sharpen').value = 20;
-                break;
-        }
-        
-        updateSliderValues();
-        applyFilters();
-        saveToHistory();
-    }
-
-    // Save to history
-    function saveToHistory() {
-        if (!currentImage) return;
-        
-        // Add current state to history
-        historyStack.push(currentImage.src);
-        
-        // Limit history size
-        if (historyStack.length > 20) {
-            historyStack.shift();
-        }
-        
-        // Clear redo stack
-        redoStack = [];
-        
-        // Update history panel
-        updateHistoryPanel();
-    }
-
-    // Update history panel
-    function updateHistoryPanel() {
-        const historyPanel = document.getElementById('historyPanel');
-        historyPanel.innerHTML = '';
-        
-        if (historyStack.length === 0) {
-            historyPanel.innerHTML = '<p class="center-align">Edit history will appear here</p>';
-            return;
-        }
-        
-        for (let i = 0; i < historyStack.length; i++) {
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-                <span>Edit ${i + 1}</span>
-                <i class="material-icons tiny">radio_button_unchecked</i>
-            `;
-            
-            historyItem.addEventListener('click', () => {
-                restoreHistory(i);
-            });
-            
-            historyPanel.appendChild(historyItem);
-        }
-        
-        // Scroll to bottom
-        historyPanel.scrollTop = historyPanel.scrollHeight;
-    }
-
-    // Restore from history
-    function restoreHistory(index) {
-        if (index < 0 || index >= historyStack.length) return;
-        
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-            currentImage = img;
-            
-            // Move items from history to redo stack
-            while (historyStack.length > index + 1) {
-                redoStack.push(historyStack.pop());
-            }
-            
-            updateHistoryPanel();
-        };
-        img.src = historyStack[index];
-    }
-
-    // Undo last action
-    function undo() {
-        if (historyStack.length > 1) {
-            redoStack.push(historyStack.pop());
-            restoreHistory(historyStack.length - 1);
-        }
-    }
-
-    // Redo last action
-    function redo() {
-        if (redoStack.length > 0) {
-            const state = redoStack.pop();
-            historyStack.push(state);
-            restoreHistory(historyStack.length - 1);
-        }
-    }
-
-    // Apply AI filter
-    function applyAIFilter(filterType) {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        // Show processing indicator
-        const aiProcessing = document.getElementById('aiProcessing');
-        aiProcessing.style.display = 'block';
-        
-        // Simulate AI processing (in a real app this would be an API call)
-        setTimeout(() => {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Apply different effects based on filter type
-            switch(filterType) {
-                case 'upscale':
-                    // Simulate resolution enhancement
-                    applyUpscaleEffect(ctx);
-                    break;
-                case 'denoise':
-                    // Simulate noise reduction
-                    applyDenoiseEffect(ctx);
-                    break;
-                case 'face_enhance':
-                    // Simulate face enhancement
-                    applyFaceEnhanceEffect(ctx);
-                    break;
-                case 'background_remove':
-                    // Simulate background removal
-                    applyBackgroundRemoveEffect(ctx);
-                    break;
-                case 'style':
-                    // Apply selected style
-                    const styleSelect = document.getElementById('styleSelect');
-                    applyStyleEffect(ctx, styleSelect.value);
-                    break;
-            }
-            
-            // Save modified image
-            currentImage.src = canvas.toDataURL();
-            
-            // Hide processing indicator
-            aiProcessing.style.display = 'none';
-            
-            // Save to history
-            saveToHistory();
-            
-            showToast('AI filter applied successfully!');
-        }, 2000);
-    }
-
-    // Upscale effect
-    function applyUpscaleEffect(ctx) {
-        const originalWidth = ctx.canvas.width;
-        const originalHeight = ctx.canvas.height;
-        
-        // Create a temporary canvas for the upscaled image
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        // Set new dimensions (1.5x)
-        tempCanvas.width = originalWidth * 1.5;
-        tempCanvas.height = originalHeight * 1.5;
-        
-        // Draw image with smooth scaling
-        tempCtx.imageSmoothingEnabled = true;
-        tempCtx.imageSmoothingQuality = 'high';
-        tempCtx.drawImage(currentImage, 0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Apply sharpening
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Simple sharpening
-            data[i] = Math.min(255, data[i] * 1.05);
-            data[i + 1] = Math.min(255, data[i + 1] * 1.05);
-            data[i + 2] = Math.min(255, data[i + 2] * 1.05);
-        }
-        
-        tempCtx.putImageData(imageData, 0, 0);
-        
-        // Resize main canvas and draw the upscaled image
-        ctx.canvas.width = tempCanvas.width;
-        ctx.canvas.height = tempCanvas.height;
-        ctx.drawImage(tempCanvas, 0, 0);
-        
-        // Update image info
-        document.getElementById('imageWidth').textContent = ctx.canvas.width;
-        document.getElementById('imageHeight').textContent = ctx.canvas.height;
-    }
-
-    // Denoise effect
-    function applyDenoiseEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        
-        // Create a copy for reading
-        const originalData = new Uint8ClampedArray(data);
-        
-        // Apply simple noise reduction
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                for (let c = 0; c < 3; c++) {
-                    const idx = (y * width + x) * 4 + c;
-                    
-                    // Get surrounding pixels
-                    const pixels = [
-                        originalData[((y-1) * width + (x-1)) * 4 + c],
-                        originalData[((y-1) * width + x) * 4 + c],
-                        originalData[((y-1) * width + (x+1)) * 4 + c],
-                        originalData[(y * width + (x-1)) * 4 + c],
-                        originalData[idx],
-                        originalData[(y * width + (x+1)) * 4 + c],
-                        originalData[((y+1) * width + (x-1)) * 4 + c],
-                        originalData[((y+1) * width + x) * 4 + c],
-                        originalData[((y+1) * width + (x+1)) * 4 + c]
-                    ];
-                    
-                    // Sort and get median
-                    pixels.sort((a, b) => a - b);
-                    data[idx] = pixels[4];
-                }
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Face enhance effect
-    function applyFaceEnhanceEffect(ctx) {
-        // In a real app, this would involve face detection and enhancement
-        // For demo purposes, apply several enhancements to the whole image
-        
-        // Increase contrast and saturation
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Increase saturation
-            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            data[i] = avg + 1.2 * (data[i] - avg); // R
-            data[i + 1] = avg + 1.1 * (data[i + 1] - avg); // G
-            data[i + 2] = avg + 0.9 * (data[i + 2] - avg); // B
-            
-            // Increase contrast
-            data[i] = Math.min(255, Math.max(0, (data[i] - 127) * 1.1 + 127));
-            data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 127) * 1.1 + 127));
-            data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 127) * 1.1 + 127));
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Slight sharpening
-        applySharpness(ctx, 15);
-    }
-
-    // Background remove effect
-    function applyBackgroundRemoveEffect(ctx) {
-        // In a real app, this would use advanced AI segmentation
-        // For demo, create a simple gradient transparency effect
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-        
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const idx = (y * width + x) * 4;
-                const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-                
-                // Make pixels more transparent the further they are from center
-                if (dist > maxDist * 0.3) {
-                    const alpha = 1 - (dist - maxDist * 0.3) / (maxDist * 0.7);
-                    data[idx + 3] = Math.max(0, Math.min(255, alpha * 255));
-                }
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply style
-    function applyStyleEffect(ctx, style) {
-        // Save current filter values
-        const currentBrightness = document.getElementById('brightness').value;
-        const currentContrast = document.getElementById('contrast').value;
-        const currentSaturate = document.getElementById('saturate').value;
-        const currentHue = document.getElementById('hue').value;
-        const currentWarmth = document.getElementById('warmth').value;
-        
-        // Reset filters
-        ctx.filter = 'none';
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Apply style
-        switch(style) {
-            case 'van_gogh':
-                document.getElementById('contrast').value = 130;
-                document.getElementById('saturate').value = 140;
-                document.getElementById('hue').value = 30;
-                document.getElementById('warmth').value = 20;
-                break;
-            case 'picasso':
-                document.getElementById('contrast').value = 150;
-                document.getElementById('brightness').value = 90;
-                document.getElementById('saturate').value = 80;
-                document.getElementById('hue').value = 300;
-                break;
-            case 'monet':
-                document.getElementById('brightness').value = 110;
-                document.getElementById('contrast').value = 90;
-                document.getElementById('saturate').value = 120;
-                document.getElementById('hue').value = 350;
-                document.getElementById('warmth').value = 10;
-                break;
-            case 'pixel':
-                applyPixelEffect(ctx);
-                break;
-            case 'sketch':
-                applySketchEffect(ctx);
-                break;
-            case 'oil_painting':
-                applyOilPaintingEffect(ctx);
-                break;
-            case 'watercolor':
-                document.getElementById('saturate').value = 140;
-                document.getElementById('contrast').value = 120;
-                document.getElementById('brightness').value = 110;
-                applyBlurEffect(ctx, 2);
-                break;
-            case 'comic':
-                document.getElementById('contrast').value = 170;
-                document.getElementById('saturate').value = 150;
-                applyPosterizeEffect(ctx);
-                break;
-        }
-        
-        // Update slider values
-        updateSliderValues();
-        
-        // Apply filters
-        applyFilters();
-        
-        // Restore original values (for further adjustments)
-        document.getElementById('brightness').value = currentBrightness;
-        document.getElementById('contrast').value = currentContrast;
-        document.getElementById('saturate').value = currentSaturate;
-        document.getElementById('hue').value = currentHue;
-        document.getElementById('warmth').value = currentWarmth;
-    }
-
-    // Pixel effect
-    function applyPixelEffect(ctx) {
-        const size = 10; // Pixel size
-        const w = ctx.canvas.width;
-        const h = ctx.canvas.height;
-        
-        // Reduce image size
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = w / size;
-        tempCanvas.height = h / size;
-        tempCtx.drawImage(ctx.canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Scale back up with pixelation
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, w, h);
-        ctx.imageSmoothingEnabled = true;
-    }
-
-    // Sketch effect
-    function applySketchEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Convert to grayscale
-            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            
-            // Invert and increase contrast
-            const sketchValue = 255 - Math.min(255, Math.max(0, avg * 1.5));
-            
-            data[i] = sketchValue;     // R
-            data[i + 1] = sketchValue; // G
-            data[i + 2] = sketchValue; // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Oil painting effect
-    function applyOilPaintingEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const radius = 3;
-        
-        for (let y = radius; y < ctx.canvas.height - radius; y++) {
-            for (let x = radius; x < ctx.canvas.width - radius; x++) {
-                const i = (y * ctx.canvas.width + x) * 4;
-                
-                // Average values in area
-                let r = 0, g = 0, b = 0;
-                for (let dy = -radius; dy <= radius; dy++) {
-                    for (let dx = -radius; dx <= radius; dx++) {
-                        const di = ((y + dy) * ctx.canvas.width + (x + dx)) * 4;
-                        r += data[di];
-                        g += data[di + 1];
-                        b += data[di + 2];
-                    }
-                }
-                
-                const count = Math.pow(radius * 2 + 1, 2);
-                data[i] = r / count;
-                data[i + 1] = g / count;
-                data[i + 2] = b / count;
-                }
-            }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Increase saturation
-        const saturateValue = document.getElementById('saturate').value;
-        document.getElementById('saturate').value = Math.min(200, parseInt(saturateValue) + 40);
-        applyFilters();
-        document.getElementById('saturate').value = saturateValue;
-    }
-
-    // Blur effect
-    function applyBlurEffect(ctx, amount) {
-        ctx.filter = `blur(${amount}px)`;
-        ctx.drawImage(ctx.canvas, 0, 0);
-        ctx.filter = 'none';
-    }
-
-    // Posterize effect
-    function applyPosterizeEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const levels = 4;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Posterize each channel
-            data[i] = Math.floor(data[i] / (255 / levels)) * (255 / levels);     // R
-            data[i + 1] = Math.floor(data[i + 1] / (255 / levels)) * (255 / levels); // G
-            data[i + 2] = Math.floor(data[i + 2] / (255 / levels)) * (255 / levels); // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Initialize comparison slider
-    function initComparisonSlider() {
-        const slider = document.querySelector('.comparison-slider');
-        const handle = slider.querySelector('.comparison-handle');
-        const before = slider.querySelector('.comparison-before');
-        
-        let isMoving = false;
-        
-        // Mouse event handlers
-        handle.addEventListener('mousedown', () => isMoving = true);
-        document.addEventListener('mouseup', () => isMoving = false);
-        document.addEventListener('mousemove', (e) => {
-            if (!isMoving) return;
-            moveSlider(e.clientX);
-        });
-        
-        // Touch event handlers
-        handle.addEventListener('touchstart', () => isMoving = true);
-        document.addEventListener('touchend', () => isMoving = false);
-        document.addEventListener('touchmove', (e) => {
-            if (!isMoving) return;
-            moveSlider(e.touches[0].clientX);
-        });
-        
-        function moveSlider(x) {
-            const sliderRect = slider.getBoundingClientRect();
-            let position = (x - sliderRect.left) / sliderRect.width;
-            position = Math.max(0, Math.min(1, position)); // Limit between 0 and 1
-            
-            before.style.width = position * 100 + '%';
-            handle.style.left = position * 100 + '%';
-        }
-    }
-
-    // Toggle before/after comparison
-    function toggleComparison() {
-        if (!currentImage) return;
-        
-        const comparisonSlider = document.getElementById('comparisonSlider');
-        const mainCanvas = document.getElementById('canvas');
-        const beforeCanvas = document.getElementById('beforeCanvas');
-        const afterCanvas = document.getElementById('afterCanvas');
-        
-        isComparisonActive = !isComparisonActive;
-        
-        if (isComparisonActive) {
-            // Set up canvas for comparison
-            beforeCanvas.width = afterCanvas.width = originalImage.width;
-            beforeCanvas.height = afterCanvas.height = originalImage.height;
-            
-            // Draw original on beforeCanvas
-            const beforeCtx = beforeCanvas.getContext('2d');
-            beforeCtx.drawImage(originalImage, 0, 0);
-            
-            // Draw current image on afterCanvas
-            const afterCtx = afterCanvas.getContext('2d');
-            afterCtx.drawImage(currentImage, 0, 0);
-            
-            // Show comparison slider and hide main canvas
-            comparisonSlider.style.display = 'block';
-            mainCanvas.style.display = 'none';
-            
-            // Update button text
-            document.querySelector('#compareBtn i').textContent = 'visibility';
-            document.querySelector('#compareBtn span').textContent = 'Show Result';
-        } else {
-            // Hide comparison slider and show main canvas
-            comparisonSlider.style.display = 'none';
-            mainCanvas.style.display = 'block';
-            
-            // Update button text
-            document.querySelector('#compareBtn i').textContent = 'compare';
-            document.querySelector('#compareBtn span').textContent = 'Compare Before/After';
-        }
-    }
-
-    // Reset image
-    function resetImage() {
-        if (!originalImage) return;
-        
-        // Reset all sliders
-        resetSlider('brightness', 100, 'brightnessValue', '%');
-        resetSlider('contrast', 100, 'contrastValue', '%');
-        resetSlider('saturate', 100, 'saturateValue', '%');
-        resetSlider('sharpen', 0, 'sharpenValue', '%');
-        resetSlider('warmth', 0, 'warmthValue', '');
-        resetSlider('hue', 0, 'hueValue', '°');
-        resetSlider('exposure', 0, 'exposureValue', '');
-        resetSlider('blur', 0, 'blurValue', 'px');
-        resetSlider('vignette', 0, 'vignetteValue', '%');
-        
-        // Restore original image
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(originalImage, 0, 0);
-        
-        currentImage = new Image();
-        currentImage.src = originalImage.src;
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image reset to original.');
-    }
-
-    // Download image
-    function downloadImage() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const format = document.getElementById('formatSelect').value;
-        const quality = document.getElementById('quality').value / 100;
-        const name = document.getElementById('imageName').value || 'edited_image';
-        const sizeOption = document.getElementById('sizeSelect').value;
-        
-        // Create temporary canvas for export
-        const exportCanvas = document.createElement('canvas');
-        const exportCtx = exportCanvas.getContext('2d');
-        
-        // Set export dimensions
-        if (sizeOption === 'custom') {
-            const customWidth = parseInt(document.getElementById('customWidth').value);
-            const customHeight = parseInt(document.getElementById('customHeight').value);
-            
-            if (customWidth && customHeight) {
-                exportCanvas.width = customWidth;
-                exportCanvas.height = customHeight;
-            } else {
-                exportCanvas.width = currentImage.width;
-                exportCanvas.height = currentImage.height;
-            }
-        } else {
-            const scale = parseInt(sizeOption) / 100;
-            exportCanvas.width = currentImage.width * scale;
-            exportCanvas.height = currentImage.height * scale;
-        }
-        
-        // Draw image to export canvas
-        exportCtx.drawImage(currentImage, 0, 0, exportCanvas.width, exportCanvas.height);
-        
-        // Create temporary download link
-        const link = document.createElement('a');
-        link.download = `${name}.${format}`;
-        link.href = exportCanvas.toDataURL(`image/${format}`, quality);
-        link.click();
-        
-        showToast('Image downloaded successfully!');
-    }
-
-    // Toggle theme
-    function toggleTheme() {
-        const body = document.body;
-        
-        if (currentTheme === 'light-mode') {
-            body.classList.remove('light-mode');
-            body.classList.add('dark-mode');
-            currentTheme = 'dark-mode';
-            document.querySelector('.theme-switch i').textContent = 'brightness_5';
-        } else {
-            body.classList.remove('dark-mode');
-            body.classList.add('light-mode');
-            currentTheme = 'light-mode';
-            document.querySelector('.theme-switch i').textContent = 'brightness_4';
-        }
-        
-        // Save theme preference
-        localStorage.setItem('theme', currentTheme);
-    }
-
-    // Toggle fullscreen mode
-    function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.error(`Error enabling fullscreen: ${err.message}`);
-            });
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-    }
-
-    // Start crop
-    function startCrop() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        isCropping = true;
-        const cropOverlay = document.getElementById('cropOverlay');
-        const cropBox = document.getElementById('cropBox');
-        const container = document.getElementById('imagePreviewContainer');
-        
-        // Show crop overlay
-        cropOverlay.style.display = 'block';
-        cropOverlay.classList.add('active');
-        
-        // Initialize crop box (start with a square in the center)
-        const size = Math.min(container.offsetWidth, container.offsetHeight) * 0.6;
-        const left = (container.offsetWidth - size) / 2;
-        const top = (container.offsetHeight - size) / 2;
-        
-        cropBox.style.width = size + 'px';
-        cropBox.style.height = size + 'px';
-        cropBox.style.left = left + 'px';
-        cropBox.style.top = top + 'px';
-        
-        // Save original parameters for reset functionality
-        originalCropBox = {
-            width: size,
-            height: size,
-            left: left,
-            top: top
-        };
-        
-        // Update input fields
-        document.getElementById('cropWidthInput').value = Math.round(size);
-        document.getElementById('cropHeightInput').value = Math.round(size);
-        document.getElementById('cropRotateInput').value = 0;
-        document.getElementById('cropRotateValue').textContent = '0°';
-        cropRotation = 0;
-        
-        // Initialize enhanced crop handlers
-        initEnhancedCropHandlers();
-        
-        showToast('Crop mode activated. Use handles to resize or enter precise values.');
-    }
-
-    // Initialize enhanced crop handlers
-    function initEnhancedCropHandlers() {
-        const cropBox = document.getElementById('cropBox');
-        const widthInput = document.getElementById('cropWidthInput');
-        const heightInput = document.getElementById('cropHeightInput');
-        const rotateInput = document.getElementById('cropRotateInput');
-        const lockAspect = document.getElementById('lockAspectRatio');
-        const presetButtons = document.querySelectorAll('.crop-preset');
-        
-        // Input change handlers
-        widthInput.addEventListener('change', function() {
-            if (!isCropping) return;
-            
-            const newWidth = parseInt(this.value);
-            if (isNaN(newWidth) || newWidth <= 0) return;
-            
-            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
-                const ratio = getAspectRatioValue(cropAspectRatio);
-                const newHeight = Math.round(newWidth / ratio);
-                cropBox.style.height = newHeight + 'px';
-                heightInput.value = newHeight;
-            }
-            
-            cropBox.style.width = newWidth + 'px';
-            updateCropBoxPosition();
-        });
-        
-        heightInput.addEventListener('change', function() {
-            if (!isCropping) return;
-            
-            const newHeight = parseInt(this.value);
-            if (isNaN(newHeight) || newHeight <= 0) return;
-            
-            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
-                const ratio = getAspectRatioValue(cropAspectRatio);
-                const newWidth = Math.round(newHeight * ratio);
-                cropBox.style.width = newWidth + 'px';
-                widthInput.value = newWidth;
-            }
-            
-            cropBox.style.height = newHeight + 'px';
-            updateCropBoxPosition();
-        });
-        
-        // Rotation handler
-        rotateInput.addEventListener('input', function() {
-            cropRotation = parseInt(this.value);
-            document.getElementById('cropRotateValue').textContent = cropRotation + '°';
-        });
-        
-        // Aspect ratio lock
-        lockAspect.addEventListener('change', function() {
-            isAspectRatioLocked = this.checked;
-            
-            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
-                const ratio = getAspectRatioValue(cropAspectRatio);
+                const cropBox = document.getElementById('cropBox');
                 const currentWidth = parseInt(cropBox.style.width);
                 const newHeight = Math.round(currentWidth / ratio);
                 
                 cropBox.style.height = newHeight + 'px';
-                heightInput.value = newHeight;
-            }
-        });
-        
-        // Preset buttons
-        presetButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                presetButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
+                document.getElementById('cropHeightInput').value = newHeight;
                 
-                cropAspectRatio = this.dataset.ratio;
-                
-                if (cropAspectRatio === 'free') {
-                    isAspectRatioLocked = false;
-                    lockAspect.checked = false;
-                } else {
-                    isAspectRatioLocked = true;
-                    lockAspect.checked = true;
-                    
-                    const ratio = getAspectRatioValue(cropAspectRatio);
-                    const currentWidth = parseInt(cropBox.style.width);
-                    const newHeight = Math.round(currentWidth / ratio);
-                    
-                    cropBox.style.height = newHeight + 'px';
-                    heightInput.value = newHeight;
-                }
-            });
-        });
-        
-        // Initialize crop box handlers
-        initCropBoxHandlers();
-    }
-
-    // Get aspect ratio value
-    function getAspectRatioValue(ratio) {
-        switch(ratio) {
-            case '1:1': return 1;
-            case '4:3': return 4/3;
-            case '16:9': return 16/9;
-            case '3:4': return 3/4;
-            case '9:16': return 9/16;
-            default: return 0;
-        }
-    }
-
-    // Update crop box position
-    function updateCropBoxPosition() {
-        const cropBox = document.getElementById('cropBox');
-        const container = document.getElementById('imagePreviewContainer');
-        
-        const boxWidth = parseInt(cropBox.style.width);
-        const boxHeight = parseInt(cropBox.style.height);
-        let boxLeft = parseInt(cropBox.style.left);
-        let boxTop = parseInt(cropBox.style.top);
-        
-        // Check boundaries
-        if (boxLeft < 0) boxLeft = 0;
-        if (boxTop < 0) boxTop = 0;
-        if (boxLeft + boxWidth > container.offsetWidth) {
-            boxLeft = container.offsetWidth - boxWidth;
-        }
-        if (boxTop + boxHeight > container.offsetHeight) {
-            boxTop = container.offsetHeight - boxHeight;
-        }
-        
-        cropBox.style.left = boxLeft + 'px';
-        cropBox.style.top = boxTop + 'px';
-        
-        // Update input fields
-        document.getElementById('cropWidthInput').value = Math.round(boxWidth);
-        document.getElementById('cropHeightInput').value = Math.round(boxHeight);
-    }
-
-    // Rotate crop
-    function rotateCrop(degrees) {
-        cropRotation += degrees;
-        
-        // Limit value between -180 and 180
-        if (cropRotation > 180) cropRotation = -180 + (cropRotation - 180);
-        if (cropRotation < -180) cropRotation = 180 + (cropRotation + 180);
-        
-        document.getElementById('cropRotateInput').value = cropRotation;
-        document.getElementById('cropRotateValue').textContent = cropRotation + '°';
-        
-        showToast('Rotation: ' + cropRotation + '°');
-    }
-
-    // Reset crop
-    function resetCrop() {
-        if (!isCropping || !originalCropBox) return;
-        
-        const cropBox = document.getElementById('cropBox');
-        cropBox.style.width = originalCropBox.width + 'px';
-        cropBox.style.height = originalCropBox.height + 'px';
-        cropBox.style.left = originalCropBox.left + 'px';
-        cropBox.style.top = originalCropBox.top + 'px';
-        
-        document.getElementById('cropWidthInput').value = Math.round(originalCropBox.width);
-        document.getElementById('cropHeightInput').value = Math.round(originalCropBox.height);
-        document.getElementById('cropRotateInput').value = 0;
-        document.getElementById('cropRotateValue').textContent = '0°';
-        cropRotation = 0;
-        
-        // Reset aspect ratio
-        document.querySelectorAll('.crop-preset').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('[data-ratio="free"]').classList.add('active');
-        cropAspectRatio = 'free';
-        document.getElementById('lockAspectRatio').checked = false;
-        isAspectRatioLocked = false;
-    }
-
-    // Apply crop
-    function applyCrop() {
-        if (!isCropping) return;
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const cropBox = document.getElementById('cropBox');
-        const container = document.getElementById('imagePreviewContainer');
-        
-        // Calculate crop coordinates relative to canvas
-        const scaleX = currentImage.width / container.offsetWidth;
-        const scaleY = currentImage.height / container.offsetHeight;
-        
-        const x = parseInt(getComputedStyle(cropBox).left, 10) * scaleX;
-        const y = parseInt(getComputedStyle(cropBox).top, 10) * scaleY;
-        const width = parseInt(getComputedStyle(cropBox).width, 10) * scaleX;
-        const height = parseInt(getComputedStyle(cropBox).height, 10) * scaleY;
-        
-        // Create a temporary canvas for the cropped image
-        const croppedCanvas = document.createElement('canvas');
-        croppedCanvas.width = width;
-        croppedCanvas.height = height;
-        const croppedCtx = croppedCanvas.getContext('2d');
-        
-        // If there's rotation, apply it
-        if (cropRotation !== 0) {
-            // Save context state
-            croppedCtx.save();
-            
-            // Move to center of canvas
-            croppedCtx.translate(width / 2, height / 2);
-            
-            // Rotate
-            croppedCtx.rotate(cropRotation * Math.PI / 180);
-            
-            // Draw image with rotation
-            croppedCtx.drawImage(
-                canvas,
-                x, y, width, height,
-                -width / 2, -height / 2, width, height
-            );
-            
-            // Restore context state
-            croppedCtx.restore();
-        } else {
-            // Without rotation - just draw the cropped area
-            croppedCtx.drawImage(
-                canvas,
-                x, y, width, height,
-                0, 0, width, height
-            );
-        }
-        
-        // Resize main canvas and draw the cropped image
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(croppedCanvas, 0, 0);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Update size information
-        document.getElementById('imageWidth').textContent = width;
-        document.getElementById('imageHeight').textContent = height;
-        document.getElementById('imageInfo').innerHTML = 
-            `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
-            `<span>${width} x ${height} px</span>`;
-        
-        // Hide crop overlay
-        document.getElementById('cropOverlay').style.display = 'none';
-        document.getElementById('cropOverlay').classList.remove('active');
-        isCropping = false;
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image cropped successfully!');
-    }
-
-    // Cancel crop
-    function cancelCrop() {
-        document.getElementById('cropOverlay').style.display = 'none';
-        document.getElementById('cropOverlay').classList.remove('active');
-        isCropping = false;
-    }
-
-    // Show resize UI
-    function showResizeUI() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        document.getElementById('resizeContainer').style.display = 'block';
-        document.getElementById('resizeWidth').value = currentImage.width;
-        document.getElementById('resizeHeight').value = currentImage.height;
-    }
-
-    // Apply resize
-    function applyResize() {
-        const newWidth = parseInt(document.getElementById('resizeWidth').value);
-        const newHeight = parseInt(document.getElementById('resizeHeight').value);
-        
-        if (isNaN(newWidth) || isNaN(newHeight) || newWidth <= 0 || newHeight <= 0) {
-            showToast('Please enter valid dimensions.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Create a temporary canvas for the resized image
-        const resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = newWidth;
-        resizedCanvas.height = newHeight;
-        const resizedCtx = resizedCanvas.getContext('2d');
-        
-        // Draw image with smooth scaling
-        resizedCtx.imageSmoothingEnabled = true;
-        resizedCtx.imageSmoothingQuality = 'high';
-        resizedCtx.drawImage(currentImage, 0, 0, newWidth, newHeight);
-        
-        // Resize main canvas and draw the resized image
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-        ctx.drawImage(resizedCanvas, 0, 0);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Update size information
-        document.getElementById('imageWidth').textContent = newWidth;
-        document.getElementById('imageHeight').textContent = newHeight;
-        document.getElementById('imageInfo').innerHTML = 
-            `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
-            `<span>${newWidth} x ${newHeight} px</span>`;
-        
-        // Hide resize UI
-        document.getElementById('resizeContainer').style.display = 'none';
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image resized successfully!');
-    }
-
-    // Cancel resize
-    function cancelResize() {
-        document.getElementById('resizeContainer').style.display = 'none';
-    }
-
-    // Rotate image
-    function rotateImage() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Save current dimensions
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Change canvas dimensions for rotation
-        canvas.width = height;
-        canvas.height = width;
-        
-        // Rotate and draw image
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(Math.PI / 2);
-        ctx.drawImage(currentImage, -width / 2, -height / 2);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Update size information
-        document.getElementById('imageWidth').textContent = canvas.width;
-        document.getElementById('imageHeight').textContent = canvas.height;
-        document.getElementById('imageInfo').innerHTML = 
-            `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
-            `<span>${canvas.width} x ${canvas.height} px</span>`;
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image rotated 90° clockwise.');
-    }
-
-    // Flip image horizontally
-    function flipHorizontal() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Flip and draw image
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(currentImage, 0, 0);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image flipped horizontally.');
-    }
-
-    // Flip image vertically
-    function flipVertical() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Flip and draw image
-        ctx.translate(0, canvas.height);
-        ctx.scale(1, -1);
-        ctx.drawImage(currentImage, 0, 0);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image flipped vertically.');
-    }
-
-    // Toggle red-eye reduction mode
-    function toggleRedEyeReduction() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        isRedEyeMode = !isRedEyeMode;
-        
-        if (isRedEyeMode) {
-            showToast('Click on red eyes to fix them. Click again to disable.');
-            document.getElementById('canvas').style.cursor = 'crosshair';
-        } else {
-            document.getElementById('canvas').style.cursor = 'default';
-        }
-    }
-
-    // Handle tool selection
-    function handleToolSelection() {
-        const toolSelect = document.getElementById('toolSelect');
-        const toolOptions = document.getElementById('toolOptions');
-        currentTool = toolSelect.value;
-        
-        toolOptions.innerHTML = '';
-        
-        switch(currentTool) {
-            case 'redeye':
-                toolOptions.innerHTML = `
-                    <p>Click on red eyes to fix them</p>
-                    <button class="btn waves-effect waves-light" onclick="toggleRedEyeReduction()">
-                        <i class="material-icons left">remove_red_eye</i>Enable Red-Eye Tool
-                    </button>
-                `;
-                break;
-            case 'heal':
-                toolOptions.innerHTML = `
-                    <p>Click on blemishes to remove them</p>
-                    <div class="range-field">
-                        <label>Brush Size</label>
-                        <input type="range" id="healSize" min="1" max="50" value="10">
-                    </div>
-                    <button class="btn waves-effect waves-light" onclick="enableHealingTool()">
-                        <i class="material-icons left">healing</i>Enable Healing Tool
-                    </button>
-                `;
-                break;
-            case 'text':
-                toolOptions.innerHTML = `
-                    <div class="input-field">
-                        <input id="textInput" type="text">
-                        <label for="textInput">Text</label>
-                    </div>
-                    <div class="input-field">
-                        <input id="textSize" type="number" value="24">
-                        <label for="textSize">Font Size</label>
-                    </div>
-                    <div class="input-field">
-                        <input type="color" id="textColor" value="#ffffff">
-                        <label for="textColor">Text Color</label>
-                    </div>
-                    <button class="btn waves-effect waves-light" onclick="addText()">
-                        <i class="material-icons left">text_fields</i>Add Text
-                    </button>
-                `;
-                break;
-            case 'draw':
-                toolOptions.innerHTML = `
-                    <div class="input-field">
-                        <input type="color" id="drawColor" value="#ff0000">
-                        <label for="drawColor">Draw Color</label>
-                    </div>
-                    <div class="range-field">
-                        <label>Brush Size</label>
-                        <input type="range" id="drawSize" min="1" max="50" value="5">
-                    </div>
-                    <button class="btn waves-effect waves-light" onclick="enableDrawing()">
-                        <i class="material-icons left">brush</i>Enable Drawing
-                    </button>
-                `;
-                break;
-            case 'shapes':
-                toolOptions.innerHTML = `
-                    <div class="input-field">
-                        <select id="shapeSelect">
-                            <option value="rectangle">Rectangle</option>
-                            <option value="circle">Circle</option>
-                            <option value="line">Line</option>
-                            <option value="arrow">Arrow</option>
-                        </select>
-                        <label>Shape</label>
-                    </div>
-                    <div class="input-field">
-                        <input type="color" id="shapeColor" value="#ff0000">
-                        <label for="shapeColor">Shape Color</label>
-                    </div>
-                    <div class="range-field">
-                        <label>Line Width</label>
-                        <input type="range" id="shapeWidth" min="1" max="20" value="3">
-                    </div>
-                    <button class="btn waves-effect waves-light" onclick="enableShapeTool()">
-                        <i class="material-icons left">crop_square</i>Enable Shape Tool
-                    </button>
-                `;
-                break;
-        }
-        
-        // Reinitialize Materialize components
-        M.FormSelect.init(document.querySelectorAll('select'), {});
-    }
-
-    // Add watermark
-    function addWatermark() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Add watermark text
-        ctx.font = '20px Arial';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('Watermark', canvas.width - 10, canvas.height - 10);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Watermark added.');
-    }
-
-    // Add border
-    function addBorder() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const borderWidth = 10;
-        
-        // Draw border
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = borderWidth;
-        ctx.strokeRect(borderWidth/2, borderWidth/2, canvas.width - borderWidth, canvas.height - borderWidth);
-        
-        // Update current image
-        currentImage.src = canvas.toDataURL();
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Border added.');
-    }
-
-    // Show toast message
-    function showToast(message) {
-        // Remove any existing toasts
-        const existingToasts = document.querySelectorAll('.custom-toast');
-        existingToasts.forEach(toast => toast.remove());
-        
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.className = 'custom-toast';
-        toast.innerHTML = `
-            <span>${message}</span>
-            <button class="toast-action" onclick="this.parentElement.remove()">Dismiss</button>
-        `;
-        
-        // Add to container
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-        
-        container.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
+                isAspectRatioLocked = true;
+                document.getElementById('lockAspectRatio').checked = true;
+            } else {
+                isAspectRatioLocked = false;
+                document.getElementById('lockAspectRatio').checked = false;
             }
-        }, 3000);
-    }
-
-    // Save project
-    function saveProject() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const projectData = {
-            image: currentImage.src,
-            filters: {
-                brightness: document.getElementById('brightness').value,
-                contrast: document.getElementById('contrast').value,
-                saturate: document.getElementById('saturate').value,
-                sharpen: document.getElementById('sharpen').value,
-                warmth: document.getElementById('warmth').value,
-                hue: document.getElementById('hue').value,
-                exposure: document.getElementById('exposure').value,
-                blur: document.getElementById('blur').value,
-                vignette: document.getElementById('vignette').value
-            },
-            history: historyStack
-        };
-        
-        const dataStr = JSON.stringify(projectData);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        
-        const exportFileDefaultName = 'image_project.json';
-        
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-        
-        showToast('Project saved successfully!');
-    }
-
-    // Load project
-    function loadProject() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        
-        input.onchange = e => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const projectData = JSON.parse(e.target.result);
-                    
-                    // Load image
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.getElementById('canvas');
-                        const ctx = canvas.getContext('2d');
-                        
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                        
-                        currentImage = img;
-                        originalImage = img;
-                        
-                        // Apply filters
-                        if (projectData.filters) {
-                            document.getElementById('brightness').value = projectData.filters.brightness;
-                            document.getElementById('contrast').value = projectData.filters.contrast;
-                            document.getElementById('saturate').value = projectData.filters.saturate;
-                            document.getElementById('sharpen').value = projectData.filters.sharpen;
-                            document.getElementById('warmth').value = projectData.filters.warmth;
-                            document.getElementById('hue').value = projectData.filters.hue;
-                            document.getElementById('exposure').value = projectData.filters.exposure;
-                            document.getElementById('blur').value = projectData.filters.blur;
-                            document.getElementById('vignette').value = projectData.filters.vignette;
-                            
-                            updateSliderValues();
-                            applyFilters();
-                        }
-                        
-                        // Load history
-                        if (projectData.history) {
-                            historyStack = projectData.history;
-                            updateHistoryPanel();
-                        }
-                        
-                        // Hide placeholder
-                        document.getElementById('placeholderText').style.display = 'none';
-                        
-                        // Enable compare button
-                        document.getElementById('compareBtn').disabled = false;
-                        
-                        showToast('Project loaded successfully!');
-                    };
-                    img.src = projectData.image;
-                } catch (error) {
-                    showToast('Error loading project: Invalid file format.');
-                }
-            };
-            
-            reader.readAsText(file);
-        };
-        
-        input.click();
-    }
-
-    // Initialize crop box handlers
-    function initCropBoxHandlers() {
-        const cropBox = document.getElementById('cropBox');
-        const handles = cropBox.querySelectorAll('.crop-handle');
-        let isResizing = false;
-        let currentHandle = null;
-        let startX, startY, startWidth, startHeight, startLeft, startTop;
-        
-        // Mouse down on handles for resizing
-        handles.forEach(handle => {
-            handle.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                isResizing = true;
-                currentHandle = this.classList[1];
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(getComputedStyle(cropBox).width, 10);
-                startHeight = parseInt(getComputedStyle(cropBox).height, 10);
-                startLeft = parseInt(getComputedStyle(cropBox).left, 10);
-                startTop = parseInt(getComputedStyle(cropBox).top, 10);
-            });
         });
-        
-        // Mouse down on crop box for moving
-        cropBox.addEventListener('mousedown', function(e) {
-            if (e.target === cropBox || e.target.classList.contains('crop-handle')) return;
-            e.preventDefault();
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(getComputedStyle(cropBox).left, 10);
-            startTop = parseInt(getComputedStyle(cropBox).top, 10);
-            
-            document.addEventListener('mousemove', moveCropBox);
-            document.addEventListener('mouseup', stopMoving);
-        });
-        
-        // Mouse move for resizing
-        document.addEventListener('mousemove', function(e) {
-            if (!isResizing) return;
-            
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            switch(currentHandle) {
-                case 'handle-n':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    break;
-                case 'handle-s':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    break;
-                case 'handle-e':
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-w':
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
-                case 'handle-ne':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-nw':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
-                case 'handle-se':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-sw':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
-            }
+    });
 
-            // Update input fields
-            document.getElementById('cropWidthInput').value = Math.round(parseInt(cropBox.style.width));
-            document.getElementById('cropHeightInput').value = Math.round(parseInt(cropBox.style.height));
-        });
-        
-        // Mouse up for resizing
-        document.addEventListener('mouseup', function() {
-            isResizing = false;
-        });
-        
-        function moveCropBox(e) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            const container = document.getElementById('imagePreviewContainer');
-            const maxLeft = container.offsetWidth - parseInt(getComputedStyle(cropBox).width, 10);
-            const maxTop = container.offsetHeight - parseInt(getComputedStyle(cropBox).height, 10);
-            
-            const newLeft = Math.max(0, Math.min(maxLeft, startLeft + dx));
-            const newTop = Math.max(0, Math.min(maxTop, startTop + dy));
-            
-            cropBox.style.left = newLeft + 'px';
-            cropBox.style.top = newTop + 'px';
-        }
-        
-        function stopMoving() {
-            document.removeEventListener('mousemove', moveCropBox);
-            document.removeEventListener('mouseup', stopMoving);
-        }
-    }
+    // Initialize aspect ratio lock
+    document.getElementById('lockAspectRatio').addEventListener('change', function() {
+        isAspectRatioLocked = this.checked;
+    });
+
+    // Initialize crop rotation
+    document.getElementById('cropRotateInput').addEventListener('input', function() {
+        cropRotation = this.value;
+        document.getElementById('cropRotateValue').textContent = this.value + '°';
+    });
+
+    // Initialize canvas event listeners
+    const canvas = document.getElementById('canvas');
+    canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('mousemove', handleCanvasMouseMove);
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+    canvas.addEventListener('click', handleCanvasClick);
 
     // Initialize theme from localStorage
     const savedTheme = localStorage.getItem('theme');
@@ -3404,119 +1621,2416 @@
             document.querySelector('.theme-switch i').textContent = 'brightness_5';
         }
     }
+});
 
-    // Add canvas event listeners for interactive tools
-    const canvas = document.getElementById('canvas');
-    canvas.addEventListener('click', function(e) {
-        if (isRedEyeMode) {
-            fixRedEye(e);
-        }
-    });
+// Function to update slider values
+function updateSliderValues() {
+    updateSliderValue('brightness', 'brightnessValue', '%');
+    updateSliderValue('contrast', 'contrastValue', '%');
+    updateSliderValue('saturate', 'saturateValue', '%');
+    updateSliderValue('sharpen', 'sharpenValue', '%');
+    updateSliderValue('warmth', 'warmthValue', '');
+    updateSliderValue('hue', 'hueValue', '°');
+    updateSliderValue('exposure', 'exposureValue', '');
+    updateSliderValue('blur', 'blurValue', 'px');
+    updateSliderValue('vignette', 'vignetteValue', '%');
+}
 
-    // Fix red eye
-    function fixRedEye(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-        
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(x - 15, y - 15, 30, 30);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Detect red pixels (high red, lower green and blue)
-            if (data[i] > 100 && data[i+1] < data[i] * 0.5 && data[i+2] < data[i] * 0.5) {
-                // Convert to grayscale (preserving brightness)
-                const brightness = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
-                data[i] = brightness * 0.5;     // R
-                data[i+1] = brightness * 0.3;   // G
-                data[i+2] = brightness * 0.2;   // B
-            }
-        }
-        
-        ctx.putImageData(imageData, x - 15, y - 15);
-        currentImage.src = canvas.toDataURL();
-        saveToHistory();
-        
-        showToast('Red eye reduced. Click again to fix more, or disable the tool.');
+// Update slider value
+function updateSliderValue(sliderId, valueId, suffix) {
+    const slider = document.getElementById(sliderId);
+    const valueElement = document.getElementById(valueId);
+    if (slider && valueElement) {
+        valueElement.textContent = slider.value + suffix;
+    }
+}
+
+// Reset slider
+function resetSlider(sliderId, defaultValue, valueId, suffix) {
+    const slider = document.getElementById(sliderId);
+    slider.value = defaultValue;
+    updateSliderValue(sliderId, valueId, suffix);
+    applyFilters();
+}
+
+// Handle file drag over
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+}
+
+// Handle file drop
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        handleFile(files[0]);
+    }
+}
+
+// Handle file selection
+function handleFileSelect(e) {
+    const files = e.target.files;
+    if (files.length) {
+        handleFile(files[0]);
+    }
+}
+
+// Main file handling function
+function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('Error: Invalid file format.');
+        return;
     }
 
-    // Enable drawing
-    function enableDrawing() {
-        isDrawing = true;
-        canvas.style.cursor = 'crosshair';
-        
-        const drawColor = document.getElementById('drawColor').value;
-        const drawSize = document.getElementById('drawSize').value;
-        
-        let isDrawingNow = false;
-        let lastX, lastY;
-        
-        canvas.onmousedown = function(e) {
-            isDrawingNow = true;
-            const rect = canvas.getBoundingClientRect();
-            lastX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            lastY = (e.clientY - rect.top) * (canvas.height / rect.height);
-        };
-        
-        canvas.onmousemove = function(e) {
-            if (!isDrawingNow) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-            
+    // Check file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+        showToast('Error: File is too large. Maximum size is 20MB.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Create canvas
+            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            ctx.lineWidth = drawSize;
-            ctx.strokeStyle = drawColor;
             
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
+            // Set canvas dimensions
+            const maxWidth = 4000;
+            const maxHeight = 4000;
             
-            lastX = x;
-            lastY = y;
-        };
-        
-        canvas.onmouseup = function() {
-            isDrawingNow = false;
+            if (img.width > maxWidth || img.height > maxHeight) {
+                // Scale down very large images
+                const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
+                canvas.width = img.width * ratio;
+                canvas.height = img.height * ratio;
+            } else {
+                canvas.width = img.width;
+                canvas.height = img.height;
+            }
+            
+            // Draw image
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Save original image
+            originalImage = new Image();
+            originalImage.src = canvas.toDataURL();
+            currentImage = new Image();
             currentImage.src = canvas.toDataURL();
+
+            // Save original dimensions for resize functionality
+            originalWidth = canvas.width;
+            originalHeight = canvas.height;
+            
+            // Update image info
+            updateImageInfo(file, canvas.width, canvas.height);
+            
+            // Hide placeholder
+            document.getElementById('placeholderText').style.display = 'none';
+            
+            // Enable compare button
+            document.getElementById('compareBtn').disabled = false;
+            
+            // Clear redo stack
+            redoStack = [];
+            
+            // Clear elements
+            textElements = [];
+            shapeElements = [];
+            drawingElements = [];
+            
+            // Save to history
             saveToHistory();
         };
-        
-        canvas.onmouseout = function() {
-            isDrawingNow = false;
-        };
-        
-        showToast('Drawing enabled. Click and drag to draw. Click again to disable.');
-    }
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
 
-    // Add text
-    function addText() {
-        const text = document.getElementById('textInput').value;
-        const size = document.getElementById('textSize').value;
-        const color = document.getElementById('textColor').value;
+// Update image information
+function updateImageInfo(file, width, height) {
+    const imageInfo = document.getElementById('imageInfo');
+    const imageWidth = document.getElementById('imageWidth');
+    const imageHeight = document.getElementById('imageHeight');
+    const imageSize = document.getElementById('imageSize');
+    const imageFormat = document.getElementById('imageFormat');
+    
+    const sizeKB = Math.round(file.size / 1024);
+    imageInfo.innerHTML = `<span>${file.name}</span><span>${width} x ${height} px</span>`;
+    imageWidth.textContent = width;
+    imageHeight.textContent = height;
+    imageSize.textContent = `${sizeKB} KB`;
+    imageFormat.textContent = file.type.split('/')[1].toUpperCase();
+}
+
+// Apply filters
+function applyFilters() {
+    if (!currentImage) return;
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw original image
+    ctx.drawImage(originalImage, 0, 0);
+    
+    // Get filter values
+    const brightness = document.getElementById('brightness').value;
+    const contrast = document.getElementById('contrast').value;
+    const saturate = document.getElementById('saturate').value;
+    const sharpen = document.getElementById('sharpen').value;
+    const warmth = document.getElementById('warmth').value;
+    const hue = document.getElementById('hue').value;
+    const exposure = document.getElementById('exposure').value;
+    const blur = document.getElementById('blur').value;
+    const vignette = document.getElementById('vignette').value;
+    
+    // Apply filters
+    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%) hue-rotate(${hue}deg) blur(${blur}px)`;
+    
+    // Redraw image
+    ctx.drawImage(originalImage, 0, 0);
+    
+    // Apply additional filters (sharpness, warmth, exposure, vignette)
+    applySharpness(ctx, sharpen);
+    applyWarmth(ctx, warmth);
+    applyExposure(ctx, exposure);
+    applyVignette(ctx, vignette);
+    
+    // Redraw all elements
+    redrawAllElements();
+    
+    // Save current state
+    currentImage.src = canvas.toDataURL();
+}
+
+// Apply sharpness
+function applySharpness(ctx, value) {
+    if (value == 0) return;
+    
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    
+    // Create a copy for reading
+    const originalData = new Uint8ClampedArray(data);
+    
+    // Apply sharpening using a convolution kernel
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            for (let c = 0; c < 3; c++) {
+                const idx = (y * width + x) * 4 + c;
+                
+                // Sharpening kernel
+                data[idx] = Math.max(0, Math.min(255, 
+                    originalData[idx] * (1 + value/50) - 
+                    originalData[((y-1) * width + x) * 4 + c] * (value/200) -
+                    originalData[((y+1) * width + x) * 4 + c] * (value/200) -
+                    originalData[(y * width + (x-1)) * 4 + c] * (value/200) -
+                    originalData[(y * width + (x+1)) * 4 + c] * (value/200)
+                ));
+            }
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Apply warmth
+function applyWarmth(ctx, value) {
+    if (value == 0) return;
+    
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Increase red and decrease blue for warm effect
+        data[i] = Math.min(255, Math.max(0, data[i] + value * 0.5));     // R
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] - value * 0.3)); // B
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Apply exposure
+function applyExposure(ctx, value) {
+    if (value == 0) return;
+    
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const factor = Math.pow(2, value / 50);
+    
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.min(255, Math.max(0, data[i] * factor));         // R
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor)); // G
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor)); // B
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Apply vignette effect
+function applyVignette(ctx, value) {
+    if (value == 0) return;
+    
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+    const amount = value / 100;
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            const factor = 1 - (dist / maxDist) * amount;
+            
+            data[idx] = Math.min(255, Math.max(0, data[idx] * factor));         // R
+            data[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] * factor)); // G
+            data[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] * factor)); // B
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Apply preset
+function applyPreset(presetName) {
+    // Reset all sliders
+    resetSlider('brightness', 100, 'brightnessValue', '%');
+    resetSlider('contrast', 100, 'contrastValue', '%');
+    resetSlider('saturate', 100, 'saturateValue', '%');
+    resetSlider('sharpen', 0, 'sharpenValue', '%');
+    resetSlider('warmth', 0, 'warmthValue', '');
+    resetSlider('hue', 0, 'hueValue', '°');
+    resetSlider('exposure', 0, 'exposureValue', '');
+    resetSlider('blur', 0, 'blurValue', 'px');
+    resetSlider('vignette', 0, 'vignetteValue', '%');
+    
+    // Apply preset settings
+    switch(presetName) {
+        case 'bright':
+            document.getElementById('brightness').value = 130;
+            document.getElementById('contrast').value = 120;
+            document.getElementById('saturate').value = 130;
+            break;
+        case 'bw':
+            document.getElementById('saturate').value = 0;
+            document.getElementById('contrast').value = 120;
+            break;
+        case 'vintage':
+            document.getElementById('warmth').value = 30;
+            document.getElementById('contrast').value = 90;
+            document.getElementById('brightness').value = 110;
+            document.getElementById('vignette').value = 40;
+            break;
+        case 'cool':
+            document.getElementById('warmth').value = -30;
+            document.getElementById('contrast').value = 110;
+            document.getElementById('hue').value = 200;
+            break;
+        case 'dramatic':
+            document.getElementById('contrast').value = 150;
+            document.getElementById('brightness').value = 90;
+            document.getElementById('saturate').value = 120;
+            document.getElementById('vignette').value = 60;
+            break;
+        case 'custom1':
+            // Custom settings
+            document.getElementById('brightness').value = 120;
+            document.getElementById('contrast').value = 110;
+            document.getElementById('saturate').value = 115;
+            document.getElementById('warmth').value = 10;
+            document.getElementById('sharpen').value = 20;
+            break;
+    }
+    
+    updateSliderValues();
+    applyFilters();
+    saveToHistory();
+}
+
+// Save to history
+function saveToHistory() {
+    if (!currentImage) return;
+    
+    // Add current state to history
+    historyStack.push({
+        image: currentImage.src,
+        elements: {
+            text: JSON.parse(JSON.stringify(textElements)),
+            shapes: JSON.parse(JSON.stringify(shapeElements)),
+            drawings: JSON.parse(JSON.stringify(drawingElements))
+        }
+    });
+    
+    // Limit history size
+    if (historyStack.length > 20) {
+        historyStack.shift();
+    }
+    
+    // Clear redo stack
+    redoStack = [];
+    
+    // Update history panel
+    updateHistoryPanel();
+}
+
+// Update history panel
+function updateHistoryPanel() {
+    const historyPanel = document.getElementById('historyPanel');
+    historyPanel.innerHTML = '';
+    
+    if (historyStack.length === 0) {
+        historyPanel.innerHTML = '<p class="center-align">Edit history will appear here</p>';
+        return;
+    }
+    
+    for (let i = 0; i < historyStack.length; i++) {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <span>Edit ${i + 1}</span>
+            <i class="material-icons tiny">radio_button_unchecked</i>
+        `;
         
-        if (!text) {
-            showToast('Please enter some text.');
-            return;
+        historyItem.addEventListener('click', () => {
+            restoreHistory(i);
+        });
+        
+        historyPanel.appendChild(historyItem);
+    }
+    
+    // Scroll to bottom
+    historyPanel.scrollTop = historyPanel.scrollHeight;
+}
+
+// Restore from history
+function restoreHistory(index) {
+    if (index < 0 || index >= historyStack.length) return;
+    
+    const historyItem = historyStack[index];
+    const img = new Image();
+    img.onload = function() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        currentImage = img;
+        
+        // Restore elements
+        textElements = historyItem.elements.text || [];
+        shapeElements = historyItem.elements.shapes || [];
+        drawingElements = historyItem.elements.drawings || [];
+        
+        // Redraw all elements
+        redrawAllElements();
+        
+        // Move items from history to redo stack
+        while (historyStack.length > index + 1) {
+            redoStack.push(historyStack.pop());
         }
         
-        const ctx = canvas.getContext('2d');
-        ctx.font = `${size}px Arial`;
-        ctx.fillStyle = color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        updateHistoryPanel();
+    };
+    img.src = historyItem.image;
+}
+
+// Redraw all elements
+function redrawAllElements() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Redraw text elements
+    textElements.forEach(text => {
+        ctx.font = `${text.size}px ${text.font}`;
+        ctx.fillStyle = text.color;
+        ctx.textAlign = text.align;
+        ctx.textBaseline = text.baseline;
+        ctx.fillText(text.content, text.x, text.y);
+    });
+    
+    // Redraw shape elements
+    shapeElements.forEach(shape => {
+        ctx.strokeStyle = shape.color;
+        ctx.lineWidth = shape.lineWidth;
+        ctx.beginPath();
         
+        switch(shape.type) {
+            case 'rectangle':
+                ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                break;
+            case 'circle':
+                ctx.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            case 'line':
+                ctx.moveTo(shape.startX, shape.startY);
+                ctx.lineTo(shape.endX, shape.endY);
+                ctx.stroke();
+                break;
+            case 'arrow':
+                ctx.moveTo(shape.startX, shape.startY);
+                ctx.lineTo(shape.endX, shape.endY);
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const angle = Math.atan2(shape.endY - shape.startY, shape.endX - shape.startX);
+                ctx.beginPath();
+                ctx.moveTo(shape.endX, shape.endY);
+                ctx.lineTo(
+                    shape.endX - 10 * Math.cos(angle - Math.PI/6),
+                    shape.endY - 10 * Math.sin(angle - Math.PI/6)
+                );
+                ctx.lineTo(
+                    shape.endX - 10 * Math.cos(angle + Math.PI/6),
+                    shape.endY - 10 * Math.sin(angle + Math.PI/6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = shape.color;
+                ctx.fill();
+                break;
+        }
+    });
+    
+    // Redraw drawing elements
+    drawingElements.forEach(drawing => {
+        ctx.strokeStyle = drawing.color;
+        ctx.lineWidth = drawing.lineWidth;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        
+        ctx.beginPath();
+        for (let i = 0; i < drawing.points.length; i++) {
+            const point = drawing.points[i];
+            if (i === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
+        }
+        ctx.stroke();
+    });
+}
+
+// Undo last action
+function undo() {
+    if (historyStack.length > 1) {
+        redoStack.push(historyStack.pop());
+        restoreHistory(historyStack.length - 1);
+    }
+}
+
+// Redo last action
+function redo() {
+    if (redoStack.length > 0) {
+        const state = redoStack.pop();
+        historyStack.push(state);
+        restoreHistory(historyStack.length - 1);
+    }
+}
+
+// Apply AI filter
+function applyAIFilter(filterType) {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    // Show processing indicator
+    const aiProcessing = document.getElementById('aiProcessing');
+    aiProcessing.style.display = 'block';
+    
+    // Simulate AI processing (in a real app this would be an API call)
+    setTimeout(() => {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Apply different effects based on filter type
+        switch(filterType) {
+            case 'upscale':
+                // Simulate resolution enhancement
+                applyUpscaleEffect(ctx);
+                break;
+            case 'denoise':
+                // Simulate noise reduction
+                applyDenoiseEffect(ctx);
+                break;
+            case 'face_enhance':
+                // Simulate face enhancement
+                applyFaceEnhanceEffect(ctx);
+                break;
+            case 'background_remove':
+                // Simulate background removal
+                applyBackgroundRemoveEffect(ctx);
+                break;
+            case 'style':
+                // Apply selected style
+                const styleSelect = document.getElementById('styleSelect');
+                applyStyleEffect(ctx, styleSelect.value);
+                break;
+        }
+        
+        // Save modified image
         currentImage.src = canvas.toDataURL();
+        
+        // Hide processing indicator
+        aiProcessing.style.display = 'none';
+        
+        // Save to history
         saveToHistory();
         
-        showToast('Text added to image.');
+        showToast('AI filter applied successfully!');
+    }, 2000);
+}
+
+// Upscale effect
+function applyUpscaleEffect(ctx) {
+    const originalWidth = ctx.canvas.width;
+    const originalHeight = ctx.canvas.height;
+    
+    // Create a temporary canvas for the upscaled image
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Set new dimensions (1.5x)
+    tempCanvas.width = originalWidth * 1.5;
+    tempCanvas.height = originalHeight * 1.5;
+    
+    // Draw image with smooth scaling
+    tempCtx.imageSmoothingEnabled = true;
+    tempCtx.imageSmoothingQuality = 'high';
+    tempCtx.drawImage(currentImage, 0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Apply sharpening
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Simple sharpening
+        data[i] = Math.min(255, data[i] * 1.05);
+        data[i + 1] = Math.min(255, data[i + 1] * 1.05);
+        data[i + 2] = Math.min(255, data[i + 2] * 1.05);
     }
+    
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    // Resize main canvas and draw the upscaled image
+    ctx.canvas.width = tempCanvas.width;
+    ctx.canvas.height = tempCanvas.height;
+    ctx.drawImage(tempCanvas, 0, 0);
+    
+    // Update image info
+    document.getElementById('imageWidth').textContent = ctx.canvas.width;
+    document.getElementById('imageHeight').textContent = ctx.canvas.height;
+}
+
+// Denoise effect
+function applyDenoiseEffect(ctx) {
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    
+    // Create a copy for reading
+    const originalData = new Uint8ClampedArray(data);
+    
+    // Apply simple noise reduction
+    for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+            for (let c = 0; c < 3; c++) {
+                const idx = (y * width + x) * 4 + c;
+                
+                // Get surrounding pixels
+                const pixels = [
+                    originalData[((y-1) * width + (x-1)) * 4 + c],
+                    originalData[((y-1) * width + x) * 4 + c],
+                    originalData[((y-1) * width + (x+1)) * 4 + c],
+                    originalData[(y * width + (x-1)) * 4 + c],
+                    originalData[idx],
+                    originalData[(y * width + (x+1)) * 4 + c],
+                    originalData[((y+1) * width + (x-1)) * 4 + c],
+                    originalData[((y+1) * width + x) * 4 + c],
+                    originalData[((y+1) * width + (x+1)) * 4 + c]
+                ];
+                
+                // Sort and get median
+                pixels.sort((a, b) => a - b);
+                data[idx] = pixels[4];
+            }
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Face enhance effect
+function applyFaceEnhanceEffect(ctx) {
+    // In a real app, this would involve face detection and enhancement
+    // For demo purposes, apply several enhancements to the whole image
+    
+    // Increase contrast and saturation
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Increase saturation
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = avg + 1.2 * (data[i] - avg); // R
+        data[i + 1] = avg + 1.1 * (data[i + 1] - avg); // G
+        data[i + 2] = avg + 0.9 * (data[i + 2] - avg); // B
+        
+        // Increase contrast
+        data[i] = Math.min(255, Math.max(0, (data[i] - 127) * 1.1 + 127));
+        data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 127) * 1.1 + 127));
+        data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 127) * 1.1 + 127));
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    // Slight sharpening
+    applySharpness(ctx, 15);
+}
+
+// Background remove effect
+function applyBackgroundRemoveEffect(ctx) {
+    // In a real app, this would use advanced AI segmentation
+    // For demo, create a simple gradient transparency effect
+    
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+    
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            
+            // Make pixels more transparent the further they are from center
+            if (dist > maxDist * 0.3) {
+                const alpha = 1 - (dist - maxDist * 0.3) / (maxDist * 0.7);
+                data[idx + 3] = Math.max(0, Math.min(255, alpha * 255));
+            }
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Apply style
+function applyStyleEffect(ctx, style) {
+    // Save current filter values
+    const currentBrightness = document.getElementById('brightness').value;
+    const currentContrast = document.getElementById('contrast').value;
+    const currentSaturate = document.getElementById('saturate').value;
+    const currentHue = document.getElementById('hue').value;
+    const currentWarmth = document.getElementById('warmth').value;
+    
+    // Reset filters
+    ctx.filter = 'none';
+    ctx.drawImage(originalImage, 0, 0);
+    
+    // Apply style
+    switch(style) {
+        case 'van_gogh':
+            document.getElementById('contrast').value = 130;
+            document.getElementById('saturate').value = 140;
+            document.getElementById('hue').value = 30;
+            document.getElementById('warmth').value = 20;
+            break;
+        case 'picasso':
+            document.getElementById('contrast').value = 150;
+            document.getElementById('brightness').value = 90;
+            document.getElementById('saturate').value = 80;
+            document.getElementById('hue').value = 300;
+            break;
+        case 'monet':
+            document.getElementById('brightness').value = 110;
+            document.getElementById('contrast').value = 90;
+            document.getElementById('saturate').value = 120;
+            document.getElementById('hue').value = 350;
+            document.getElementById('warmth').value = 10;
+            break;
+        case 'pixel':
+            applyPixelEffect(ctx);
+            break;
+        case 'sketch':
+            applySketchEffect(ctx);
+            break;
+        case 'oil_painting':
+            applyOilPaintingEffect(ctx);
+            break;
+        case 'watercolor':
+            document.getElementById('saturate').value = 140;
+            document.getElementById('contrast').value = 120;
+            document.getElementById('brightness').value = 110;
+            applyBlurEffect(ctx, 2);
+            break;
+        case 'comic':
+            document.getElementById('contrast').value = 170;
+            document.getElementById('saturate').value = 150;
+            applyPosterizeEffect(ctx);
+            break;
+    }
+    
+    // Update slider values
+    updateSliderValues();
+    
+    // Apply filters
+    applyFilters();
+    
+    // Restore original values (for further adjustments)
+    document.getElementById('brightness').value = currentBrightness;
+    document.getElementById('contrast').value = currentContrast;
+    document.getElementById('saturate').value = currentSaturate;
+    document.getElementById('hue').value = currentHue;
+    document.getElementById('warmth').value = currentWarmth;
+}
+
+// Pixel effect
+function applyPixelEffect(ctx) {
+    const size = 10; // Pixel size
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    
+    // Reduce image size
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = w / size;
+    tempCanvas.height = h / size;
+    tempCtx.drawImage(ctx.canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Scale back up with pixelation
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+}
+
+// Sketch effect
+function applySketchEffect(ctx) {
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Convert to grayscale
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        
+        // Invert and increase contrast
+        const sketchValue = 255 - Math.min(255, Math.max(0, avg * 1.5));
+        
+        data[i] = sketchValue;     // R
+        data[i + 1] = sketchValue; // G
+        data[i + 2] = sketchValue; // B
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Oil painting effect
+function applyOilPaintingEffect(ctx) {
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const radius = 3;
+    
+    for (let y = radius; y < ctx.canvas.height - radius; y++) {
+        for (let x = radius; x < ctx.canvas.width - radius; x++) {
+            const i = (y * ctx.canvas.width + x) * 4;
+            
+            // Average values in area
+            let r = 0, g = 0, b = 0;
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const di = ((y + dy) * ctx.canvas.width + (x + dx)) * 4;
+                    r += data[di];
+                    g += data[di + 1];
+                    b += data[di + 2];
+                }
+            }
+            
+            const count = Math.pow(radius * 2 + 1, 2);
+            data[i] = r / count;
+            data[i + 1] = g / count;
+            data[i + 2] = b / count;
+            }
+        }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    // Increase saturation
+    const saturateValue = document.getElementById('saturate').value;
+    document.getElementById('saturate').value = Math.min(200, parseInt(saturateValue) + 40);
+    applyFilters();
+    document.getElementById('saturate').value = saturateValue;
+}
+
+// Blur effect
+function applyBlurEffect(ctx, amount) {
+    ctx.filter = `blur(${amount}px)`;
+    ctx.drawImage(ctx.canvas, 0, 0);
+    ctx.filter = 'none';
+}
+
+// Posterize effect
+function applyPosterizeEffect(ctx) {
+    const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const data = imageData.data;
+    const levels = 4;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Posterize each channel
+        data[i] = Math.floor(data[i] / (255 / levels)) * (255 / levels);     // R
+        data[i + 1] = Math.floor(data[i + 1] / (255 / levels)) * (255 / levels); // G
+        data[i + 2] = Math.floor(data[i + 2] / (255 / levels)) * (255 / levels); // B
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+// Initialize comparison slider
+function initComparisonSlider() {
+    const slider = document.querySelector('.comparison-slider');
+    const handle = slider.querySelector('.comparison-handle');
+    const before = slider.querySelector('.comparison-before');
+    
+    let isMoving = false;
+    
+    // Mouse event handlers
+    handle.addEventListener('mousedown', () => isMoving = true);
+    document.addEventListener('mouseup', () => isMoving = false);
+    document.addEventListener('mousemove', (e) => {
+        if (!isMoving) return;
+        moveSlider(e.clientX);
+    });
+    
+    // Touch event handlers
+    handle.addEventListener('touchstart', () => isMoving = true);
+    document.addEventListener('touchend', () => isMoving = false);
+    document.addEventListener('touchmove', (e) => {
+        if (!isMoving) return;
+        moveSlider(e.touches[0].clientX);
+    });
+    
+    function moveSlider(x) {
+        const sliderRect = slider.getBoundingClientRect();
+        let position = (x - sliderRect.left) / sliderRect.width;
+        position = Math.max(0, Math.min(1, position)); // Limit between 0 and 1
+        
+        before.style.width = position * 100 + '%';
+        handle.style.left = position * 100 + '%';
+    }
+}
+
+// Toggle before/after comparison
+function toggleComparison() {
+    if (!currentImage) return;
+    
+    const comparisonSlider = document.getElementById('comparisonSlider');
+    const mainCanvas = document.getElementById('canvas');
+    const beforeCanvas = document.getElementById('beforeCanvas');
+    const afterCanvas = document.getElementById('afterCanvas');
+    
+    isComparisonActive = !isComparisonActive;
+    
+    if (isComparisonActive) {
+        // Set up canvas for comparison
+        beforeCanvas.width = afterCanvas.width = originalImage.width;
+        beforeCanvas.height = afterCanvas.height = originalImage.height;
+        
+        // Draw original on beforeCanvas
+        const beforeCtx = beforeCanvas.getContext('2d');
+        beforeCtx.drawImage(originalImage, 0, 0);
+        
+        // Draw current image on afterCanvas
+        const afterCtx = afterCanvas.getContext('2d');
+        afterCtx.drawImage(currentImage, 0, 0);
+        
+        // Show comparison slider and hide main canvas
+        comparisonSlider.style.display = 'block';
+        mainCanvas.style.display = 'none';
+        
+        // Update button text
+        document.querySelector('#compareBtn i').textContent = 'visibility';
+        document.querySelector('#compareBtn span').textContent = 'Show Result';
+    } else {
+        // Hide comparison slider and show main canvas
+        comparisonSlider.style.display = 'none';
+        mainCanvas.style.display = 'block';
+        
+        // Update button text
+        document.querySelector('#compareBtn i').textContent = 'compare';
+        document.querySelector('#compareBtn span').textContent = 'Compare Before/After';
+    }
+}
+
+// Reset image
+function resetImage() {
+    if (!originalImage) return;
+    
+    // Reset all sliders
+    resetSlider('brightness', 100, 'brightnessValue', '%');
+    resetSlider('contrast', 100, 'contrastValue', '%');
+    resetSlider('saturate', 100, 'saturateValue', '%');
+    resetSlider('sharpen', 0, 'sharpenValue', '%');
+    resetSlider('warmth', 0, 'warmthValue', '');
+    resetSlider('hue', 0, 'hueValue', '°');
+    resetSlider('exposure', 0, 'exposureValue', '');
+    resetSlider('blur', 0, 'blurValue', 'px');
+    resetSlider('vignette', 0, 'vignetteValue', '%');
+    
+    // Restore original image
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(originalImage, 0, 0);
+    
+    currentImage = new Image();
+    currentImage.src = originalImage.src;
+    
+    // Clear elements
+    textElements = [];
+    shapeElements = [];
+    drawingElements = [];
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image reset to original.');
+}
+
+// Download image
+function downloadImage() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const format = document.getElementById('formatSelect').value;
+    const quality = document.getElementById('quality').value / 100;
+    const name = document.getElementById('imageName').value || 'edited_image';
+    const sizeOption = document.getElementById('sizeSelect').value;
+    
+    // Create temporary canvas for export
+    const exportCanvas = document.createElement('canvas');
+    const exportCtx = exportCanvas.getContext('2d');
+    
+    // Set export dimensions
+    if (sizeOption === 'custom') {
+        const customWidth = parseInt(document.getElementById('customWidth').value);
+        const customHeight = parseInt(document.getElementById('customHeight').value);
+        
+        if (customWidth && customHeight) {
+            exportCanvas.width = customWidth;
+            exportCanvas.height = customHeight;
+        } else {
+            exportCanvas.width = currentImage.width;
+            exportCanvas.height = currentImage.height;
+        }
+    } else {
+        const scale = parseInt(sizeOption) / 100;
+        exportCanvas.width = currentImage.width * scale;
+        exportCanvas.height = currentImage.height * scale;
+    }
+    
+    // Draw image to export canvas
+    exportCtx.drawImage(currentImage, 0, 0, exportCanvas.width, exportCanvas.height);
+    
+    // Redraw all elements on export canvas
+    redrawAllElementsOnCanvas(exportCtx, exportCanvas.width, exportCanvas.height);
+    
+    // Create temporary download link
+    const link = document.createElement('a');
+    link.download = `${name}.${format}`;
+    link.href = exportCanvas.toDataURL(`image/${format}`, quality);
+    link.click();
+    
+    showToast('Image downloaded successfully!');
+}
+
+// Redraw all elements on a specific canvas
+function redrawAllElementsOnCanvas(ctx, width, height) {
+    const scaleX = width / currentImage.width;
+    const scaleY = height / currentImage.height;
+    
+    // Redraw text elements
+    textElements.forEach(text => {
+        ctx.font = `${text.size * scaleX}px ${text.font}`;
+        ctx.fillStyle = text.color;
+        ctx.textAlign = text.align;
+        ctx.textBaseline = text.baseline;
+        ctx.fillText(text.content, text.x * scaleX, text.y * scaleY);
+    });
+    
+    // Redraw shape elements
+    shapeElements.forEach(shape => {
+        ctx.strokeStyle = shape.color;
+        ctx.lineWidth = shape.lineWidth * scaleX;
+        ctx.beginPath();
+        
+        switch(shape.type) {
+            case 'rectangle':
+                ctx.strokeRect(shape.x * scaleX, shape.y * scaleY, shape.width * scaleX, shape.height * scaleY);
+                break;
+            case 'circle':
+                ctx.arc(shape.x * scaleX, shape.y * scaleY, shape.radius * scaleX, 0, Math.PI * 2);
+                ctx.stroke();
+                break;
+            case 'line':
+                ctx.moveTo(shape.startX * scaleX, shape.startY * scaleY);
+                ctx.lineTo(shape.endX * scaleX, shape.endY * scaleY);
+                ctx.stroke();
+                break;
+            case 'arrow':
+                ctx.moveTo(shape.startX * scaleX, shape.startY * scaleY);
+                ctx.lineTo(shape.endX * scaleX, shape.endY * scaleY);
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const angle = Math.atan2(
+                    shape.endY * scaleY - shape.startY * scaleY,
+                    shape.endX * scaleX - shape.startX * scaleX
+                );
+                ctx.beginPath();
+                ctx.moveTo(shape.endX * scaleX, shape.endY * scaleY);
+                ctx.lineTo(
+                    shape.endX * scaleX - 10 * scaleX * Math.cos(angle - Math.PI/6),
+                    shape.endY * scaleY - 10 * scaleY * Math.sin(angle - Math.PI/6)
+                );
+                ctx.lineTo(
+                    shape.endX * scaleX - 10 * scaleX * Math.cos(angle + Math.PI/6),
+                    shape.endY * scaleY - 10 * scaleY * Math.sin(angle + Math.PI/6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = shape.color;
+                ctx.fill();
+                break;
+        }
+    });
+    
+    // Redraw drawing elements
+    drawingElements.forEach(drawing => {
+        ctx.strokeStyle = drawing.color;
+        ctx.lineWidth = drawing.lineWidth * scaleX;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        
+        ctx.beginPath();
+        for (let i = 0; i < drawing.points.length; i++) {
+            const point = drawing.points[i];
+            const x = point.x * scaleX;
+            const y = point.y * scaleY;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    });
+}
+
+// Toggle theme
+function toggleTheme() {
+    const body = document.body;
+    
+    if (currentTheme === 'light-mode') {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        currentTheme = 'dark-mode';
+        document.querySelector('.theme-switch i').textContent = 'brightness_5';
+    } else {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        currentTheme = 'light-mode';
+        document.querySelector('.theme-switch i').textContent = 'brightness_4';
+    }
+    
+    // Save theme preference
+    localStorage.setItem('theme', currentTheme);
+}
+
+// Toggle fullscreen mode
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error enabling fullscreen: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+// Start crop
+function startCrop() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    isCropping = true;
+    const cropOverlay = document.getElementById('cropOverlay');
+    const cropBox = document.getElementById('cropBox');
+    const container = document.getElementById('imagePreviewContainer');
+    
+    // Show crop overlay
+    cropOverlay.style.display = 'block';
+    cropOverlay.classList.add('active');
+    
+    // Initialize crop box (start with a square in the center)
+    const size = Math.min(container.offsetWidth, container.offsetHeight) * 0.6;
+    const left = (container.offsetWidth - size) / 2;
+    const top = (container.offsetHeight - size) / 2;
+    
+    cropBox.style.width = size + 'px';
+    cropBox.style.height = size + 'px';
+    cropBox.style.left = left + 'px';
+    cropBox.style.top = top + 'px';
+    
+    // Save original parameters for reset functionality
+    originalCropBox = {
+        width: size,
+        height: size,
+        left: left,
+        top: top
+    };
+    
+    // Update input fields
+    document.getElementById('cropWidthInput').value = Math.round(size);
+    document.getElementById('cropHeightInput').value = Math.round(size);
+    document.getElementById('cropRotateInput').value = 0;
+    document.getElementById('cropRotateValue').textContent = '0°';
+    cropRotation = 0;
+    
+    // Initialize enhanced crop handlers
+    initEnhancedCropHandlers();
+    
+    showToast('Crop mode activated. Use handles to resize or enter precise values.');
+}
+
+// Initialize enhanced crop handlers
+function initEnhancedCropHandlers() {
+    const cropBox = document.getElementById('cropBox');
+    const widthInput = document.getElementById('cropWidthInput');
+    const heightInput = document.getElementById('cropHeightInput');
+    const rotateInput = document.getElementById('cropRotateInput');
+    const lockAspect = document.getElementById('lockAspectRatio');
+    
+    // Input change handlers
+    widthInput.addEventListener('change', function() {
+        if (!isCropping) return;
+        
+        const newWidth = parseInt(this.value);
+        if (isNaN(newWidth) || newWidth <= 0) return;
+        
+        if (isAspectRatioLocked && cropAspectRatio !== 'free') {
+            const ratio = getAspectRatioValue(cropAspectRatio);
+            const newHeight = Math.round(newWidth / ratio);
+            cropBox.style.height = newHeight + 'px';
+            heightInput.value = newHeight;
+        }
+        
+        cropBox.style.width = newWidth + 'px';
+        updateCropBoxPosition();
+    });
+    
+    heightInput.addEventListener('change', function() {
+        if (!isCropping) return;
+        
+        const newHeight = parseInt(this.value);
+        if (isNaN(newHeight) || newHeight <= 0) return;
+        
+        if (isAspectRatioLocked && cropAspectRatio !== 'free') {
+            const ratio = getAspectRatioValue(cropAspectRatio);
+            const newWidth = Math.round(newHeight * ratio);
+            cropBox.style.width = newWidth + 'px';
+            widthInput.value = newWidth;
+        }
+        
+        cropBox.style.height = newHeight + 'px';
+        updateCropBoxPosition();
+    });
+    
+    // Rotation handler
+    rotateInput.addEventListener('input', function() {
+        cropRotation = parseInt(this.value);
+        document.getElementById('cropRotateValue').textContent = cropRotation + '°';
+    });
+    
+    // Initialize crop box handlers
+    initCropBoxHandlers();
+}
+
+// Get aspect ratio value
+function getAspectRatioValue(ratio) {
+    switch(ratio) {
+        case '1:1': return 1;
+        case '4:3': return 4/3;
+        case '16:9': return 16/9;
+        case '3:4': return 3/4;
+        case '9:16': return 9/16;
+        default: return 0;
+    }
+}
+
+// Update crop box position
+function updateCropBoxPosition() {
+    const cropBox = document.getElementById('cropBox');
+    const container = document.getElementById('imagePreviewContainer');
+    
+    const boxWidth = parseInt(cropBox.style.width);
+    const boxHeight = parseInt(cropBox.style.height);
+    let boxLeft = parseInt(cropBox.style.left);
+    let boxTop = parseInt(cropBox.style.top);
+    
+    // Check boundaries
+    if (boxLeft < 0) boxLeft = 0;
+    if (boxTop < 0) boxTop = 0;
+    if (boxLeft + boxWidth > container.offsetWidth) {
+        boxLeft = container.offsetWidth - boxWidth;
+    }
+    if (boxTop + boxHeight > container.offsetHeight) {
+        boxTop = container.offsetHeight - boxHeight;
+    }
+    
+    cropBox.style.left = boxLeft + 'px';
+    cropBox.style.top = boxTop + 'px';
+    
+    // Update input fields
+    document.getElementById('cropWidthInput').value = Math.round(boxWidth);
+    document.getElementById('cropHeightInput').value = Math.round(boxHeight);
+}
+
+// Rotate crop
+function rotateCrop(degrees) {
+    cropRotation += degrees;
+    
+    // Limit value between -180 and 180
+    if (cropRotation > 180) cropRotation = -180 + (cropRotation - 180);
+    if (cropRotation < -180) cropRotation = 180 + (cropRotation + 180);
+    
+    document.getElementById('cropRotateInput').value = cropRotation;
+    document.getElementById('cropRotateValue').textContent = cropRotation + '°';
+    
+    showToast('Rotation: ' + cropRotation + '°');
+}
+
+// Reset crop
+function resetCrop() {
+    if (!isCropping || !originalCropBox) return;
+    
+    const cropBox = document.getElementById('cropBox');
+    cropBox.style.width = originalCropBox.width + 'px';
+    cropBox.style.height = originalCropBox.height + 'px';
+    cropBox.style.left = originalCropBox.left + 'px';
+    cropBox.style.top = originalCropBox.top + 'px';
+    
+    document.getElementById('cropWidthInput').value = Math.round(originalCropBox.width);
+    document.getElementById('cropHeightInput').value = Math.round(originalCropBox.height);
+    document.getElementById('cropRotateInput').value = 0;
+    document.getElementById('cropRotateValue').textContent = '0°';
+    cropRotation = 0;
+    
+    // Reset aspect ratio
+    document.querySelectorAll('.crop-preset').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('[data-ratio="free"]').classList.add('active');
+    cropAspectRatio = 'free';
+    document.getElementById('lockAspectRatio').checked = false;
+    isAspectRatioLocked = false;
+}
+
+// Apply crop
+function applyCrop() {
+    if (!isCropping) return;
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const cropBox = document.getElementById('cropBox');
+    const container = document.getElementById('imagePreviewContainer');
+    
+    // Calculate crop coordinates relative to canvas
+    const scaleX = currentImage.width / container.offsetWidth;
+    const scaleY = currentImage.height / container.offsetHeight;
+    
+    const x = parseInt(getComputedStyle(cropBox).left, 10) * scaleX;
+    const y = parseInt(getComputedStyle(cropBox).top, 10) * scaleY;
+    const width = parseInt(getComputedStyle(cropBox).width, 10) * scaleX;
+    const height = parseInt(getComputedStyle(cropBox).height, 10) * scaleY;
+    
+    // Create a temporary canvas for the cropped image
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = width;
+    croppedCanvas.height = height;
+    const croppedCtx = croppedCanvas.getContext('2d');
+    
+    // If there's rotation, apply it
+    if (cropRotation !== 0) {
+        // Save context state
+        croppedCtx.save();
+        
+        // Move to center of canvas
+        croppedCtx.translate(width / 2, height / 2);
+        
+        // Rotate
+        croppedCtx.rotate(cropRotation * Math.PI / 180);
+        
+        // Draw image with rotation
+        croppedCtx.drawImage(
+            canvas,
+            x, y, width, height,
+            -width / 2, -height / 2, width, height
+        );
+        
+        // Restore context state
+        croppedCtx.restore();
+    } else {
+        // Without rotation - just draw the cropped area
+        croppedCtx.drawImage(
+            canvas,
+            x, y, width, height,
+            0, 0, width, height
+        );
+    }
+    
+    // Resize main canvas and draw the cropped image
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(croppedCanvas, 0, 0);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Update size information
+    document.getElementById('imageWidth').textContent = width;
+    document.getElementById('imageHeight').textContent = height;
+    document.getElementById('imageInfo').innerHTML = 
+        `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
+        `<span>${width} x ${height} px</span>`;
+    
+    // Hide crop overlay
+    document.getElementById('cropOverlay').style.display = 'none';
+    document.getElementById('cropOverlay').classList.remove('active');
+    isCropping = false;
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image cropped successfully!');
+}
+
+// Cancel crop
+function cancelCrop() {
+    document.getElementById('cropOverlay').style.display = 'none';
+    document.getElementById('cropOverlay').classList.remove('active');
+    isCropping = false;
+}
+
+// Show resize UI
+function showResizeUI() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    document.getElementById('resizeContainer').style.display = 'block';
+    document.getElementById('resizeWidth').value = currentImage.width;
+    document.getElementById('resizeHeight').value = currentImage.height;
+}
+
+// Apply resize
+function applyResize() {
+    const newWidth = parseInt(document.getElementById('resizeWidth').value);
+    const newHeight = parseInt(document.getElementById('resizeHeight').value);
+    
+    if (isNaN(newWidth) || isNaN(newHeight) || newWidth <= 0 || newHeight <= 0) {
+        showToast('Please enter valid dimensions.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Create a temporary canvas for the resized image
+    const resizedCanvas = document.createElement('canvas');
+    resizedCanvas.width = newWidth;
+    resizedCanvas.height = newHeight;
+    const resizedCtx = resizedCanvas.getContext('2d');
+    
+    // Draw image with smooth scaling
+    resizedCtx.imageSmoothingEnabled = true;
+    resizedCtx.imageSmoothingQuality = 'high';
+    resizedCtx.drawImage(currentImage, 0, 0, newWidth, newHeight);
+    
+    // Resize main canvas and draw the resized image
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    ctx.drawImage(resizedCanvas, 0, 0);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Update size information
+    document.getElementById('imageWidth').textContent = newWidth;
+    document.getElementById('imageHeight').textContent = newHeight;
+    document.getElementById('imageInfo').innerHTML = 
+        `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
+        `<span>${newWidth} x ${newHeight} px</span>`;
+    
+    // Hide resize UI
+    document.getElementById('resizeContainer').style.display = 'none';
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image resized successfully!');
+}
+
+// Cancel resize
+function cancelResize() {
+    document.getElementById('resizeContainer').style.display = 'none';
+}
+
+// Rotate image
+function rotateImage() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Save current dimensions
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Change canvas dimensions for rotation
+    canvas.width = height;
+    canvas.height = width;
+    
+    // Rotate and draw image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(currentImage, -width / 2, -height / 2);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Update size information
+    document.getElementById('imageWidth').textContent = canvas.width;
+    document.getElementById('imageHeight').textContent = canvas.height;
+    document.getElementById('imageInfo').innerHTML = 
+        `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
+        `<span>${canvas.width} x ${canvas.height} px</span>`;
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image rotated 90° clockwise.');
+}
+
+// Flip image horizontally
+function flipHorizontal() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Flip and draw image
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(currentImage, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image flipped horizontally.');
+}
+
+// Flip image vertically
+function flipVertical() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Flip and draw image
+    ctx.translate(0, canvas.height);
+    ctx.scale(1, -1);
+    ctx.drawImage(currentImage, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Image flipped vertically.');
+}
+
+// Toggle red-eye reduction mode
+function toggleRedEyeReduction() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    isRedEyeMode = !isRedEyeMode;
+    
+    if (isRedEyeMode) {
+        showToast('Click on red eyes to fix them. Click again to disable.');
+        document.getElementById('canvas').style.cursor = 'crosshair';
+    } else {
+        document.getElementById('canvas').style.cursor = 'default';
+    }
+}
+
+// Handle tool selection
+function handleToolSelection() {
+    const toolSelect = document.getElementById('toolSelect');
+    const toolOptions = document.getElementById('toolOptions');
+    currentTool = toolSelect.value;
+    
+    toolOptions.innerHTML = '';
+    
+    switch(currentTool) {
+        case 'redeye':
+            toolOptions.innerHTML = `
+                <p>Click on red eyes to fix them</p>
+                <button class="btn waves-effect waves-light" onclick="toggleRedEyeReduction()">
+                    <i class="material-icons left">remove_red_eye</i>Enable Red-Eye Tool
+                </button>
+            `;
+            break;
+        case 'heal':
+            toolOptions.innerHTML = `
+                <p>Click on blemishes to remove them</p>
+                <div class="range-field">
+                    <label>Brush Size</label>
+                    <input type="range" id="healSize" min="1" max="50" value="10">
+                </div>
+                <button class="btn waves-effect waves-light" onclick="enableHealingTool()">
+                    <i class="material-icons left">healing</i>Enable Healing Tool
+                </button>
+            `;
+            break;
+        case 'text':
+            toolOptions.innerHTML = `
+                <div class="input-field">
+                    <input id="textInput" type="text">
+                    <label for="textInput">Text</label>
+                </div>
+                <div class="input-field">
+                    <input id="textSize" type="number" value="24">
+                    <label for="textSize">Font Size</label>
+                </div>
+                <div class="input-field">
+                    <input type="color" id="textColor" value="#ffffff">
+                    <label for="textColor">Text Color</label>
+                </div>
+                <div class="input-field">
+                    <select id="textFont">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
+                    <label>Font</label>
+                </div>
+                <div class="input-field">
+                    <select id="textAlign">
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                    <label>Alignment</label>
+                </div>
+                <button class="btn waves-effect waves-light" onclick="enableTextTool()">
+                    <i class="material-icons left">text_fields</i>Add Text
+                </button>
+            `;
+            break;
+        case 'draw':
+            toolOptions.innerHTML = `
+                <div class="input-field">
+                    <input type="color" id="drawColor" value="#ff0000">
+                    <label for="drawColor">Draw Color</label>
+                </div>
+                <div class="range-field">
+                    <label>Brush Size</label>
+                    <input type="range" id="drawSize" min="1" max="50" value="5">
+                </div>
+                <button class="btn waves-effect waves-light" onclick="enableDrawing()">
+                    <i class="material-icons left">brush</i>Enable Drawing
+                </button>
+            `;
+            break;
+        case 'shapes':
+            toolOptions.innerHTML = `
+                <div class="input-field">
+                    <select id="shapeSelect">
+                        <option value="rectangle">Rectangle</option>
+                        <option value="circle">Circle</option>
+                        <option value="line">Line</option>
+                        <option value="arrow">Arrow</option>
+                    </select>
+                    <label>Shape</label>
+                </div>
+                <div class="input-field">
+                    <input type="color" id="shapeColor" value="#ff0000">
+                    <label for="shapeColor">Shape Color</label>
+                </div>
+                <div class="range-field">
+                    <label>Line Width</label>
+                    <input type="range" id="shapeWidth" min="1" max="20" value="3">
+                </div>
+                <button class="btn waves-effect waves-light" onclick="enableShapeTool()">
+                    <i class="material-icons left">crop_square</i>Enable Shape Tool
+                </button>
+            `;
+            break;
+    }
+    
+    // Reinitialize Materialize components
+    M.FormSelect.init(document.querySelectorAll('select'), {});
+}
+
+// Enable healing tool
+function enableHealingTool() {
+    disableAllTools();
+    isHealingMode = true;
+    document.getElementById('canvas').style.cursor = 'crosshair';
+    showToast('Click on blemishes to remove them. Click again to disable.');
+}
+
+// Enable text tool
+function enableTextTool() {
+    disableAllTools();
+    isAddingText = true;
+    document.getElementById('canvas').style.cursor = 'text';
+    showToast('Click on the image to add text.');
+}
+
+// Enable drawing
+function enableDrawing() {
+    disableAllTools();
+    isDrawingMode = true;
+    document.getElementById('canvas').style.cursor = 'crosshair';
+    showToast('Click and drag to draw. Click again to disable.');
+}
+
+// Enable shape tool
+function enableShapeTool() {
+    disableAllTools();
+    isShapeMode = true;
+    currentShape = document.getElementById('shapeSelect').value;
+    document.getElementById('canvas').style.cursor = 'crosshair';
+    showToast('Click and drag to draw a ' + currentShape + '. Click again to disable.');
+}
+
+// Disable all tools
+function disableAllTools() {
+    isRedEyeMode = false;
+    isHealingMode = false;
+    isAddingText = false;
+    isDrawingMode = false;
+    isShapeMode = false;
+    document.getElementById('canvas').style.cursor = 'default';
+}
+
+// Handle canvas mouse down
+function handleCanvasMouseDown(e) {
+    if (!currentImage) return;
+    
+    const canvas = document.getElementById('canvas');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    if (isDrawingMode) {
+        startDrawing(x, y);
+    } else if (isShapeMode) {
+        startShape(x, y);
+    }
+}
+
+// Handle canvas mouse move
+function handleCanvasMouseMove(e) {
+    if (!currentImage) return;
+    
+    const canvas = document.getElementById('canvas');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    if (isDrawingMode && currentDrawingElement) {
+        continueDrawing(x, y);
+    } else if (isShapeMode && currentShapeElement) {
+        continueShape(x, y);
+    }
+}
+
+// Handle canvas mouse up
+function handleCanvasMouseUp() {
+    if (isDrawingMode && currentDrawingElement) {
+        finishDrawing();
+    } else if (isShapeMode && currentShapeElement) {
+        finishShape();
+    }
+}
+
+// Handle canvas click
+function handleCanvasClick(e) {
+    if (!currentImage) return;
+    
+    const canvas = document.getElementById('canvas');
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    if (isRedEyeMode) {
+        fixRedEye(e);
+    } else if (isHealingMode) {
+        healArea(x, y);
+    } else if (isAddingText) {
+        addTextAtPosition(x, y);
+    }
+}
+
+// Start drawing
+function startDrawing(x, y) {
+    const color = document.getElementById('drawColor').value;
+    const lineWidth = document.getElementById('drawSize').value;
+    
+    currentDrawingElement = {
+        color: color,
+        lineWidth: parseInt(lineWidth),
+        points: [{x: x, y: y}]
+    };
+}
+
+// Continue drawing
+function continueDrawing(x, y) {
+    if (!currentDrawingElement) return;
+    
+    currentDrawingElement.points.push({x: x, y: y});
+    
+    // Redraw everything
+    redrawEverything();
+}
+
+// Finish drawing
+function finishDrawing() {
+    if (!currentDrawingElement) return;
+    
+    drawingElements.push(currentDrawingElement);
+    currentDrawingElement = null;
+    
+    // Save to history
+    saveToHistory();
+}
+
+// Start shape
+function startShape(x, y) {
+    const color = document.getElementById('shapeColor').value;
+    const lineWidth = document.getElementById('shapeWidth').value;
+    
+    currentShapeElement = {
+        type: currentShape,
+        color: color,
+        lineWidth: parseInt(lineWidth),
+        startX: x,
+        startY: y,
+        endX: x,
+        endY: y
+    };
+    
+    if (currentShape === 'rectangle' || currentShape === 'circle') {
+        currentShapeElement.x = x;
+        currentShapeElement.y = y;
+        currentShapeElement.width = 0;
+        currentShapeElement.height = 0;
+        currentShapeElement.radius = 0;
+    }
+}
+
+// Continue shape
+function continueShape(x, y) {
+    if (!currentShapeElement) return;
+    
+    currentShapeElement.endX = x;
+    currentShapeElement.endY = y;
+    
+    if (currentShape === 'rectangle') {
+        currentShapeElement.x = Math.min(currentShapeElement.startX, x);
+        currentShapeElement.y = Math.min(currentShapeElement.startY, y);
+        currentShapeElement.width = Math.abs(x - currentShapeElement.startX);
+        currentShapeElement.height = Math.abs(y - currentShapeElement.startY);
+    } else if (currentShape === 'circle') {
+        const dx = x - currentShapeElement.startX;
+        const dy = y - currentShapeElement.startY;
+        currentShapeElement.radius = Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    // Redraw everything
+    redrawEverything();
+}
+
+// Finish shape
+function finishShape() {
+    if (!currentShapeElement) return;
+    
+    shapeElements.push(currentShapeElement);
+    currentShapeElement = null;
+    
+    // Save to history
+    saveToHistory();
+}
+
+// Fix red eye
+function fixRedEye(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(x - 15, y - 15, 30, 30);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        // Detect red pixels (high red, lower green and blue)
+        if (data[i] > 100 && data[i+1] < data[i] * 0.5 && data[i+2] < data[i] * 0.5) {
+            // Convert to grayscale (preserving brightness)
+            const brightness = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
+            data[i] = brightness * 0.5;     // R
+            data[i+1] = brightness * 0.3;   // G
+            data[i+2] = brightness * 0.2;   // B
+        }
+    }
+    
+    ctx.putImageData(imageData, x - 15, y - 15);
+    currentImage.src = canvas.toDataURL();
+    saveToHistory();
+    
+    showToast('Red eye reduced. Click again to fix more, or disable the tool.');
+}
+
+// Heal area
+function healArea(x, y) {
+    const radius = parseInt(document.getElementById('healSize').value);
+    const ctx = canvas.getContext('2d');
+    
+    // Get the area to heal
+    const imageData = ctx.getImageData(x - radius, y - radius, radius * 2, radius * 2);
+    const data = imageData.data;
+    
+    // Simple healing algorithm - average surrounding pixels
+    for (let i = 0; i < data.length; i += 4) {
+        // Skip edges
+        const pixelIndex = i / 4;
+        const pixelX = pixelIndex % (radius * 2);
+        const pixelY = Math.floor(pixelIndex / (radius * 2));
+        
+        if (pixelX > 0 && pixelX < radius * 2 - 1 && pixelY > 0 && pixelY < radius * 2 - 1) {
+            // Average with surrounding pixels
+            let r = 0, g = 0, b = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const neighborIndex = ((pixelY + dy) * (radius * 2) + (pixelX + dx)) * 4;
+                    r += data[neighborIndex];
+                    g += data[neighborIndex + 1];
+                    b += data[neighborIndex + 2];
+                }
+            }
+            
+            data[i] = r / 9;
+            data[i + 1] = g / 9;
+            data[i + 2] = b / 9;
+        }
+    }
+    
+    ctx.putImageData(imageData, x - radius, y - radius);
+    currentImage.src = canvas.toDataURL();
+    saveToHistory();
+    
+    showToast('Area healed. Click again to heal more, or disable the tool.');
+}
+
+// Add text at position
+function addTextAtPosition(x, y) {
+    const text = document.getElementById('textInput').value;
+    if (!text) {
+        showToast('Please enter text first.');
+        return;
+    }
+    
+    const size = document.getElementById('textSize').value;
+    const color = document.getElementById('textColor').value;
+    const font = document.getElementById('textFont').value;
+    const align = document.getElementById('textAlign').value;
+    
+    const textElement = {
+        content: text,
+        x: x,
+        y: y,
+        size: parseInt(size),
+        color: color,
+        font: font,
+        align: align,
+        baseline: 'top'
+    };
+    
+    textElements.push(textElement);
+    
+    // Redraw everything
+    redrawEverything();
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Text added. You can move it by dragging.');
+}
+
+// Redraw everything
+function redrawEverything() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw image
+    ctx.drawImage(currentImage, 0, 0);
+    
+    // Redraw all elements
+    redrawAllElements();
+    
+    // Draw current drawing if in progress
+    if (currentDrawingElement) {
+        ctx.strokeStyle = currentDrawingElement.color;
+        ctx.lineWidth = currentDrawingElement.lineWidth;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        
+        ctx.beginPath();
+        for (let i = 0; i < currentDrawingElement.points.length; i++) {
+            const point = currentDrawingElement.points[i];
+            if (i === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
+        }
+        ctx.stroke();
+    }
+    
+    // Draw current shape if in progress
+    if (currentShapeElement) {
+        ctx.strokeStyle = currentShapeElement.color;
+        ctx.lineWidth = currentShapeElement.lineWidth;
+        
+        ctx.beginPath();
+        switch(currentShapeElement.type) {
+            case 'rectangle':
+                ctx.strokeRect(
+                    currentShapeElement.x,
+                    currentShapeElement.y,
+                    currentShapeElement.width,
+                    currentShapeElement.height
+                );
+                break;
+            case 'circle':
+                ctx.arc(
+                    currentShapeElement.startX,
+                    currentShapeElement.startY,
+                    currentShapeElement.radius,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.stroke();
+                break;
+            case 'line':
+                ctx.moveTo(currentShapeElement.startX, currentShapeElement.startY);
+                ctx.lineTo(currentShapeElement.endX, currentShapeElement.endY);
+                ctx.stroke();
+                break;
+            case 'arrow':
+                ctx.moveTo(currentShapeElement.startX, currentShapeElement.startY);
+                ctx.lineTo(currentShapeElement.endX, currentShapeElement.endY);
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const angle = Math.atan2(
+                    currentShapeElement.endY - currentShapeElement.startY,
+                    currentShapeElement.endX - currentShapeElement.startX
+                );
+                ctx.beginPath();
+                ctx.moveTo(currentShapeElement.endX, currentShapeElement.endY);
+                ctx.lineTo(
+                    currentShapeElement.endX - 10 * Math.cos(angle - Math.PI/6),
+                    currentShapeElement.endY - 10 * Math.sin(angle - Math.PI/6)
+                );
+                ctx.lineTo(
+                    currentShapeElement.endX - 10 * Math.cos(angle + Math.PI/6),
+                    currentShapeElement.endY - 10 * Math.sin(angle + Math.PI/6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = currentShapeElement.color;
+                ctx.fill();
+                break;
+        }
+    }
+}
+
+// Add watermark
+function addWatermark() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Add watermark text
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('Watermark', canvas.width - 10, canvas.height - 10);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Watermark added.');
+}
+
+// Add border
+function addBorder() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const borderWidth = 10;
+    
+    // Draw border
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = borderWidth;
+    ctx.strokeRect(borderWidth/2, borderWidth/2, canvas.width - borderWidth, canvas.height - borderWidth);
+    
+    // Update current image
+    currentImage.src = canvas.toDataURL();
+    
+    // Save to history
+    saveToHistory();
+    
+    showToast('Border added.');
+}
+
+// Show toast message
+function showToast(message) {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.custom-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-action" onclick="this.parentElement.remove()">Dismiss</button>
+    `;
+    
+    // Add to container
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+// Save project
+function saveProject() {
+    if (!currentImage) {
+        showToast('Please upload an image first.');
+        return;
+    }
+    
+    const projectData = {
+        image: currentImage.src,
+        filters: {
+            brightness: document.getElementById('brightness').value,
+            contrast: document.getElementById('contrast').value,
+            saturate: document.getElementById('saturate').value,
+            sharpen: document.getElementById('sharpen').value,
+            warmth: document.getElementById('warmth').value,
+            hue: document.getElementById('hue').value,
+            exposure: document.getElementById('exposure').value,
+            blur: document.getElementById('blur').value,
+            vignette: document.getElementById('vignette').value
+        },
+        history: historyStack,
+        elements: {
+            text: textElements,
+            shapes: shapeElements,
+            drawings: drawingElements
+        }
+    };
+    
+    const dataStr = JSON.stringify(projectData);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'image_project.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showToast('Project saved successfully!');
+}
+
+// Load project
+function loadProject() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const projectData = JSON.parse(e.target.result);
+                
+                // Load image
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    currentImage = img;
+                    originalImage = img;
+                    
+                    // Load elements
+                    if (projectData.elements) {
+                        textElements = projectData.elements.text || [];
+                        shapeElements = projectData.elements.shapes || [];
+                        drawingElements = projectData.elements.drawings || [];
+                    }
+                    
+                    // Redraw all elements
+                    redrawAllElements();
+                    
+                    // Apply filters
+                    if (projectData.filters) {
+                        document.getElementById('brightness').value = projectData.filters.brightness;
+                        document.getElementById('contrast').value = projectData.filters.contrast;
+                        document.getElementById('saturate').value = projectData.filters.saturate;
+                        document.getElementById('sharpen').value = projectData.filters.sharpen;
+                        document.getElementById('warmth').value = projectData.filters.warmth;
+                        document.getElementById('hue').value = projectData.filters.hue;
+                        document.getElementById('exposure').value = projectData.filters.exposure;
+                        document.getElementById('blur').value = projectData.filters.blur;
+                        document.getElementById('vignette').value = projectData.filters.vignette;
+                        
+                        updateSliderValues();
+                        applyFilters();
+                    }
+                    
+                    // Load history
+                    if (projectData.history) {
+                        historyStack = projectData.history;
+                        updateHistoryPanel();
+                    }
+                    
+                    // Hide placeholder
+                    document.getElementById('placeholderText').style.display = 'none';
+                    
+                    // Enable compare button
+                    document.getElementById('compareBtn').disabled = false;
+                    
+                    showToast('Project loaded successfully!');
+                };
+                img.src = projectData.image;
+            } catch (error) {
+                showToast('Error loading project: Invalid file format.');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+// Initialize crop box handlers
+function initCropBoxHandlers() {
+    const cropBox = document.getElementById('cropBox');
+    const handles = cropBox.querySelectorAll('.crop-handle');
+    let isResizing = false;
+    let currentHandle = null;
+    let startX, startY, startWidth, startHeight, startLeft, startTop;
+    
+    // Mouse down on handles for resizing
+    handles.forEach(handle => {
+        handle.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isResizing = true;
+            currentHandle = this.classList[1];
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = parseInt(getComputedStyle(cropBox).width, 10);
+            startHeight = parseInt(getComputedStyle(cropBox).height, 10);
+            startLeft = parseInt(getComputedStyle(cropBox).left, 10);
+            startTop = parseInt(getComputedStyle(cropBox).top, 10);
+        });
+    });
+    
+    // Mouse down on crop box for moving
+    cropBox.addEventListener('mousedown', function(e) {
+        if (e.target === cropBox || e.target.classList.contains('crop-handle')) return;
+        e.preventDefault();
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(getComputedStyle(cropBox).left, 10);
+        startTop = parseInt(getComputedStyle(cropBox).top, 10);
+        
+        document.addEventListener('mousemove', moveCropBox);
+        document.addEventListener('mouseup', stopMoving);
+    });
+    
+    // Mouse move for resizing
+    document.addEventListener('mousemove', function(e) {
+        if (!isResizing) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        switch(currentHandle) {
+            case 'handle-n':
+                cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                cropBox.style.top = startTop + dy + 'px';
+                break;
+            case 'handle-s':
+                cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                break;
+            case 'handle-e':
+                cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                break;
+            case 'handle-w':
+                cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                cropBox.style.left = startLeft + dx + 'px';
+                break;
+            case 'handle-ne':
+                cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                cropBox.style.top = startTop + dy + 'px';
+                cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                break;
+            case 'handle-nw':
+                cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                cropBox.style.top = startTop + dy + 'px';
+                cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                cropBox.style.left = startLeft + dx + 'px';
+                break;
+            case 'handle-se':
+                cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                break;
+            case 'handle-sw':
+                cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                cropBox.style.left = startLeft + dx + 'px';
+                break;
+        }
+
+        // Update input fields
+        document.getElementById('cropWidthInput').value = Math.round(parseInt(cropBox.style.width));
+        document.getElementById('cropHeightInput').value = Math.round(parseInt(cropBox.style.height));
+    });
+    
+    // Mouse up for resizing
+    document.addEventListener('mouseup', function() {
+        isResizing = false;
+    });
+    
+    function moveCropBox(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        const container = document.getElementById('imagePreviewContainer');
+        const maxLeft = container.offsetWidth - parseInt(getComputedStyle(cropBox).width, 10);
+        const maxTop = container.offsetHeight - parseInt(getComputedStyle(cropBox).height, 10);
+        
+        const newLeft = Math.max(0, Math.min(maxLeft, startLeft + dx));
+        const newTop = Math.max(0, Math.min(maxTop, startTop + dy));
+        
+        cropBox.style.left = newLeft + 'px';
+        cropBox.style.top = newTop + 'px';
+    }
+    
+    function stopMoving() {
+        document.removeEventListener('mousemove', moveCropBox);
+        document.removeEventListener('mouseup', stopMoving);
+    }
+}
     </script>
 </body>
 </html>
