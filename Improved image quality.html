@@ -872,49 +872,49 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class="modal-header">
-                <h2><i class="fas fa-info-circle"></i> О приложении Pro Image Enhancer</h2>
+                <h2><i class="fas fa-info-circle"></i> About Pro Image Enhancer</h2>
             </div>
-            <p>Pro Image Enhancer - это мощный инструмент для улучшения качества изображений прямо в вашем браузере. Приложение используе передовые алгоритмы обработки изображений для коррекции цвета, яркости, контраста и других параметров.</p>
+            <p>Pro Image Enhancer is a powerful tool for improving image quality right in your browser. The application uses advanced image processing algorithms for color correction, brightness, contrast, and other parameters.</p>
             
             <div class="performance-warning">
-                <h4><i class="fas fa-exclamation-triangle"></i> Важная информация о производительности</h4>
-                <p>При обработке больших изображений (более 5 МПикс) приложение может работать медленнее. Для лучшей производительности:</p>
+                <h4><i class="fas fa-exclamation-triangle"></i> Important Performance Information</h4>
+                <p>When processing large images (more than 5 MP), the application may run slower. For better performance:</p>
                 <ul>
-                    <li>Используйте режим "Производительность" для больших изображений</li>
-                    <li>Уменьшайте разрешение очень больших фотографий перед обработкой</li>
-                    <li>Закройте другие вкладки браузера для высвобождения ресурсов</li>
+                    <li>Use "Performance" mode for large images</li>
+                    <li>Reduce resolution of very large photos before processing</li>
+                    <li>Close other browser tabs to free up resources</li>
                 </ul>
             </div>
             
-            <h3>Основные возможности:</h3>
+            <h3>Main Features:</h3>
             <div class="features-grid">
                 <div class="feature-item">
-                    <h4><i class="fas fa-sliders-h"></i> Регулировка параметров</h4>
-                    <p>Настройте яркость, контраст, насыщенность, резкость и уровень шумоподавления с помощью интуитивных ползунков.</p>
+                    <h4><i class="fas fa-sliders-h"></i> Parameter Adjustment</h4>
+                    <p>Adjust brightness, contrast, saturation, sharpness, and noise reduction level with intuitive sliders.</p>
                 </div>
                 <div class="feature-item">
-                    <h4><i class="fas fa-bolt"></i> Быстрые пресеты</h4>
-                    <p>Используйте готовые пресеты для мгновенного улучшения портретов, пейзажей и других типов изображений.</p>
+                    <h4><i class="fas fa-bolt"></i> Quick Presets</h4>
+                    <p>Use ready-made presets for instant enhancement of portraits, landscapes, and other image types.</p>
                 </div>
                 <div class="feature-item">
-                    <h4><i class="fas fa-exchange-alt"></i> Сравнение результатов</h4>
-                    <p>Интерактивный слайдер позволяет сравнить оригинальное и улучшенное изображение.</p>
+                    <h4><i class="fas fa-exchange-alt"></i> Result Comparison</h4>
+                    <p>Interactive slider allows you to compare original and enhanced images.</p>
                 </div>
                 <div class="feature-item">
-                    <h4><i class="fas fa-download"></i> Пакетная обработка</h4>
-                    <p>Обрабатывайте несколько изображений одновременно и скачивайте их в виде ZIP-архива.</p>
+                    <h4><i class="fas fa-download"></i> Batch Processing</h4>
+                    <p>Process multiple images simultaneously and download them as a ZIP archive.</p>
                 </div>
             </div>
             
-            <h3>Техническая информация:</h3>
-            <p>Приложение работает полностью в вашем браузере, без отправки изображений на сервер. Все обработки выполняются локально с использованием Canvas API и Web Workers для обеспечения максимальной производительности.</p>
+            <h3>Technical Information:</h3>
+            <p>The application works entirely in your browser, without sending images to the server. All processing is performed locally using Canvas API and Web Workers to ensure maximum performance.</p>
             
             <div class="info-panel">
-                <h4><i class="fas fa-lightbulb"></i> Советы по использованию</h4>
-                <p>• Начните с пресета "Auto Enhance" для автоматической коррекции<br>
-                • Увеличьте резкость для детализации, но избегайте значений выше 5<br>
-                • Используйте шумоподавление для фотографий с высоким ISO<br>
-                • Сравнивайте результаты с оригиналом для точной настройки</p>
+                <h4><i class="fas fa-lightbulb"></i> Usage Tips</h4>
+                <p>• Start with the "Auto Enhance" preset for automatic correction<br>
+                • Increase sharpness for detail, but avoid values above 5<br>
+                • Use noise reduction for high ISO photos<br>
+                • Compare results with the original for precise tuning</p>
             </div>
         </div>
     </div>
@@ -931,7 +931,7 @@
                 </div>
             </div>
             <button class="about-btn" id="aboutBtn">
-                <i class="fas fa-info-circle"></i> О приложении
+                <i class="fas fa-info-circle"></i> About App
             </button>
         </header>
         
@@ -1138,7 +1138,7 @@
     </div>
 
     <script>
-    // Глобальные переменные
+    // Global variables
     let images = [];
     let currentIndex = 0;
     let isDragging = false;
@@ -1164,33 +1164,33 @@
     const qualityDot = document.getElementById('qualityDot');
     const qualityText = document.getElementById('qualityText');
 
-    // Слайдеры
+    // Sliders
     const brightnessSlider = document.getElementById('brightness');
     const contrastSlider = document.getElementById('contrast');
     const saturationSlider = document.getElementById('saturation');
     const sharpnessSlider = document.getElementById('sharpness');
     const noiseReductionSlider = document.getElementById('noiseReduction');
 
-    // Значения
+    // Values
     const brightnessValue = document.getElementById('brightnessValue');
     const contrastValue = document.getElementById('contrastValue');
     const saturationValue = document.getElementById('saturationValue');
     const sharpnessValue = document.getElementById('sharpnessValue');
     const noiseReductionValue = document.getElementById('noiseReductionValue');
 
-    // Инфо о файле
+    // File info
     const fileName = document.getElementById('fileName');
     const fileDimensions = document.getElementById('fileDimensions');
     const fileSizeInfo = document.getElementById('fileSizeInfo');
     const fileType = document.getElementById('fileType');
 
-    // Инициализация
+    // Initialization
     document.addEventListener('DOMContentLoaded', () => {
         fileInput.addEventListener('change', handleFileSelect);
         prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
         nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
         
-        // Модальное окно
+        // Modal window
         aboutBtn.addEventListener('click', () => {
             modal.style.display = 'block';
         });
@@ -1205,7 +1205,7 @@
             }
         });
 
-        // Слайдеры
+        // Sliders
         [brightnessSlider, contrastSlider, saturationSlider, sharpnessSlider, noiseReductionSlider].forEach(slider => {
             slider.addEventListener('input', () => {
                 updateValueDisplay();
@@ -1213,7 +1213,7 @@
             });
         });
 
-        // Сравнение
+        // Comparison
         comparisonSlider.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', stopDrag);
@@ -1246,7 +1246,7 @@
         updateValueDisplay();
         setInitialClip();
         
-        // Создаем Web Worker для обработки изображений
+        // Create Web Worker for image processing
         try {
             processingWorker = new Worker(URL.createObjectURL(new Blob([`
                 self.addEventListener('message', function(e) {
@@ -1271,30 +1271,30 @@
                     const width = imageData.width;
                     const height = imageData.height;
                     
-                    // Создаем копию данных для обработки
+                    // Create a copy of data for processing
                     const output = new Uint8ClampedArray(data);
                     
-                    // Применяем улучшенный алгоритм шумоподавления
+                    // Apply improved noise reduction algorithm
                     if (settings.noiseReduction > 0) {
                         applyAdvancedNoiseReduction(output, width, height, settings.noiseReduction);
                     }
                     
-                    // Применяем базовые корректировки
+                    // Apply basic adjustments
                     for (let i = 0; i < output.length; i += 4) {
                         let r = output[i], g = output[i+1], b = output[i+2];
                         
-                        // Яркость
+                        // Brightness
                         r = Math.max(0, Math.min(255, r + settings.brightness));
                         g = Math.max(0, Math.min(255, g + settings.brightness));
                         b = Math.max(0, Math.min(255, b + settings.brightness));
                         
-                        // Контраст
+                        // Contrast
                         const cf = settings.contrast / 100;
                         r = Math.max(0, Math.min(255, (r - 128) * cf + 128));
                         g = Math.max(0, Math.min(255, (g - 128) * cf + 128));
                         b = Math.max(0, Math.min(255, (b - 128) * cf + 128));
                         
-                        // Насыщенность
+                        // Saturation
                         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
                         const sf = settings.saturation / 100;
                         r = Math.max(0, Math.min(255, gray + (r - gray) * sf));
@@ -1306,7 +1306,7 @@
                         output[i+2] = b;
                     }
                     
-                    // Применяем улучшенное повышение резкости
+                    // Apply improved sharpening
                     if (settings.sharpness > 0) {
                         applyAdvancedSharpening(output, width, height, settings.sharpness);
                     }
@@ -1315,7 +1315,7 @@
                 }
                 
                 function applyAdvancedNoiseReduction(data, width, height, amount) {
-                    // Улучшенный алгоритм шумоподавления на основе bilateral filter
+                    // Improved noise reduction algorithm based on bilateral filter
                     const radius = Math.min(3, Math.floor(amount / 3));
                     if (radius <= 0) return;
                     
@@ -1337,11 +1337,11 @@
                                         const idx = ((y + dy) * width + (x + dx)) * 4 + c;
                                         const value = tempData[idx];
                                         
-                                        // Пространственный вес (гауссово распределение)
+                                        // Spatial weight (Gaussian distribution)
                                         const spatialDist = Math.sqrt(dx*dx + dy*dy);
                                         const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
                                         
-                                        // Вес по значению (гауссово распределение)
+                                        // Value weight (Gaussian distribution)
                                         const valueDist = Math.abs(centerValue - value);
                                         const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
                                         
@@ -1358,17 +1358,17 @@
                 }
                 
                 function applyAdvancedSharpening(data, width, height, amount) {
-                    // Улучшенный алгоритм повышения резкости с использованием unsharp mask
+                    // Improved sharpening algorithm using unsharp mask
                     const radius = 1;
                     const strength = amount / 10;
                     
-                    // Создаем размытую копию
+                    // Create a blurred copy
                     const blurred = new Uint8ClampedArray(data);
                     applyGaussianBlur(blurred, width, height, radius);
                     
-                    // Применяем unsharp masking
+                    // Apply unsharp masking
                     for (let i = 0; i < data.length; i++) {
-                        // Пропускаем альфа-канал
+                        // Skip alpha channel
                         if ((i + 1) % 4 === 0) continue;
                         
                         const sharpened = data[i] + (data[i] - blurred[i]) * strength;
@@ -1377,11 +1377,11 @@
                 }
                 
                 function applyGaussianBlur(data, width, height, radius) {
-                    // Гауссово размытие для создания маски
+                    // Gaussian blur for creating a mask
                     const weights = getGaussianWeights(radius);
                     const tempData = new Uint8ClampedArray(data);
                     
-                    // Горизонтальный проход
+                    // Horizontal pass
                     for (let y = 0; y < height; y++) {
                         for (let x = radius; x < width - radius; x++) {
                             for (let c = 0; c < 3; c++) {
@@ -1401,7 +1401,7 @@
                         }
                     }
                     
-                    // Вертикальный проход
+                    // Vertical pass
                     for (let y = radius; y < height - radius; y++) {
                         for (let x = 0; x < width; x++) {
                             for (let c = 0; c < 3; c++) {
@@ -1433,7 +1433,7 @@
                         total += weight;
                     }
                     
-                    // Нормализуем веса
+                    // Normalize weights
                     return weights.map(w => w / total);
                 }
             `], { type: 'application/javascript' })));
@@ -1451,7 +1451,7 @@
         }
     });
 
-    // Установка стартовой маски сравнения (50/50)
+    // Set initial comparison mask (50/50)
     function setInitialClip() {
         comparisonSlider.style.left = "50%";
         originalImage.style.clipPath = "inset(0 50% 0 0)";
@@ -1474,14 +1474,14 @@
         );
 
         if (validFiles.length === 0) {
-            alert('Поддерживаются только JPG, PNG, GIF, WebP, BMP');
+            alert('Only JPG, PNG, GIF, WebP, BMP are supported');
             return;
         }
 
-        // Проверка на слишком большие изображения
+        // Check for very large images
         const largeFiles = validFiles.filter(file => file.size > 10 * 1024 * 1024); // >10MB
         if (largeFiles.length > 0) {
-            if (!confirm(`Некоторые изображения очень большие (${largeFiles.length} файлов более 10MB). Обработка может занять много времени. Продолжить?`)) {
+            if (!confirm(`Some images are very large (${largeFiles.length} files over 10MB). Processing may take a long time. Continue?`)) {
                 return;
             }
         }
@@ -1490,7 +1490,7 @@
         let processed = 0;
         const total = validFiles.length;
 
-        // Показать прогресс-бар
+        // Show progress bar
         progressBar.style.display = 'block';
         progress.style.width = '0%';
 
@@ -1499,7 +1499,7 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // Ограничение размера для очень больших изображений
+                    // Size limitation for very large images
                     let width = img.naturalWidth;
                     let height = img.naturalHeight;
                     
@@ -1552,13 +1552,13 @@
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         
-        // Рисуем изображение с новыми размерами
+        // Draw image with new dimensions
         ctx.drawImage(img, 0, 0, width, height);
         imageObj.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         imageObj.canvas = canvas;
         imageObj.ctx = ctx;
         
-        // Анализируем качество изображения
+        // Analyze image quality
         analyzeImageQuality(imageObj);
     }
 
@@ -1569,7 +1569,7 @@
         let minLuminance = 255;
         let maxLuminance = 0;
         
-        // Анализируем яркость и контраст
+        // Analyze brightness and contrast
         for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
             const g = data[i+1];
@@ -1584,7 +1584,7 @@
         const avgLuminance = totalLuminance / (data.length / 4);
         const contrast = maxLuminance - minLuminance;
         
-        // Определяем качество изображения
+        // Determine image quality
         if (contrast < 100 || avgLuminance < 50 || avgLuminance > 200) {
             imageObj.quality = 'low';
         } else if (contrast < 150 || avgLuminance < 80 || avgLuminance > 180) {
@@ -1629,7 +1629,7 @@
     }
 
     function applySettingsToImage(imageObj) {
-        // Если доступен Web Worker, используем его для обработки
+        // If Web Worker is available, use it for processing
         if (processingWorker && processingMode === 'performance') {
             const imageData = imageObj.originalImageData;
             const settings = {
@@ -1652,15 +1652,15 @@
                 settings: settings
             });
         } else {
-            // Обработка в основном потоке
+            // Processing in the main thread
             const { brightness, contrast, saturation, sharpness, noiseReduction } = imageObj.settings;
             const ctx = imageObj.ctx;
-            ctx.putImageData(imageObj.originalImageData, 0, 0); // всегда с оригинала
+            ctx.putImageData(imageObj.originalImageData, 0, 0); // always start from original
 
             let imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
             let data = imageData.data;
 
-            // Применяем улучшенное шумоподавление
+            // Apply improved noise reduction
             if (noiseReduction > 0) {
                 applyAdvancedNoiseReduction(data, imageObj.canvas.width, imageObj.canvas.height, noiseReduction);
                 ctx.putImageData(imageData, 0, 0);
@@ -1705,7 +1705,7 @@
     }
 
     function applyAdvancedNoiseReduction(data, width, height, amount) {
-        // Улучшенный алгоритм шумоподавления на основе bilateral filter
+        // Improved noise reduction algorithm based on bilateral filter
         const radius = Math.min(3, Math.floor(amount / 3));
         if (radius <= 0) return;
         
@@ -1713,7 +1713,7 @@
         const spatialSigma = radius;
         const rangeSigma = amount * 5;
         
-        // Обрабатываем только каждый второй пиксель для повышения производительности
+        // Process every second pixel for better performance
         for (let y = radius; y < height - radius; y += 2) {
             for (let x = radius; x < width - radius; x += 2) {
                 for (let c = 0; c < 3; c++) {
@@ -1728,11 +1728,11 @@
                             const idx = ((y + dy) * width + (x + dx)) * 4 + c;
                             const value = tempData[idx];
                             
-                            // Пространственный вес (гауссово распределение)
+                            // Spatial weight (Gaussian distribution)
                             const spatialDist = Math.sqrt(dx*dx + dy*dy);
                             const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
                             
-                            // Вес по значению (гауссово распределение)
+                            // Value weight (Gaussian distribution)
                             const valueDist = Math.abs(centerValue - value);
                             const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
                             
@@ -1744,7 +1744,7 @@
                     
                     data[centerIdx] = sum / totalWeight;
                     
-                    // Интерполируем пропущенные пиксели
+                    // Interpolate missed pixels
                     if (x + 1 < width - radius) {
                         data[centerIdx + 4] = sum / totalWeight;
                     }
@@ -1765,11 +1765,11 @@
         const imageData = ctx.getImageData(0, 0, width, height);
         const data = imageData.data;
         
-        // Создаем размытую копию с помощью гауссова размытия
+        // Create a blurred copy using Gaussian blur
         const blurredData = new Uint8ClampedArray(data);
         applyGaussianBlur(blurredData, width, height, 1);
         
-        // Применяем unsharp masking
+        // Apply unsharp masking
         const strength = amount / 10;
         for (let i = 0; i < data.length; i += 4) {
             for (let c = 0; c < 3; c++) {
@@ -1786,11 +1786,11 @@
     }
 
     function applyGaussianBlur(data, width, height, radius) {
-        // Гауссово размытие
+        // Gaussian blur
         const weights = getGaussianWeights(radius);
         const tempData = new Uint8ClampedArray(data);
         
-        // Горизонтальный проход
+        // Horizontal pass
         for (let y = 0; y < height; y++) {
             for (let x = radius; x < width - radius; x++) {
                 for (let c = 0; c < 3; c++) {
@@ -1810,7 +1810,7 @@
             }
         }
         
-        // Вертикальный проход
+        // Vertical pass
         const tempData2 = new Uint8ClampedArray(data);
         for (let y = radius; y < height - radius; y++) {
             for (let x = 0; x < width; x++) {
@@ -1843,7 +1843,7 @@
             total += weight;
         }
         
-        // Нормализуем веса
+        // Normalize weights
         return weights.map(w => w / total);
     }
 
@@ -2025,7 +2025,7 @@
         let maxLuminance = 0;
         let rSum = 0, gSum = 0, bSum = 0;
         
-        // Анализируем изображение
+        // Analyze the image
         for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
             const g = data[i+1];
@@ -2046,29 +2046,29 @@
         const avgG = gSum / (data.length / 4);
         const avgB = bSum / (data.length / 4);
         
-        // Определяем оптимальные настройки на основе анализа
+        // Determine optimal settings based on analysis
         let brightness = 0;
         let contrastValue = 100;
         let saturation = 100;
         let sharpness = 0;
         let noiseReduction = 0;
         
-        // Корректируем яркость
+        // Adjust brightness
         if (avgLuminance < 80) brightness = 10;
         else if (avgLuminance > 180) brightness = -10;
         
-        // Корректируем контраст
+        // Adjust contrast
         if (contrast < 100) contrastValue = 120;
         else if (contrast > 150) contrastValue = 90;
         
-        // Корректируем насыщенность
+        // Adjust saturation
         const colorBalance = Math.max(avgR, avgG, avgB) - Math.min(avgR, avgG, avgB);
         if (colorBalance < 30) saturation = 120;
         
-        // Добавляем немного резкости
+        // Add some sharpness
         sharpness = 1.5;
         
-        // Добавляем шумоподавление для темных изображений
+        // Add noise reduction for dark images
         if (avgLuminance < 100) noiseReduction = 1;
         
         return { brightness, contrast: contrastValue, saturation, sharpness, noiseReduction };
@@ -2116,7 +2116,7 @@
         
         const histogram = new Array(256).fill(0);
         
-        // Для производительности анализируем только каждый 4-й пиксель
+        // For performance, analyze only every 4th pixel
         for (let i = 0; i < data.length; i += 16) {
             const r = data[i];
             const g = data[i + 1];
