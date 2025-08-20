@@ -659,6 +659,147 @@
             justify-content: center;
         }
 
+        /* Новые стили для улучшенного инструмента обрезки */
+        .crop-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 20;
+            color: white;
+            max-width: 250px;
+        }
+
+        .crop-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .crop-preset {
+            padding: 5px 10px;
+            background: #555;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .crop-preset.active {
+            background: #4caf50;
+        }
+
+        .crop-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .crop-input-field {
+            margin: 5px 0;
+        }
+
+        .crop-input-field input {
+            color: white;
+            border-bottom: 1px solid #aaa;
+            font-size: 14px;
+            padding: 5px;
+            width: 100%;
+            background: transparent;
+        }
+
+        .lock-aspect-ratio {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .crop-guides {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .guide-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .guide-h {
+            height: 1px;
+            width: 100%;
+            top: 33.33%;
+        }
+
+        .guide-h.middle {
+            top: 50%;
+        }
+
+        .guide-h.bottom {
+            top: 66.66%;
+        }
+
+        .guide-v {
+            width: 1px;
+            height: 100%;
+            left: 33.33%;
+        }
+
+        .guide-v.middle {
+            left: 50%;
+        }
+
+        .guide-v.right {
+            left: 66.66%;
+        }
+
+        .rotate-controls {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+        }
+
+        .rotate-slider {
+            width: 200px;
+        }
+
+        .crop-overlay.active ~ canvas {
+            opacity: 0.7;
+        }
+
+        /* Стили для улучшенного интерфейса изменения размера */
+        .resize-container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            max-width: 300px;
+            margin: 10px;
+        }
+
+        .resize-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .resize-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
         @media (max-width: 1400px) {
             .app-container {
                 padding: 15px;
@@ -684,6 +825,10 @@
             
             .image-preview-container {
                 min-height: 300px;
+            }
+
+            .crop-controls {
+                max-width: 200px;
             }
         }
 
@@ -729,6 +874,20 @@
             
             .drop-zone i {
                 font-size: 36px;
+            }
+
+            .crop-controls {
+                max-width: 160px;
+                padding: 8px;
+            }
+
+            .crop-presets {
+                gap: 3px;
+            }
+
+            .crop-preset {
+                padding: 3px 6px;
+                font-size: 10px;
             }
         }
     </style>
@@ -785,9 +944,9 @@
                                 <i class="material-icons">flip</i>
                                 <span>Flip</span>
                             </button>
-                            <button class="btn waves-effect waves-light tooltipped" onclick="flipVertical()" data-position="bottom" data-tooltip="Flip vertically">
-                                <i class="material-icons">flip</i>
-                                <span>Flip V</span>
+                            <button class="btn waves-effect waves-light tooltipped" onclick="showResizeUI()" data-position="bottom" data-tooltip="Resize image">
+                                <i class="material-icons">aspect_ratio</i>
+                                <span>Resize</span>
                             </button>
                             <button class="btn waves-effect waves-light tooltipped" onclick="resetImage()" data-position="bottom" data-tooltip="Reset image">
                                 <i class="material-icons">refresh</i>
@@ -1050,6 +1209,50 @@
                     <div class="card-content">
                         <div class="image-preview-container" id="imagePreviewContainer">
                             <div class="crop-overlay" id="cropOverlay">
+                                <div class="crop-controls" id="cropControls">
+                                    <h6>Image Cropping</h6>
+                                    
+                                    <div class="crop-presets">
+                                        <div class="crop-preset active" data-ratio="free">Free</div>
+                                        <div class="crop-preset" data-ratio="1:1">1:1 (Square)</div>
+                                        <div class="crop-preset" data-ratio="4:3">4:3</div>
+                                        <div class="crop-preset" data-ratio="16:9">16:9</div>
+                                        <div class="crop-preset" data-ratio="3:4">3:4 (Portrait)</div>
+                                        <div class="crop-preset" data-ratio="9:16">9:16 (Vertical)</div>
+                                    </div>
+                                    
+                                    <div class="crop-inputs">
+                                        <div class="crop-input-field">
+                                            <label>Width (px)</label>
+                                            <input type="number" id="cropWidthInput" min="1">
+                                        </div>
+                                        <div class="crop-input-field">
+                                            <label>Height (px)</label>
+                                            <input type="number" id="cropHeightInput" min="1">
+                                        </div>
+                                    </div>
+                                    
+                                    <label class="lock-aspect-ratio">
+                                        <input type="checkbox" id="lockAspectRatio" />
+                                        <span>Lock aspect ratio</span>
+                                    </label>
+                                    
+                                    <div class="crop-input-field">
+                                        <label>Rotation (°)</label>
+                                        <input type="range" id="cropRotateInput" min="-180" max="180" value="0">
+                                        <span id="cropRotateValue">0°</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="crop-guides">
+                                    <div class="guide-line guide-h"></div>
+                                    <div class="guide-line guide-h middle"></div>
+                                    <div class="guide-line guide-h bottom"></div>
+                                    <div class="guide-line guide-v"></div>
+                                    <div class="guide-line guide-v middle"></div>
+                                    <div class="guide-line guide-v right"></div>
+                                </div>
+                                
                                 <div class="crop-box" id="cropBox">
                                     <div class="crop-handle handle-n"></div>
                                     <div class="crop-handle handle-e"></div>
@@ -1060,12 +1263,52 @@
                                     <div class="crop-handle handle-se"></div>
                                     <div class="crop-handle handle-sw"></div>
                                 </div>
+                                
+                                <div class="rotate-controls">
+                                    <button class="btn waves-effect waves-light" onclick="rotateCrop(-90)">
+                                        <i class="material-icons">rotate_left</i>
+                                    </button>
+                                    <button class="btn waves-effect waves-light" onclick="rotateCrop(90)">
+                                        <i class="material-icons">rotate_right</i>
+                                    </button>
+                                </div>
+                                
                                 <div class="crop-toolbar">
                                     <button class="btn waves-effect waves-light green" onclick="applyCrop()">
-                                        <i class="material-icons">check</i>
+                                        <i class="material-icons">check</i> Apply
                                     </button>
                                     <button class="btn waves-effect waves-light red" onclick="cancelCrop()">
-                                        <i class="material-icons">close</i>
+                                        <i class="material-icons">close</i> Cancel
+                                    </button>
+                                    <button class="btn waves-effect waves-light blue" onclick="resetCrop()">
+                                        <i class="material-icons">refresh</i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- UI для изменения размера -->
+                            <div class="resize-container" id="resizeContainer" style="display: none;">
+                                <h6>Resize Image</h6>
+                                <div class="resize-inputs">
+                                    <div class="input-field">
+                                        <input type="number" id="resizeWidth" min="1" placeholder="Width">
+                                        <label for="resizeWidth">Width (px)</label>
+                                    </div>
+                                    <div class="input-field">
+                                        <input type="number" id="resizeHeight" min="1" placeholder="Height">
+                                        <label for="resizeHeight">Height (px)</label>
+                                    </div>
+                                </div>
+                                <label>
+                                    <input type="checkbox" id="maintainAspect" checked="checked" />
+                                    <span>Maintain aspect ratio</span>
+                                </label>
+                                <div class="resize-actions">
+                                    <button class="btn waves-effect waves-light green" onclick="applyResize()">
+                                        <i class="material-icons">check</i> Apply
+                                    </button>
+                                    <button class="btn waves-effect waves-light red" onclick="cancelResize()">
+                                        <i class="material-icons">close</i> Cancel
                                     </button>
                                 </div>
                             </div>
@@ -1258,6 +1501,14 @@
     let currentTool = '';
     let isRedEyeMode = false;
 
+    // New variables for enhanced cropping
+    let cropAspectRatio = 'free';
+    let isAspectRatioLocked = false;
+    let cropRotation = 0;
+    let originalCropBox = null;
+    let originalWidth = 0;
+    let originalHeight = 0;
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize Materialize components
@@ -1285,6 +1536,21 @@
                 document.getElementById('customSizeContainer').style.display = 'block';
             } else {
                 document.getElementById('customSizeContainer').style.display = 'none';
+            }
+        });
+
+        // Initialize resize inputs
+        document.getElementById('resizeWidth').addEventListener('input', function() {
+            if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
+                const ratio = originalHeight / originalWidth;
+                document.getElementById('resizeHeight').value = Math.round(this.value * ratio);
+            }
+        });
+
+        document.getElementById('resizeHeight').addEventListener('input', function() {
+            if (document.getElementById('maintainAspect').checked && originalWidth && originalHeight) {
+                const ratio = originalWidth / originalHeight;
+                document.getElementById('resizeWidth').value = Math.round(this.value * ratio);
             }
         });
     });
@@ -1387,6 +1653,10 @@
                 originalImage.src = canvas.toDataURL();
                 currentImage = new Image();
                 currentImage.src = canvas.toDataURL();
+
+                // Save original dimensions for resize functionality
+                originalWidth = canvas.width;
+                originalHeight = canvas.height;
                 
                 // Update image info
                 updateImageInfo(file, canvas.width, canvas.height);
@@ -2026,8 +2296,8 @@
                 data[i] = r / count;
                 data[i + 1] = g / count;
                 data[i + 2] = b / count;
+                }
             }
-        }
         
         ctx.putImageData(imageData, 0, 0);
         
@@ -2256,12 +2526,13 @@
         isCropping = true;
         const cropOverlay = document.getElementById('cropOverlay');
         const cropBox = document.getElementById('cropBox');
+        const container = document.getElementById('imagePreviewContainer');
         
         // Show crop overlay
         cropOverlay.style.display = 'block';
+        cropOverlay.classList.add('active');
         
         // Initialize crop box (start with a square in the center)
-        const container = document.getElementById('imagePreviewContainer');
         const size = Math.min(container.offsetWidth, container.offsetHeight) * 0.6;
         const left = (container.offsetWidth - size) / 2;
         const top = (container.offsetHeight - size) / 2;
@@ -2271,116 +2542,198 @@
         cropBox.style.left = left + 'px';
         cropBox.style.top = top + 'px';
         
-        // Add event listeners for resizing and moving
-        initCropBoxHandlers();
+        // Save original parameters for reset functionality
+        originalCropBox = {
+            width: size,
+            height: size,
+            left: left,
+            top: top
+        };
+        
+        // Update input fields
+        document.getElementById('cropWidthInput').value = Math.round(size);
+        document.getElementById('cropHeightInput').value = Math.round(size);
+        document.getElementById('cropRotateInput').value = 0;
+        document.getElementById('cropRotateValue').textContent = '0°';
+        cropRotation = 0;
+        
+        // Initialize enhanced crop handlers
+        initEnhancedCropHandlers();
+        
+        showToast('Crop mode activated. Use handles to resize or enter precise values.');
     }
 
-    // Initialize crop box handlers
-    function initCropBoxHandlers() {
+    // Initialize enhanced crop handlers
+    function initEnhancedCropHandlers() {
         const cropBox = document.getElementById('cropBox');
-        const handles = cropBox.querySelectorAll('.crop-handle');
-        let isResizing = false;
-        let currentHandle = null;
-        let startX, startY, startWidth, startHeight, startLeft, startTop;
+        const widthInput = document.getElementById('cropWidthInput');
+        const heightInput = document.getElementById('cropHeightInput');
+        const rotateInput = document.getElementById('cropRotateInput');
+        const lockAspect = document.getElementById('lockAspectRatio');
+        const presetButtons = document.querySelectorAll('.crop-preset');
         
-        // Mouse down on handles for resizing
-        handles.forEach(handle => {
-            handle.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                isResizing = true;
-                currentHandle = this.classList[1];
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(getComputedStyle(cropBox).width, 10);
-                startHeight = parseInt(getComputedStyle(cropBox).height, 10);
-                startLeft = parseInt(getComputedStyle(cropBox).left, 10);
-                startTop = parseInt(getComputedStyle(cropBox).top, 10);
-            });
+        // Input change handlers
+        widthInput.addEventListener('change', function() {
+            if (!isCropping) return;
+            
+            const newWidth = parseInt(this.value);
+            if (isNaN(newWidth) || newWidth <= 0) return;
+            
+            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
+                const ratio = getAspectRatioValue(cropAspectRatio);
+                const newHeight = Math.round(newWidth / ratio);
+                cropBox.style.height = newHeight + 'px';
+                heightInput.value = newHeight;
+            }
+            
+            cropBox.style.width = newWidth + 'px';
+            updateCropBoxPosition();
         });
         
-        // Mouse down on crop box for moving
-        cropBox.addEventListener('mousedown', function(e) {
-            if (e.target === cropBox || e.target.classList.contains('crop-handle')) return;
-            e.preventDefault();
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(getComputedStyle(cropBox).left, 10);
-            startTop = parseInt(getComputedStyle(cropBox).top, 10);
+        heightInput.addEventListener('change', function() {
+            if (!isCropping) return;
             
-            document.addEventListener('mousemove', moveCropBox);
-            document.addEventListener('mouseup', stopMoving);
+            const newHeight = parseInt(this.value);
+            if (isNaN(newHeight) || newHeight <= 0) return;
+            
+            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
+                const ratio = getAspectRatioValue(cropAspectRatio);
+                const newWidth = Math.round(newHeight * ratio);
+                cropBox.style.width = newWidth + 'px';
+                widthInput.value = newWidth;
+            }
+            
+            cropBox.style.height = newHeight + 'px';
+            updateCropBoxPosition();
         });
         
-        // Mouse move for resizing
-        document.addEventListener('mousemove', function(e) {
-            if (!isResizing) return;
+        // Rotation handler
+        rotateInput.addEventListener('input', function() {
+            cropRotation = parseInt(this.value);
+            document.getElementById('cropRotateValue').textContent = cropRotation + '°';
+        });
+        
+        // Aspect ratio lock
+        lockAspect.addEventListener('change', function() {
+            isAspectRatioLocked = this.checked;
             
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            switch(currentHandle) {
-                case 'handle-n':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    break;
-                case 'handle-s':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    break;
-                case 'handle-e':
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-w':
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
-                case 'handle-ne':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-nw':
-                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
-                    cropBox.style.top = startTop + dy + 'px';
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
-                case 'handle-se':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
-                    break;
-                case 'handle-sw':
-                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
-                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
-                    cropBox.style.left = startLeft + dx + 'px';
-                    break;
+            if (isAspectRatioLocked && cropAspectRatio !== 'free') {
+                const ratio = getAspectRatioValue(cropAspectRatio);
+                const currentWidth = parseInt(cropBox.style.width);
+                const newHeight = Math.round(currentWidth / ratio);
+                
+                cropBox.style.height = newHeight + 'px';
+                heightInput.value = newHeight;
             }
         });
         
-        // Mouse up for resizing
-        document.addEventListener('mouseup', function() {
-            isResizing = false;
+        // Preset buttons
+        presetButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                presetButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                cropAspectRatio = this.dataset.ratio;
+                
+                if (cropAspectRatio === 'free') {
+                    isAspectRatioLocked = false;
+                    lockAspect.checked = false;
+                } else {
+                    isAspectRatioLocked = true;
+                    lockAspect.checked = true;
+                    
+                    const ratio = getAspectRatioValue(cropAspectRatio);
+                    const currentWidth = parseInt(cropBox.style.width);
+                    const newHeight = Math.round(currentWidth / ratio);
+                    
+                    cropBox.style.height = newHeight + 'px';
+                    heightInput.value = newHeight;
+                }
+            });
         });
         
-        function moveCropBox(e) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            const container = document.getElementById('imagePreviewContainer');
-            const maxLeft = container.offsetWidth - parseInt(getComputedStyle(cropBox).width, 10);
-            const maxTop = container.offsetHeight - parseInt(getComputedStyle(cropBox).height, 10);
-            
-            const newLeft = Math.max(0, Math.min(maxLeft, startLeft + dx));
-            const newTop = Math.max(0, Math.min(maxTop, startTop + dy));
-            
-            cropBox.style.left = newLeft + 'px';
-            cropBox.style.top = newTop + 'px';
+        // Initialize crop box handlers
+        initCropBoxHandlers();
+    }
+
+    // Get aspect ratio value
+    function getAspectRatioValue(ratio) {
+        switch(ratio) {
+            case '1:1': return 1;
+            case '4:3': return 4/3;
+            case '16:9': return 16/9;
+            case '3:4': return 3/4;
+            case '9:16': return 9/16;
+            default: return 0;
+        }
+    }
+
+    // Update crop box position
+    function updateCropBoxPosition() {
+        const cropBox = document.getElementById('cropBox');
+        const container = document.getElementById('imagePreviewContainer');
+        
+        const boxWidth = parseInt(cropBox.style.width);
+        const boxHeight = parseInt(cropBox.style.height);
+        let boxLeft = parseInt(cropBox.style.left);
+        let boxTop = parseInt(cropBox.style.top);
+        
+        // Check boundaries
+        if (boxLeft < 0) boxLeft = 0;
+        if (boxTop < 0) boxTop = 0;
+        if (boxLeft + boxWidth > container.offsetWidth) {
+            boxLeft = container.offsetWidth - boxWidth;
+        }
+        if (boxTop + boxHeight > container.offsetHeight) {
+            boxTop = container.offsetHeight - boxHeight;
         }
         
-        function stopMoving() {
-            document.removeEventListener('mousemove', moveCropBox);
-            document.removeEventListener('mouseup', stopMoving);
-        }
+        cropBox.style.left = boxLeft + 'px';
+        cropBox.style.top = boxTop + 'px';
+        
+        // Update input fields
+        document.getElementById('cropWidthInput').value = Math.round(boxWidth);
+        document.getElementById('cropHeightInput').value = Math.round(boxHeight);
+    }
+
+    // Rotate crop
+    function rotateCrop(degrees) {
+        cropRotation += degrees;
+        
+        // Limit value between -180 and 180
+        if (cropRotation > 180) cropRotation = -180 + (cropRotation - 180);
+        if (cropRotation < -180) cropRotation = 180 + (cropRotation + 180);
+        
+        document.getElementById('cropRotateInput').value = cropRotation;
+        document.getElementById('cropRotateValue').textContent = cropRotation + '°';
+        
+        showToast('Rotation: ' + cropRotation + '°');
+    }
+
+    // Reset crop
+    function resetCrop() {
+        if (!isCropping || !originalCropBox) return;
+        
+        const cropBox = document.getElementById('cropBox');
+        cropBox.style.width = originalCropBox.width + 'px';
+        cropBox.style.height = originalCropBox.height + 'px';
+        cropBox.style.left = originalCropBox.left + 'px';
+        cropBox.style.top = originalCropBox.top + 'px';
+        
+        document.getElementById('cropWidthInput').value = Math.round(originalCropBox.width);
+        document.getElementById('cropHeightInput').value = Math.round(originalCropBox.height);
+        document.getElementById('cropRotateInput').value = 0;
+        document.getElementById('cropRotateValue').textContent = '0°';
+        cropRotation = 0;
+        
+        // Reset aspect ratio
+        document.querySelectorAll('.crop-preset').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('[data-ratio="free"]').classList.add('active');
+        cropAspectRatio = 'free';
+        document.getElementById('lockAspectRatio').checked = false;
+        isAspectRatioLocked = false;
     }
 
     // Apply crop
@@ -2401,20 +2754,42 @@
         const width = parseInt(getComputedStyle(cropBox).width, 10) * scaleX;
         const height = parseInt(getComputedStyle(cropBox).height, 10) * scaleY;
         
-        // Create a new canvas with cropped dimensions
+        // Create a temporary canvas for the cropped image
         const croppedCanvas = document.createElement('canvas');
         croppedCanvas.width = width;
         croppedCanvas.height = height;
         const croppedCtx = croppedCanvas.getContext('2d');
         
-        // Draw cropped portion
-        croppedCtx.drawImage(
-            canvas,
-            x, y, width, height,
-            0, 0, width, height
-        );
+        // If there's rotation, apply it
+        if (cropRotation !== 0) {
+            // Save context state
+            croppedCtx.save();
+            
+            // Move to center of canvas
+            croppedCtx.translate(width / 2, height / 2);
+            
+            // Rotate
+            croppedCtx.rotate(cropRotation * Math.PI / 180);
+            
+            // Draw image with rotation
+            croppedCtx.drawImage(
+                canvas,
+                x, y, width, height,
+                -width / 2, -height / 2, width, height
+            );
+            
+            // Restore context state
+            croppedCtx.restore();
+        } else {
+            // Without rotation - just draw the cropped area
+            croppedCtx.drawImage(
+                canvas,
+                x, y, width, height,
+                0, 0, width, height
+            );
+        }
         
-        // Resize main canvas and draw cropped image
+        // Resize main canvas and draw the cropped image
         canvas.width = width;
         canvas.height = height;
         ctx.drawImage(croppedCanvas, 0, 0);
@@ -2422,12 +2797,16 @@
         // Update current image
         currentImage.src = canvas.toDataURL();
         
-        // Update image info
+        // Update size information
         document.getElementById('imageWidth').textContent = width;
         document.getElementById('imageHeight').textContent = height;
+        document.getElementById('imageInfo').innerHTML = 
+            `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
+            `<span>${width} x ${height} px</span>`;
         
         // Hide crop overlay
         document.getElementById('cropOverlay').style.display = 'none';
+        document.getElementById('cropOverlay').classList.remove('active');
         isCropping = false;
         
         // Save to history
@@ -2439,7 +2818,73 @@
     // Cancel crop
     function cancelCrop() {
         document.getElementById('cropOverlay').style.display = 'none';
+        document.getElementById('cropOverlay').classList.remove('active');
         isCropping = false;
+    }
+
+    // Show resize UI
+    function showResizeUI() {
+        if (!currentImage) {
+            showToast('Please upload an image first.');
+            return;
+        }
+        
+        document.getElementById('resizeContainer').style.display = 'block';
+        document.getElementById('resizeWidth').value = currentImage.width;
+        document.getElementById('resizeHeight').value = currentImage.height;
+    }
+
+    // Apply resize
+    function applyResize() {
+        const newWidth = parseInt(document.getElementById('resizeWidth').value);
+        const newHeight = parseInt(document.getElementById('resizeHeight').value);
+        
+        if (isNaN(newWidth) || isNaN(newHeight) || newWidth <= 0 || newHeight <= 0) {
+            showToast('Please enter valid dimensions.');
+            return;
+        }
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Create a temporary canvas for the resized image
+        const resizedCanvas = document.createElement('canvas');
+        resizedCanvas.width = newWidth;
+        resizedCanvas.height = newHeight;
+        const resizedCtx = resizedCanvas.getContext('2d');
+        
+        // Draw image with smooth scaling
+        resizedCtx.imageSmoothingEnabled = true;
+        resizedCtx.imageSmoothingQuality = 'high';
+        resizedCtx.drawImage(currentImage, 0, 0, newWidth, newHeight);
+        
+        // Resize main canvas and draw the resized image
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        ctx.drawImage(resizedCanvas, 0, 0);
+        
+        // Update current image
+        currentImage.src = canvas.toDataURL();
+        
+        // Update size information
+        document.getElementById('imageWidth').textContent = newWidth;
+        document.getElementById('imageHeight').textContent = newHeight;
+        document.getElementById('imageInfo').innerHTML = 
+            `<span>${document.getElementById('imageInfo').children[0].textContent}</span>` +
+            `<span>${newWidth} x ${newHeight} px</span>`;
+        
+        // Hide resize UI
+        document.getElementById('resizeContainer').style.display = 'none';
+        
+        // Save to history
+        saveToHistory();
+        
+        showToast('Image resized successfully!');
+    }
+
+    // Cancel resize
+    function cancelResize() {
+        document.getElementById('resizeContainer').style.display = 'none';
     }
 
     // Rotate image
@@ -2835,6 +3280,118 @@
         };
         
         input.click();
+    }
+
+    // Initialize crop box handlers
+    function initCropBoxHandlers() {
+        const cropBox = document.getElementById('cropBox');
+        const handles = cropBox.querySelectorAll('.crop-handle');
+        let isResizing = false;
+        let currentHandle = null;
+        let startX, startY, startWidth, startHeight, startLeft, startTop;
+        
+        // Mouse down on handles for resizing
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                currentHandle = this.classList[1];
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(getComputedStyle(cropBox).width, 10);
+                startHeight = parseInt(getComputedStyle(cropBox).height, 10);
+                startLeft = parseInt(getComputedStyle(cropBox).left, 10);
+                startTop = parseInt(getComputedStyle(cropBox).top, 10);
+            });
+        });
+        
+        // Mouse down on crop box for moving
+        cropBox.addEventListener('mousedown', function(e) {
+            if (e.target === cropBox || e.target.classList.contains('crop-handle')) return;
+            e.preventDefault();
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(getComputedStyle(cropBox).left, 10);
+            startTop = parseInt(getComputedStyle(cropBox).top, 10);
+            
+            document.addEventListener('mousemove', moveCropBox);
+            document.addEventListener('mouseup', stopMoving);
+        });
+        
+        // Mouse move for resizing
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            switch(currentHandle) {
+                case 'handle-n':
+                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                    cropBox.style.top = startTop + dy + 'px';
+                    break;
+                case 'handle-s':
+                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                    break;
+                case 'handle-e':
+                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                    break;
+                case 'handle-w':
+                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                    cropBox.style.left = startLeft + dx + 'px';
+                    break;
+                case 'handle-ne':
+                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                    cropBox.style.top = startTop + dy + 'px';
+                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                    break;
+                case 'handle-nw':
+                    cropBox.style.height = Math.max(20, startHeight - dy) + 'px';
+                    cropBox.style.top = startTop + dy + 'px';
+                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                    cropBox.style.left = startLeft + dx + 'px';
+                    break;
+                case 'handle-se':
+                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                    cropBox.style.width = Math.max(20, startWidth + dx) + 'px';
+                    break;
+                case 'handle-sw':
+                    cropBox.style.height = Math.max(20, startHeight + dy) + 'px';
+                    cropBox.style.width = Math.max(20, startWidth - dx) + 'px';
+                    cropBox.style.left = startLeft + dx + 'px';
+                    break;
+            }
+
+            // Update input fields
+            document.getElementById('cropWidthInput').value = Math.round(parseInt(cropBox.style.width));
+            document.getElementById('cropHeightInput').value = Math.round(parseInt(cropBox.style.height));
+        });
+        
+        // Mouse up for resizing
+        document.addEventListener('mouseup', function() {
+            isResizing = false;
+        });
+        
+        function moveCropBox(e) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            const container = document.getElementById('imagePreviewContainer');
+            const maxLeft = container.offsetWidth - parseInt(getComputedStyle(cropBox).width, 10);
+            const maxTop = container.offsetHeight - parseInt(getComputedStyle(cropBox).height, 10);
+            
+            const newLeft = Math.max(0, Math.min(maxLeft, startLeft + dx));
+            const newTop = Math.max(0, Math.min(maxTop, startTop + dy));
+            
+            cropBox.style.left = newLeft + 'px';
+            cropBox.style.top = newTop + 'px';
+        }
+        
+        function stopMoving() {
+            document.removeEventListener('mousemove', moveCropBox);
+            document.removeEventListener('mouseup', stopMoving);
+        }
     }
 
     // Initialize theme from localStorage
