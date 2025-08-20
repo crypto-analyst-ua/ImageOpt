@@ -864,6 +864,36 @@
         .quality-dot.low {
             background: var(--danger);
         }
+
+        /* New styles for detail enhancement */
+        .detail-controls {
+            background: rgba(40, 167, 69, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid var(--success);
+            margin-top: 15px;
+        }
+
+        .detail-controls h4 {
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-preset {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .detail-preset i {
+            color: white !important;
+        }
+
+        .detail-preset:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+        }
     </style>
 </head>
 <body>
@@ -904,6 +934,10 @@
                     <h4><i class="fas fa-download"></i> Batch Processing</h4>
                     <p>Process multiple images simultaneously and download them as a ZIP archive.</p>
                 </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-search-plus"></i> Detail Enhancement</h4>
+                    <p>New algorithms specifically designed to enhance fine details like hair and textures.</p>
+                </div>
             </div>
             
             <h3>Technical Information:</h3>
@@ -914,6 +948,7 @@
                 <p>• Start with the "Auto Enhance" preset for automatic correction<br>
                 • Increase sharpness for detail, but avoid values above 5<br>
                 • Use noise reduction for high ISO photos<br>
+                • Use the new "Detail Enhancement" preset for fine details like hair<br>
                 • Compare results with the original for precise tuning</p>
             </div>
         </div>
@@ -1002,6 +1037,9 @@
                         <button class="preset-btn" onclick="applyPreset('auto')">
                             <i class="fas fa-magic"></i> Auto Enhance
                         </button>
+                        <button class="preset-btn detail-preset" onclick="applyPreset('details')">
+                            <i class="fas fa-search-plus"></i> Detail Enhance
+                        </button>
                         <button class="preset-btn" onclick="applyPreset('portrait')">
                             <i class="fas fa-user"></i> Portrait
                         </button>
@@ -1081,6 +1119,28 @@
                         </div>
                     </div>
                     
+                    <!-- Detail Enhancement Controls -->
+                    <div class="detail-controls">
+                        <h4><i class="fas fa-search-plus"></i> Detail Enhancement</h4>
+                        <div class="control-header">
+                            <label for="detailStrength"><i class="fas fa-sliders-h"></i> Detail Strength</label>
+                            <span class="value-display" id="detailStrengthValue">0</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="detailStrengthTrack"></div>
+                            <input type="range" id="detailStrength" min="0" max="10" value="0" step="0.5">
+                        </div>
+                        
+                        <div class="control-header">
+                            <label for="clarity"><i class="fas fa-eye"></i> Clarity</label>
+                            <span class="value-display" id="clarityValue">0</span>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" id="clarityTrack"></div>
+                            <input type="range" id="clarity" min="0" max="10" value="0" step="0.5">
+                        </div>
+                    </div>
+                    
                     <div class="processing-options">
                         <div class="processing-option active" id="optionQuality" onclick="toggleProcessingOption('quality')">
                             <i class="fas fa-star"></i> Quality
@@ -1111,7 +1171,7 @@
                     <p>• Use Auto Enhance for quick improvements<br>
                     • Increase contrast for faded photos<br>
                     • Adjust brightness for underexposed images<br>
-                    • Add sharpness to reduce blurriness<br>
+                    • Use Detail Enhancement for fine details like hair<br>
                     • Try presets for one-click transformations</p>
                 </div>
                 
@@ -1170,6 +1230,8 @@
     const saturationSlider = document.getElementById('saturation');
     const sharpnessSlider = document.getElementById('sharpness');
     const noiseReductionSlider = document.getElementById('noiseReduction');
+    const detailStrengthSlider = document.getElementById('detailStrength');
+    const claritySlider = document.getElementById('clarity');
 
     // Values
     const brightnessValue = document.getElementById('brightnessValue');
@@ -1177,6 +1239,8 @@
     const saturationValue = document.getElementById('saturationValue');
     const sharpnessValue = document.getElementById('sharpnessValue');
     const noiseReductionValue = document.getElementById('noiseReductionValue');
+    const detailStrengthValue = document.getElementById('detailStrengthValue');
+    const clarityValue = document.getElementById('clarityValue');
 
     // File info
     const fileName = document.getElementById('fileName');
@@ -1206,7 +1270,8 @@
         });
 
         // Sliders
-        [brightnessSlider, contrastSlider, saturationSlider, sharpnessSlider, noiseReductionSlider].forEach(slider => {
+        [brightnessSlider, contrastSlider, saturationSlider, sharpnessSlider, 
+         noiseReductionSlider, detailStrengthSlider, claritySlider].forEach(slider => {
             slider.addEventListener('input', () => {
                 updateValueDisplay();
                 updateImage();
@@ -1311,6 +1376,11 @@
                         applyAdvancedSharpening(output, width, height, settings.sharpness);
                     }
                     
+                    // Apply detail enhancement
+                    if (settings.detailStrength > 0 || settings.clarity > 0) {
+                        applyDetailEnhancement(output, width, height, settings.detailStrength, settings.clarity);
+                    }
+                    
                     return output.buffer;
                 }
                 
@@ -1376,8 +1446,101 @@
                     }
                 }
                 
+                function applyDetailEnhancement(data, width, height, detailStrength, clarity) {
+                    // Enhanced detail extraction algorithm for fine details like hair
+                    const strength = detailStrength / 10;
+                    const clarityAmount = clarity / 20;
+                    
+                    // Create a copy for processing
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    // Apply bilateral filter to preserve edges while smoothing
+                    applyBilateralFilter(tempData, width, height, 2, 20);
+                    
+                    // Extract details by subtracting smoothed version
+                    for (let i = 0; i < data.length; i += 4) {
+                        for (let c = 0; c < 3; c++) {
+                            const idx = i + c;
+                            const original = data[idx];
+                            const smoothed = tempData[idx];
+                            
+                            // Calculate detail
+                            const detail = original - smoothed;
+                            
+                            // Enhance details with adaptive strength
+                            const enhancedDetail = detail * strength * (1 + clarityAmount);
+                            
+                            // Apply enhanced details back to the image
+                            const result = original + enhancedDetail;
+                            data[idx] = Math.max(0, Math.min(255, result));
+                        }
+                    }
+                    
+                    // Apply local contrast enhancement for clarity
+                    if (clarity > 0) {
+                        applyLocalContrastEnhancement(data, width, height, clarityAmount);
+                    }
+                }
+                
+                function applyBilateralFilter(data, width, height, spatialSigma, rangeSigma) {
+                    const radius = Math.floor(spatialSigma * 1.5);
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    for (let y = radius; y < height - radius; y++) {
+                        for (let x = radius; x < width - radius; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                const centerIdx = (y * width + x) * 4 + c;
+                                const centerValue = tempData[centerIdx];
+                                
+                                let totalWeight = 0;
+                                let sum = 0;
+                                
+                                for (let dy = -radius; dy <= radius; dy++) {
+                                    for (let dx = -radius; dx <= radius; dx++) {
+                                        const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                                        const value = tempData[idx];
+                                        
+                                        // Spatial weight
+                                        const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                                        const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                                        
+                                        // Range weight
+                                        const valueDist = Math.abs(centerValue - value);
+                                        const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                                        
+                                        const weight = spatialWeight * rangeWeight;
+                                        sum += value * weight;
+                                        totalWeight += weight;
+                                    }
+                                }
+                                
+                                data[centerIdx] = sum / totalWeight;
+                            }
+                        }
+                    }
+                }
+                
+                function applyLocalContrastEnhancement(data, width, height, amount) {
+                    // Apply local contrast enhancement using unsharp mask with larger radius
+                    const radius = 20;
+                    const tempData = new Uint8ClampedArray(data);
+                    applyGaussianBlur(tempData, width, height, radius);
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        for (let c = 0; c < 3; c++) {
+                            const idx = i + c;
+                            const original = data[idx];
+                            const blurred = tempData[idx];
+                            
+                            // Enhance mid-tone contrast
+                            const enhanced = original + (original - blurred) * amount;
+                            data[idx] = Math.max(0, Math.min(255, enhanced));
+                        }
+                    }
+                }
+                
                 function applyGaussianBlur(data, width, height, radius) {
-                    // Gaussian blur for creating a mask
+                    // Gaussian blur implementation
                     const weights = getGaussianWeights(radius);
                     const tempData = new Uint8ClampedArray(data);
                     
@@ -1402,6 +1565,7 @@
                     }
                     
                     // Vertical pass
+                    const tempData2 = new Uint8ClampedArray(data);
                     for (let y = radius; y < height - radius; y++) {
                         for (let x = 0; x < width; x++) {
                             for (let c = 0; c < 3; c++) {
@@ -1411,7 +1575,7 @@
                                 for (let dy = -radius; dy <= radius; dy++) {
                                     const idx = ((y + dy) * width + x) * 4 + c;
                                     const weight = weights[dy + radius];
-                                    sum += data[idx] * weight;
+                                    sum += tempData2[idx] * weight;
                                     totalWeight += weight;
                                 }
                                 
@@ -1516,7 +1680,9 @@
                             contrast: 100, 
                             saturation: 100, 
                             sharpness: 0,
-                            noiseReduction: 0
+                            noiseReduction: 0,
+                            detailStrength: 0,
+                            clarity: 0
                         },
                         originalImage: img,
                         originalImageData: null,
@@ -1611,6 +1777,8 @@
         saturationSlider.value = imageObj.settings.saturation;
         sharpnessSlider.value = imageObj.settings.sharpness;
         noiseReductionSlider.value = imageObj.settings.noiseReduction;
+        detailStrengthSlider.value = imageObj.settings.detailStrength;
+        claritySlider.value = imageObj.settings.clarity;
 
         updateValueDisplay();
         originalImage.src = imageObj.originalImage.src;
@@ -1638,6 +1806,8 @@
                 saturation: parseInt(saturationSlider.value),
                 sharpness: parseFloat(sharpnessSlider.value),
                 noiseReduction: parseFloat(noiseReductionSlider.value),
+                detailStrength: parseFloat(detailStrengthSlider.value),
+                clarity: parseFloat(claritySlider.value),
                 width: imageObj.canvas.width,
                 height: imageObj.canvas.height
             };
@@ -1653,7 +1823,7 @@
             });
         } else {
             // Processing in the main thread
-            const { brightness, contrast, saturation, sharpness, noiseReduction } = imageObj.settings;
+            const { brightness, contrast, saturation, sharpness, noiseReduction, detailStrength, clarity } = imageObj.settings;
             const ctx = imageObj.ctx;
             ctx.putImageData(imageObj.originalImageData, 0, 0); // always start from original
 
@@ -1698,6 +1868,11 @@
             // Apply sharpening if needed
             if (sharpness > 0) {
                 applyAdvancedSharpening(imageObj, sharpness);
+            }
+
+            // Apply detail enhancement if needed
+            if (detailStrength > 0 || clarity > 0) {
+                applyDetailEnhancement(imageObj, detailStrength, clarity);
             }
 
             enhancedImage.src = imageObj.canvas.toDataURL();
@@ -1785,6 +1960,117 @@
         ctx.putImageData(imageData, 0, 0);
     }
 
+    function applyDetailEnhancement(imageObj, detailStrength, clarity) {
+        const ctx = imageObj.ctx;
+        const { width, height } = imageObj.canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        
+        // Create a copy for processing
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Apply bilateral filter to preserve edges while smoothing
+        applyBilateralFilter(tempData, width, height, 2, 20);
+        
+        // Extract details by subtracting smoothed version
+        const strength = detailStrength / 10;
+        const clarityAmount = clarity / 20;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const idx = i + c;
+                const original = data[idx];
+                const smoothed = tempData[idx];
+                
+                // Calculate detail
+                const detail = original - smoothed;
+                
+                // Enhance details with adaptive strength
+                const enhancedDetail = detail * strength * (1 + clarityAmount);
+                
+                // Apply enhanced details back to the image
+                const result = original + enhancedDetail;
+                data[idx] = Math.max(0, Math.min(255, result));
+            }
+        }
+        
+        // Apply local contrast enhancement for clarity
+        if (clarity > 0) {
+            applyLocalContrastEnhancement(data, width, height, clarityAmount);
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function applyBilateralFilter(data, width, height, spatialSigma, rangeSigma) {
+        const radius = Math.floor(spatialSigma * 1.5);
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Process every second pixel for performance
+        for (let y = radius; y < height - radius; y += 2) {
+            for (let x = radius; x < width - radius; x += 2) {
+                for (let c = 0; c < 3; c++) {
+                    const centerIdx = (y * width + x) * 4 + c;
+                    const centerValue = tempData[centerIdx];
+                    
+                    let totalWeight = 0;
+                    let sum = 0;
+                    
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        for (let dx = -radius; dx <= radius; dx++) {
+                            const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                            const value = tempData[idx];
+                            
+                            // Spatial weight
+                            const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                            const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                            
+                            // Range weight
+                            const valueDist = Math.abs(centerValue - value);
+                            const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                            
+                            const weight = spatialWeight * rangeWeight;
+                            sum += value * weight;
+                            totalWeight += weight;
+                        }
+                    }
+                    
+                    data[centerIdx] = sum / totalWeight;
+                    
+                    // Interpolate missed pixels
+                    if (x + 1 < width - radius) {
+                        data[centerIdx + 4] = sum / totalWeight;
+                    }
+                    if (y + 1 < height - radius) {
+                        data[centerIdx + width * 4] = sum / totalWeight;
+                    }
+                    if (x + 1 < width - radius && y + 1 < height - radius) {
+                        data[centerIdx + width * 4 + 4] = sum / totalWeight;
+                    }
+                }
+            }
+        }
+    }
+
+    function applyLocalContrastEnhancement(data, width, height, amount) {
+        // Apply local contrast enhancement using unsharp mask with larger radius
+        const radius = 20;
+        const tempData = new Uint8ClampedArray(data);
+        applyGaussianBlur(tempData, width, height, radius);
+        
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const idx = i + c;
+                const original = data[idx];
+                const blurred = tempData[idx];
+                
+                // Enhance mid-tone contrast
+                const enhanced = original + (original - blurred) * amount;
+                data[idx] = Math.max(0, Math.min(255, enhanced));
+            }
+        }
+    }
+
     function applyGaussianBlur(data, width, height, radius) {
         // Gaussian blur
         const weights = getGaussianWeights(radius);
@@ -1855,7 +2141,9 @@
             contrast: parseInt(contrastSlider.value),
             saturation: parseInt(saturationSlider.value),
             sharpness: parseFloat(sharpnessSlider.value),
-            noiseReduction: parseFloat(noiseReductionSlider.value)
+            noiseReduction: parseFloat(noiseReductionSlider.value),
+            detailStrength: parseFloat(detailStrengthSlider.value),
+            clarity: parseFloat(claritySlider.value)
         };
         applySettingsToImage(imageObj);
         updateSliderTrack();
@@ -1868,6 +2156,8 @@
         saturationValue.textContent = saturationSlider.value;
         sharpnessValue.textContent = sharpnessSlider.value;
         noiseReductionValue.textContent = noiseReductionSlider.value;
+        detailStrengthValue.textContent = detailStrengthSlider.value;
+        clarityValue.textContent = claritySlider.value;
         updateSliderTrack();
     }
 
@@ -1877,6 +2167,8 @@
         document.getElementById('saturationTrack').style.width = `${parseInt(saturationSlider.value)/200*100}%`;
         document.getElementById('sharpnessTrack').style.width = `${parseFloat(sharpnessSlider.value)/10*100}%`;
         document.getElementById('noiseReductionTrack').style.width = `${parseFloat(noiseReductionSlider.value)/10*100}%`;
+        document.getElementById('detailStrengthTrack').style.width = `${parseFloat(detailStrengthSlider.value)/10*100}%`;
+        document.getElementById('clarityTrack').style.width = `${parseFloat(claritySlider.value)/10*100}%`;
     }
 
     function startDrag() { isDragging = true; document.body.style.cursor = 'ew-resize'; }
@@ -1984,26 +2276,37 @@
         if (!images.length) return;
         
         const imageObj = images[currentIndex];
-        let settings = { brightness: 0, contrast: 100, saturation: 100, sharpness: 0, noiseReduction: 0 };
+        let settings = { 
+            brightness: 0, 
+            contrast: 100, 
+            saturation: 100, 
+            sharpness: 0, 
+            noiseReduction: 0,
+            detailStrength: 0,
+            clarity: 0
+        };
 
         switch(presetName) {
             case 'auto':
                 settings = analyzeAndGetOptimalSettings(imageObj);
                 break;
+            case 'details':
+                settings = { brightness: 5, contrast: 110, saturation: 105, sharpness: 2, noiseReduction: 1, detailStrength: 7, clarity: 5 };
+                break;
             case 'portrait':
-                settings = { brightness: 5, contrast: 105, saturation: 90, sharpness: 1, noiseReduction: 2 };
+                settings = { brightness: 5, contrast: 105, saturation: 90, sharpness: 1, noiseReduction: 2, detailStrength: 3, clarity: 2 };
                 break;
             case 'landscape':
-                settings = { brightness: 15, contrast: 120, saturation: 130, sharpness: 3, noiseReduction: 1 };
+                settings = { brightness: 15, contrast: 120, saturation: 130, sharpness: 3, noiseReduction: 1, detailStrength: 4, clarity: 4 };
                 break;
             case 'vintage':
-                settings = { brightness: -10, contrast: 90, saturation: 85, sharpness: 0, noiseReduction: 3 };
+                settings = { brightness: -10, contrast: 90, saturation: 85, sharpness: 0, noiseReduction: 3, detailStrength: 2, clarity: 1 };
                 break;
             case 'bw':
-                settings = { brightness: 0, contrast: 110, saturation: 0, sharpness: 1, noiseReduction: 1 };
+                settings = { brightness: 0, contrast: 110, saturation: 0, sharpness: 1, noiseReduction: 1, detailStrength: 4, clarity: 3 };
                 break;
             case 'clear':
-                settings = { brightness: 5, contrast: 115, saturation: 105, sharpness: 4, noiseReduction: 2 };
+                settings = { brightness: 5, contrast: 115, saturation: 105, sharpness: 4, noiseReduction: 2, detailStrength: 5, clarity: 4 };
                 break;
         }
 
@@ -2012,6 +2315,8 @@
         saturationSlider.value = settings.saturation;
         sharpnessSlider.value = settings.sharpness;
         noiseReductionSlider.value = settings.noiseReduction;
+        detailStrengthSlider.value = settings.detailStrength;
+        claritySlider.value = settings.clarity;
         imageObj.settings = settings;
         updateValueDisplay();
         updateImage();
@@ -2052,6 +2357,8 @@
         let saturation = 100;
         let sharpness = 0;
         let noiseReduction = 0;
+        let detailStrength = 0;
+        let clarity = 0;
         
         // Adjust brightness
         if (avgLuminance < 80) brightness = 10;
@@ -2071,7 +2378,13 @@
         // Add noise reduction for dark images
         if (avgLuminance < 100) noiseReduction = 1;
         
-        return { brightness, contrast: contrastValue, saturation, sharpness, noiseReduction };
+        // Add detail enhancement for images with potential fine details
+        if (contrast > 100) {
+            detailStrength = 3;
+            clarity = 2;
+        }
+        
+        return { brightness, contrast: contrastValue, saturation, sharpness, noiseReduction, detailStrength, clarity };
     }
 
     function analyzeAndAutoEnhance() {
@@ -2084,6 +2397,8 @@
         saturationSlider.value = settings.saturation;
         sharpnessSlider.value = settings.sharpness;
         noiseReductionSlider.value = settings.noiseReduction;
+        detailStrengthSlider.value = settings.detailStrength;
+        claritySlider.value = settings.clarity;
         imageObj.settings = settings;
         updateValueDisplay();
         updateImage();
@@ -2098,7 +2413,17 @@
         saturationSlider.value = 100;
         sharpnessSlider.value = 0;
         noiseReductionSlider.value = 0;
-        imageObj.settings = { brightness: 0, contrast: 100, saturation: 100, sharpness: 0, noiseReduction: 0 };
+        detailStrengthSlider.value = 0;
+        claritySlider.value = 0;
+        imageObj.settings = { 
+            brightness: 0, 
+            contrast: 100, 
+            saturation: 100, 
+            sharpness: 0, 
+            noiseReduction: 0,
+            detailStrength: 0,
+            clarity: 0
+        };
         updateValueDisplay();
         updateImage();
     }
