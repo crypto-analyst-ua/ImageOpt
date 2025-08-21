@@ -27,6 +27,7 @@ const qualityDot = document.getElementById('qualityDot');
 const qualityText = document.getElementById('qualityText');
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
+const resetBtn = document.getElementById('resetBtn'); // Добавляем кнопку сброса
 
 // Sliders
 const brightnessSlider = document.getElementById('brightness');
@@ -73,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.addEventListener('change', handleFileSelect);
     prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
     nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
+    
+    // Добавляем обработчик для кнопки сброса
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetToOriginal);
+    }
     
     // Modal window
     aboutBtn.addEventListener('click', () => {
@@ -998,9 +1004,9 @@ function getGaussianWeights(radius) {
     let total = 0;
     
     for (let i = -radius; i <= radius; i++) {
-        const weight = Math.exp(-0.5 * (i * i) / (sigma * sigma));
-        weights.push(weight);
-        total += weight;
+    const weight = Math.exp(-0.5 * (i * i) / (sigma * sigma));
+    weights.push(weight);
+    total += weight;
     }
     
     // Normalize weights
@@ -1302,6 +1308,39 @@ function resetSettings() {
     };
     updateValueDisplay();
     updateImage();
+}
+
+function resetToOriginal() {
+    if (!images.length) return;
+    
+    const imageObj = images[currentIndex];
+    
+    // Reset slider values
+    brightnessSlider.value = 0;
+    contrastSlider.value = 100;
+    saturationSlider.value = 100;
+    sharpnessSlider.value = 0;
+    noiseReductionSlider.value = 0;
+    detailStrengthSlider.value = 0;
+    claritySlider.value = 0;
+    imageObj.settings = { 
+        brightness: 0, 
+        contrast: 100, 
+        saturation: 100, 
+        sharpness: 0, 
+        noiseReduction: 0,
+        detailStrength: 0,
+        clarity: 0
+    };
+    updateValueDisplay();
+    
+    // Restore original image
+    enhancedImage.src = imageObj.originalImage.src;
+    
+    // Update canvas with original image data
+    imageObj.ctx.putImageData(imageObj.originalImageData, 0, 0);
+    
+    updateHistogram();
 }
 
 function updateHistogram() {

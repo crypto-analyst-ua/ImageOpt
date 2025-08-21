@@ -548,6 +548,18 @@ input[type="range"]::-moz-range-thumb {
     border-color: #28a745;
 }
 
+.action-btn.warning {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    border-color: #ffc107;
+}
+
+.action-btn.warning:hover {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+}
+
 .info-panel {
     background: rgba(111, 66, 193, 0.05);
     padding: 20px;
@@ -672,6 +684,7 @@ input[type="range"]::-moz-range-thumb {
     font-size: 14px;
     z-index: 20;
 }
+
 /* Add new styles for noise reduction control */
 .noise-reduction-container {
     margin-top: 10px;
