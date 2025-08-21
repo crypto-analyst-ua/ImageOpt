@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="Improved image quality.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
     <!-- Modal -->
@@ -81,9 +87,14 @@
                     <p>Transform your images with advanced AI enhancement tools</p>
                 </div>
             </div>
-            <button class="about-btn" id="aboutBtn">
-                <i class="fas fa-info-circle"></i> About App
-            </button>
+            <div class="header-buttons">
+                <button class="about-btn" id="aboutBtn">
+                    <i class="fas fa-info-circle"></i> About App
+                </button>
+                <button class="about-btn" onclick="window.open('AI Image Enhancer Pro.html', '_blank')">
+                    <i class="fas fa-robot"></i> AI Image Enhancer Pro
+                </button>
+            </div>
         </header>
         
         <div class="upload-section" id="uploadSection">
