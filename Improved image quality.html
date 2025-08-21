@@ -303,32 +303,46 @@
                         <p>Apply AI-powered filters for professional-grade enhancement</p>
                         
                         <div class="filter-preview-grid">
-                            <div class="filter-preview-item active" data-filter="ai_enhance">
-                                <img id="preview-original" src="" alt="Original">
+                            <div class="filter-preview-item active" data-filter="none">
+                                <div class="filter-icon"><i class="fas fa-image"></i></div>
                                 <div class="filter-preview-name">Original</div>
                             </div>
-                            <div class="filter-preview-item" data-filter="ai_portrait">
-                                <img id="preview-portrait" src="" alt="AI Portrait">
+                            <div class="filter-preview-item ai-filter-btn" data-filter="upscale">
+                                <div class="filter-icon"><i class="fas fa-magic"></i></div>
+                                <div class="filter-preview-name">AI Enhance</div>
+                            </div>
+                            <div class="filter-preview-item ai-filter-btn" data-filter="face_enhance">
+                                <div class="filter-icon"><i class="fas fa-user"></i></div>
                                 <div class="filter-preview-name">AI Portrait</div>
                             </div>
-                            <div class="filter-preview-item" data-filter="ai_landscape">
-                                <img id="preview-landscape" src="" alt="AI Landscape">
-                                <div class="filter-preview-name">AI Landscape</div>
-                            </div>
-                            <div class="filter-preview-item" data-filter="ai_clear">
-                                <img id="preview-clear" src="" alt="AI Clear">
+                            <div class="filter-preview-item ai-filter-btn" data-filter="denoise">
+                                <div class="filter-icon"><i class="fas fa-snowflake"></i></div>
                                 <div class="filter-preview-name">AI Clear</div>
                             </div>
-                            <div class="filter-preview-item" data-filter="ai_hdr">
-                                <img id="preview-hdr" src="" alt="AI HDR">
-                                <div class="filter-preview-name">AI HDR</div>
+                            <div class="filter-preview-item ai-filter-btn" data-filter="background_remove">
+                                <div class="filter-icon"><i class="fas fa-cut"></i></div>
+                                <div class="filter-preview-name>AI Background Remove</div>
                             </div>
-                            <div class="filter-preview-item" data-filter="ai_cinematic">
-                                <img id="preview-cinematic" src="" alt="AI Cinematic">
+                            <div class="filter-preview-item ai-filter-btn" data-filter="style">
+                                <div class="filter-icon"><i class="fas fa-film"></i></div>
                                 <div class="filter-preview-name">AI Cinematic</div>
                             </div>
                         </div>
                         
+                        <div class="style-selector" id="styleSelector" style="display: none; margin-top: 15px;">
+                            <label for="styleSelect"><i class="fas fa-paint-brush"></i> Select Style:</label>
+                            <select id="styleSelect">
+                                <option value="van_gogh">Van Gogh</option>
+                                <option value="picasso">Picasso</option>
+                                <option value="monet">Monet</option>
+                                <option value="pixel">Pixel Art</option>
+                                <option value="sketch">Sketch</option>
+                                <option value="oil_painting">Oil Painting</option>
+                                <option value="watercolor">Watercolor</option>
+                                <option value="comic">Comic Book</option>
+                            </select>
+                        </div>
+
                         <div class="action-buttons" style="margin-top: 20px;">
                             <button class="action-btn primary" onclick="applyAIFilter()">
                                 <i class="fas fa-check"></i> Apply Selected Filter

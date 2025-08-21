@@ -543,7 +543,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .action-btn.success {
-    background: linear-gradient(135dex, #28a745, #218838);
+    background: linear-gradient(135deg, #28a745, #218838);
     color: white;
     border-color: #28a745;
 }
@@ -886,6 +886,138 @@ input[type="range"]::-moz-range-thumb {
     background: linear-gradient(135deg, #218838, #1e7e34);
 }
 
+/* Обновленные стили для AI фильтров */
+.ai-filter-btn {
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.ai-filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4);
+    background: linear-gradient(135deg, #7952b3, #6340a8);
+}
+
+.ai-filter-btn i {
+    color: white !important;
+    font-size: 20px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.filter-preview-item.ai-filter-btn {
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+    color: white;
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.filter-preview-item.ai-filter-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(111, 66, 193, 0.4);
+}
+
+.filter-preview-item.ai-filter-btn .filter-icon {
+    color: white !important;
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.filter-preview-item.ai-filter-btn .filter-preview-name {
+    color: white;
+    background: rgba(0, 0, 0, 0.8);
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.filter-preview-item.active {
+    box-shadow: 0 0 0 4px var(--accent-color), 0 8px 25px rgba(111, 66, 193, 0.5);
+    transform: scale(1.08);
+}
+
+.filter-preview-item.active .filter-icon,
+.filter-preview-item:hover .filter-icon {
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Улучшенная видимость для неактивных элементов */
+.filter-preview-item:not(.active) {
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+}
+
+.filter-preview-item:not(.active):hover {
+    opacity: 1;
+    transform: scale(1.03);
+}
+
+/* Контрастные тени для лучшей читаемости */
+.filter-icon i {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Индикатор выбранного фильтра */
+.filter-preview-item.active::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Анимация для AI элементов */
+@keyframes ai-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(111, 66, 193, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(111, 66, 193, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(111, 66, 193, 0); }
+}
+
+.ai-filter-btn:focus {
+    animation: ai-pulse 1.5s infinite;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .ai-filter-btn {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .action-btn.primary.ai-apply {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .filter-preview-name {
+        font-size: 11px;
+        padding: 6px;
+    }
+}
+
 /* New styles for AI filters */
 .ai-filters-panel {
     background: var(--darker-panel);
@@ -1012,4 +1144,19 @@ input[type="range"]::-moz-range-thumb {
     padding: 5px;
     font-size: 12px;
     text-align: center;
+}
+
+.filter-icon {
+    font-size: 36px;
+    color: var(--accent-color);
+    margin-bottom: 10px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-preview-item.active .filter-icon,
+.filter-preview-item:hover .filter-icon {
+    color: white;
 }
