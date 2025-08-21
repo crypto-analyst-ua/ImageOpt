@@ -617,6 +617,21 @@
             .control-group {
                 padding: 8px 10px;
             }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        .auto-enhance-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(33, 150, 243, 0.1);
+            border-radius: var(--border-radius);
+        }
+        
+        .dark-mode .auto-enhance-section {
+            background: rgba(33, 150, 243, 0.15);
         }
     </style>
 </head>
@@ -660,6 +675,22 @@
                         <div class="step-indicator">
                             <div class="step-number">2</div>
                             <div class="step-text">Adjust your image using the tools below</div>
+                        </div>
+
+                        <div class="auto-enhance-section">
+                            <div class="section-title">
+                                <i class="material-icons">auto_awesome</i> Auto Enhance
+                            </div>
+                            <p class="hint-text">One-click automatic image enhancement with AI</p>
+                            
+                            <div class="action-buttons">
+                                <button class="btn waves-effect waves-light blue enhanced-btn" onclick="autoEnhance('soft')">
+                                    <i class="material-icons left">auto_awesome</i>Soft Enhance
+                                </button>
+                                <button class="btn waves-effect waves-light indigo enhanced-btn" onclick="autoEnhance('balanced')">
+                                    <i class="material-icons left">auto_awesome</i>Balanced Enhance
+                                </button>
+                            </div>
                         </div>
 
                         <div class="action-buttons">
@@ -913,6 +944,16 @@
                                     <div class="ai-filter-content">
                                         <h6>Face Enhancement <span class="ai-feature-badge">AI</span></h6>
                                         <p>Enhances facial details and retouching for portraits</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-filter-card" onclick="applyAIAutoEnhance()">
+                                <div class="card-content">
+                                    <i class="material-icons">auto_awesome</i>
+                                    <div class="ai-filter-content">
+                                        <h6>AI Auto Enhance <span class="ai-feature-badge">AI</span></h6>
+                                        <p>Automatically enhances image quality with AI analysis</p>
                                     </div>
                                 </div>
                             </div>
@@ -1856,6 +1897,154 @@
     // Import settings (placeholder)
     function importSettings() {
         showToast('Import feature will be available soon!');
+    }
+    
+    // NEW FUNCTIONS FOR AUTO ENHANCEMENT
+    
+    // Auto enhance function with different modes
+    function autoEnhance(mode = 'balanced') {
+        if (!currentImage) {
+            showToast('Please upload an image first.');
+            return;
+        }
+        
+        // Show processing indicator
+        showToast(`Applying ${mode} auto enhancement...`);
+        
+        // Reset image first
+        resetImage();
+        
+        // Apply enhancement based on mode
+        setTimeout(() => {
+            if (mode === 'soft') {
+                // Soft enhancement settings
+                document.getElementById('brightness').value = 105;
+                document.getElementById('contrast').value = 105;
+                document.getElementById('saturate').value = 110;
+                document.getElementById('exposure').value = 5;
+                document.getElementById('warmth').value = 5;
+                document.getElementById('sharpen').value = 10;
+            } else {
+                // Balanced enhancement settings
+                document.getElementById('brightness').value = 110;
+                document.getElementById('contrast').value = 110;
+                document.getElementById('saturate').value = 115;
+                document.getElementById('exposure').value = 8;
+                document.getElementById('warmth').value = 10;
+                document.getElementById('sharpen').value = 15;
+            }
+            
+            // Update slider values
+            updateSliderValues();
+            
+            // Apply filters
+            applyFilters();
+            
+            // Save to history
+            saveToHistory();
+            
+            showToast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} auto enhancement applied!`);
+        }, 500);
+    }
+    
+    // AI Auto Enhance function
+    function applyAIAutoEnhance() {
+        if (!currentImage) {
+            showToast('Please upload an image first.');
+            return;
+        }
+        
+        // Show processing indicator
+        const aiProcessing = document.getElementById('aiProcessing');
+        aiProcessing.style.display = 'block';
+        
+        // Simulate AI processing
+        setTimeout(() => {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Apply AI-based enhancement
+            applyAIDetailEnhancement(ctx);
+            
+            // Save modified image
+            currentImage.src = canvas.toDataURL();
+            
+            // Hide processing indicator
+            aiProcessing.style.display = 'none';
+            
+            // Save to history
+            saveToHistory();
+            
+            showToast('AI auto enhancement applied successfully!');
+        }, 2500);
+    }
+    
+    // AI-based detail enhancement
+    function applyAIDetailEnhancement(ctx) {
+        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const data = imageData.data;
+        const width = ctx.canvas.width;
+        const height = ctx.canvas.height;
+        
+        // Create a copy for reading
+        const originalData = new Uint8ClampedArray(data);
+        
+        // Adaptive contrast enhancement
+        for (let i = 0; i < data.length; i += 4) {
+            // Calculate luminance
+            const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            
+            // Adaptive contrast based on luminance
+            const contrastFactor = luminance > 128 ? 1.08 : 1.12;
+            
+            // Apply adaptive contrast
+            data[i] = Math.min(255, Math.max(0, (data[i] - 127) * contrastFactor + 127));
+            data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 127) * contrastFactor + 127));
+            data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 127) * contrastFactor + 127));
+        }
+        
+        // Adaptive sharpening with edge detection
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                for (let c = 0; c < 3; c++) {
+                    const idx = (y * width + x) * 4 + c;
+                    
+                    // Calculate edge strength using simple gradient
+                    const gradient = Math.abs(originalData[idx] - originalData[(y * width + (x + 1)) * 4 + c]) + 
+                                    Math.abs(originalData[idx] - originalData[((y + 1) * width + x) * 4 + c]);
+                    
+                    // Adaptive sharpening based on edge strength
+                    const sharpenAmount = Math.min(0.3, gradient / 200);
+                    
+                    // Apply adaptive sharpening
+                    data[idx] = Math.max(0, Math.min(255, 
+                        data[idx] * (1 + sharpenAmount) - 
+                        originalData[((y-1) * width + x) * 4 + c] * (sharpenAmount/4) -
+                        originalData[((y+1) * width + x) * 4 + c] * (sharpenAmount/4) -
+                        originalData[(y * width + (x-1)) * 4 + c] * (sharpenAmount/4) -
+                        originalData[(y * width + (x+1)) * 4 + c] * (sharpenAmount/4)
+                    ));
+                }
+            }
+        }
+        
+        // Adaptive color enhancement
+        for (let i = 0; i < data.length; i += 4) {
+            // Calculate colorfulness
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const colorfulness = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
+            
+            // Adaptive saturation based on colorfulness
+            const saturationFactor = 1 + (0.15 * (1 - colorfulness));
+            
+            // Apply adaptive saturation
+            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            data[i] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i] - avg)));
+            data[i + 1] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i + 1] - avg)));
+            data[i + 2] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i + 2] - avg)));
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
     }
     </script>
 </body>
