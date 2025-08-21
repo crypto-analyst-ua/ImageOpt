@@ -1,0 +1,1827 @@
+ let images = [];
+    let currentIndex = 0;
+    let isDragging = false;
+    let processingMode = 'quality'; // 'quality' or 'performance'
+    let processingWorker = null;
+    let currentFilter = 'ai_enhance';
+    let updateTimeout = null;
+    let currentTaskId = 0;
+
+    // DOM elements
+    const fileInput = document.getElementById('fileInput');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const imageCounter = document.getElementById('imageCounter');
+    const originalImage = document.getElementById('originalImage');
+    const enhancedImage = document.getElementById('enhancedImage');
+    const comparisonSlider = document.getElementById('comparisonSlider');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const mainContent = document.getElementById('mainContent');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.getElementById('progress');
+    const uploadSection = document.getElementById('uploadSection');
+    const aboutBtn = document.getElementById('aboutBtn');
+    const modal = document.getElementById('aboutModal');
+    const closeBtn = document.querySelector('.close');
+    const qualityDot = document.getElementById('qualityDot');
+    const qualityText = document.getElementById('qualityText');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Sliders
+    const brightnessSlider = document.getElementById('brightness');
+    const contrastSlider = document.getElementById('contrast');
+    const saturationSlider = document.getElementById('saturation');
+    const sharpnessSlider = document.getElementById('sharpness');
+    const noiseReductionSlider = document.getElementById('noiseReduction');
+    const detailStrengthSlider = document.getElementById('detailStrength');
+    const claritySlider = document.getElementById('clarity');
+
+    // Values
+    const brightnessValue = document.getElementById('brightnessValue');
+    const contrastValue = document.getElementById('contrastValue');
+    const saturationValue = document.getElementById('saturationValue');
+    const sharpnessValue = document.getElementById('sharpnessValue');
+    const noiseReductionValue = document.getElementById('noiseReductionValue');
+    const detailStrengthValue = document.getElementById('detailStrengthValue');
+    const clarityValue = document.getElementById('clarityValue');
+
+    // File info
+    const fileName = document.getElementById('fileName');
+    const fileDimensions = document.getElementById('fileDimensions');
+    const fileSizeInfo = document.getElementById('fileSizeInfo');
+    const fileType = document.getElementById('fileType');
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        fileInput.addEventListener('change', handleFileSelect);
+        prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
+        nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
+        
+        // Modal window
+        aboutBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+        });
+        
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Tabs
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Deactivate all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                
+                // Activate current tab
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Filter preview items
+        document.querySelectorAll('.filter-preview-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.filter-preview-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.getAttribute('data-filter');
+                updateImage();
+            });
+        });
+
+        // Sliders with debouncing
+        [brightnessSlider, contrastSlider, saturationSlider, sharpnessSlider, 
+         noiseReductionSlider, detailStrengthSlider, claritySlider].forEach(slider => {
+            slider.addEventListener('input', () => {
+                updateValueDisplay();
+                
+                // Update settings immediately
+                if (images.length) {
+                    images[currentIndex].settings = {
+                        brightness: parseInt(brightnessSlider.value),
+                        contrast: parseInt(contrastSlider.value),
+                        saturation: parseInt(saturationSlider.value),
+                        sharpness: parseFloat(sharpnessSlider.value),
+                        noiseReduction: parseFloat(noiseReductionSlider.value),
+                        detailStrength: parseFloat(detailStrengthSlider.value),
+                        clarity: parseFloat(claritySlider.value)
+                    };
+                }
+
+                // Debounce the image update to prevent excessive processing
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(() => {
+                    updateImage();
+                }, 150);
+            });
+        });
+
+        // Comparison slider
+        comparisonSlider.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+
+        // Fullscreen button
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // Drag & Drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = 'var(--accent-color)';
+            uploadSection.style.backgroundColor = 'rgba(111, 66, 193, 0.05)';
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.style.borderColor = 'var(--light-border)';
+            uploadSection.style.backgroundColor = '';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = 'var(--light-border)';
+            uploadSection.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        updateValueDisplay();
+        setInitialClip();
+        
+        // Create Web Worker for image processing
+        try {
+            processingWorker = new Worker(URL.createObjectURL(new Blob([`
+                let taskId = 0;
+                
+                self.addEventListener('message', function(e) {
+                    const data = e.data;
+                    if (data.type === 'process') {
+                        taskId = data.taskId;
+                        
+                        // If this isn't the latest task, ignore it
+                        if (taskId !== data.taskId) return;
+                        
+                        const imageData = new ImageData(
+                            new Uint8ClampedArray(data.imageData.data),
+                            data.imageData.width,
+                            data.imageData.height
+                        );
+                        
+                        const result = processImage(imageData, data.settings, data.filter);
+                        self.postMessage({
+                            type: 'processed',
+                            imageData: result,
+                            taskId: taskId
+                        }, [result.buffer]);
+                    }
+                });
+                
+                function processImage(imageData, settings, filter) {
+                    const data = imageData.data;
+                    const width = imageData.width;
+                    const height = imageData.height;
+                    
+                    // Create a copy of data for processing
+                    const output = new Uint8ClampedArray(data);
+                    
+                    // Apply improved noise reduction algorithm
+                    if (settings.noiseReduction > 0) {
+                        applyAdvancedNoiseReduction(output, width, height, settings.noiseReduction);
+                    }
+                    
+                    // Apply basic adjustments
+                    for (let i = 0; i < output.length; i += 4) {
+                        let r = output[i], g = output[i+1], b = output[i+2];
+                        
+                        // Brightness
+                        r = Math.max(0, Math.min(255, r + settings.brightness));
+                        g = Math.max(0, Math.min(255, g + settings.brightness));
+                        b = Math.max(0, Math.min(255, b + settings.brightness));
+                        
+                        // Contrast
+                        const cf = (settings.contrast - 100) / 100;
+                        r = Math.max(0, Math.min(255, 128 + (r - 128) * (1 + cf)));
+                        g = Math.max(0, Math.min(255, 128 + (g - 128) * (1 + cf)));
+                        b = Math.max(0, Math.min(255, 128 + (b - 128) * (1 + cf)));
+                        
+                        // Saturation
+                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                        const sf = (settings.saturation - 100) / 100;
+                        r = Math.max(0, Math.min(255, gray + (r - gray) * (1 + sf)));
+                        g = Math.max(0, Math.min(255, gray + (g - gray) * (1 + sf)));
+                        b = Math.max(0, Math.min(255, gray + (b - gray) * (1 + sf)));
+                        
+                        output[i] = r;
+                        output[i+1] = g;
+                        output[i+2] = b;
+                    }
+                    
+                    // Apply improved sharpening
+                    if (settings.sharpness > 0) {
+                        applyAdvancedSharpening(output, width, height, settings.sharpness);
+                    }
+                    
+                    // Apply detail enhancement
+                    if (settings.detailStrength > 0 || settings.clarity > 0) {
+                        applyDetailEnhancement(output, width, height, settings.detailStrength, settings.clarity);
+                    }
+                    
+                    // Apply AI filter if specified
+                    if (filter && filter !== 'ai_enhance') {
+                        applyAIFilter(output, width, height, filter);
+                    }
+                    
+                    return output.buffer;
+                }
+                
+                function applyAIFilter(data, width, height, filter) {
+                    switch(filter) {
+                        case 'ai_portrait':
+                            applyAIPortraitFilter(data, width, height);
+                            break;
+                        case 'ai_landscape':
+                            applyAILandscapeFilter(data, width, height);
+                            break;
+                        case 'ai_clear':
+                            applyAIClearFilter(data, width, height);
+                            break;
+                        case 'ai_hdr':
+                            applyAIHDRFilter(data, width, height);
+                            break;
+                        case 'ai_cinematic':
+                            applyAICinematicFilter(data, width, height);
+                            break;
+                    }
+                }
+                
+                function applyAIPortraitFilter(data, width, height) {
+                    // AI Portrait filter - enhances skin tones, softens skin, and emphasizes eyes
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i], g = data[i+1], b = data[i+2];
+                        
+                        // Skin tone detection and softening
+                        if (isSkinTone(r, g, b)) {
+                            // Soften skin (mild blur effect)
+                            if (i > width * 4 && i < data.length - width * 4) {
+                                data[i] = (data[i] + data[i-4] + data[i+4] + data[i-width*4] + data[i+width*4]) / 5;
+                                data[i+1] = (data[i+1] + data[i-3] + data[i+5] + data[i-width*4+1] + data[i+width*4+1]) / 5;
+                                data[i+2] = (data[i+2] + data[i-2] + data[i+6] + data[i-width*4+2] + data[i+width*4+2]) / 5;
+                            }
+                            
+                            // Warm up skin tones
+                            data[i] = Math.min(255, data[i] * 1.05);
+                            data[i+1] = Math.min(255, data[i+1] * 1.03);
+                        }
+                        
+                        // Enhance eyes (areas with high contrast)
+                        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+                        const nextLuminance = i+4 < data.length ? 0.299 * data[i+4] + 0.587 * data[i+5] + 0.114 * data[i+6] : luminance;
+                        
+                        if (Math.abs(luminance - nextLuminance) > 50) {
+                            // This might be an eye area, increase contrast
+                            data[i] = Math.max(0, Math.min(255, (data[i] - 128) * 1.2 + 128));
+                            data[i+1] = Math.max(0, Math.min(255, (data[i+1] - 128) * 1.2 + 128));
+                            data[i+2] = Math.max(0, Math.min(255, (data[i+2] - 128) * 1.2 + 128));
+                        }
+                    }
+                }
+                
+                function isSkinTone(r, g, b) {
+                    // Simple skin tone detection
+                    const max = Math.max(r, g, b);
+                    const min = Math.min(r, g, b);
+                    
+                    // Check if color is in skin tone range
+                    return r > 95 && g > 40 && b > 20 && 
+                           (max - min) > 15 && 
+                           Math.abs(r - g) > 15 && 
+                           r > g && r > b;
+                }
+                
+                function applyAILandscapeFilter(data, width, height) {
+                    // AI Landscape filter - enhances skies, foliage, and increases overall vibrancy
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i], g = data[i+1], b = data[i+2];
+                        
+                        // Sky detection (blue areas)
+                        if (b > r * 1.2 && b > g * 1.2) {
+                            // Enhance blue channels for sky
+                            data[i+2] = Math.min(255, b * 1.15);
+                            // Add slight cyan tint to sky
+                            data[i+1] = Math.min(255, g * 1.05);
+                        }
+                        
+                        // Foliage detection (green areas)
+                        if (g > r * 1.1 && g > b * 1.1) {
+                            // Enhance green channels for foliage
+                            data[i+1] = Math.min(255, g * 1.2);
+                            // Adjust red and blue for more vibrant greens
+                            data[i] = Math.max(0, r * 0.9);
+                            data[i+2] = Math.max(0, b * 0.9);
+                        }
+                        
+                        // Increase overall vibrancy
+                        const avg = (r + g + b) / 3;
+                        data[i] = Math.max(0, Math.min(255, avg + (r - avg) * 1.3));
+                        data[i+1] = Math.max(0, Math.min(255, avg + (g - avg) * 1.3));
+                        data[i+2] = Math.max(0, Math.min(255, avg + (b - avg) * 1.3));
+                    }
+                }
+                
+                function applyAIClearFilter(data, width, height) {
+                    // AI Clear filter - enhances details and clarity without oversharpening
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    // Apply mild unsharp mask
+                    for (let y = 1; y < height - 1; y++) {
+                        for (let x = 1; x < width - 1; x++) {
+                            const idx = (y * width + x) * 4;
+                            
+                            for (let c = 0; c < 3; c++) {
+                                // Simple sharpening kernel
+                                const val = tempData[idx + c] * 5 -
+                                          tempData[idx - 4 + c] -
+                                          tempData[idx + 4 + c] -
+                                          tempData[idx - width*4 + c] -
+                                          tempData[idx + width*4 + c];
+                                
+                                data[idx + c] = Math.max(0, Math.min(255, val));
+                            }
+                        }
+                    }
+                    
+                    // Enhance local contrast
+                    for (let i = 0; i < data.length; i += 4) {
+                        const luminance = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                        
+                        if (luminance < 100) {
+                            // Boost shadows slightly
+                            data[i] = Math.min(255, data[i] * 1.1);
+                            data[i+1] = Math.min(255, data[i+1] * 1.1);
+                            data[i+2] = Math.min(255, data[i+2] * 1.1);
+                        } else if (luminance > 180) {
+                            // Reduce highlights slightly
+                            data[i] = data[i] * 0.95;
+                            data[i+1] = data[i+1] * 0.95;
+                            data[i+2] = data[i+2] * 0.95;
+                        }
+                    }
+                }
+                
+                function applyAIHDRFilter(data, width, height) {
+                    // AI HDR filter - enhances dynamic range and brings out details
+                    const luminance = new Float32Array(width * height);
+                    
+                    // First pass: calculate luminance
+                    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+                        luminance[j] = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                    }
+                    
+                    // Second pass: tone mapping
+                    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+                        const lum = luminance[j];
+                        
+                        // Simple tone mapping curve
+                        const newLum = Math.pow(lum / 255, 0.7) * 255;
+                        const scale = newLum / (lum || 1);
+                        
+                        data[i] = Math.max(0, Math.min(255, data[i] * scale));
+                        data[i+1] = Math.max(0, Math.min(255, data[i+1] * scale));
+                        data[i+2] = Math.max(0, Math.min(255, data[i+2] * scale));
+                        
+                        // Increase local contrast
+                        if (j > 0 && j < luminance.length - 1) {
+                            const edge = Math.abs(lum - luminance[j-1]) + Math.abs(lum - luminance[j+1]);
+                            if (edge > 30) {
+                                data[i] = Math.max(0, Math.min(255, (data[i] - 128) * 1.2 + 128));
+                                data[i+1] = Math.max(0, Math.min(255, (data[i+1] - 128) * 1.2 + 128));
+                                data[i+2] = Math.max(0, Math.min(255, (data[i+2] - 128) * 1.2 + 128));
+                            }
+                        }
+                    }
+                }
+                
+                function applyAICinematicFilter(data, width, height) {
+                    // AI Cinematic filter - creates a movie-like look with enhanced colors and contrast
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i], g = data[i+1], b = data[i+2];
+                        
+                        // Calculate luminance
+                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                        
+                        // Apply S-curve for contrast
+                        const newLum = lum < 128 ? 
+                            110 * (1 - Math.cos(Math.PI * lum / 255)) : 
+                            145 + 110 * Math.sin(Math.PI * (lum - 128) / 255);
+                        
+                        const scale = newLum / (lum || 1);
+                        
+                        // Apply cinematic color grading (teal and orange)
+                        const newR = Math.min(255, r * scale * 1.1);
+                        const newG = Math.min(255, g * scale * 0.95);
+                        const newB = Math.min(255, b * scale * 0.9);
+                        
+                        data[i] = newR;
+                        data[i+1] = newG;
+                        data[i+2] = newB;
+                        
+                        // Add film grain for cinematic effect
+                        const grain = (Math.random() - 0.5) * 5;
+                        data[i] = Math.max(0, Math.min(255, data[i] + grain));
+                        data[i+1] = Math.max(0, Math.min(255, data[i+1] + grain));
+                        data[i+2] = Math.max(0, Math.min(255, data[i+2] + grain));
+                    }
+                }
+                
+                function applyAdvancedNoiseReduction(data, width, height, amount) {
+                    // Improved noise reduction algorithm based on bilateral filter
+                    const radius = Math.min(3, Math.floor(amount / 3));
+                    if (radius <= 0) return;
+                    
+                    const tempData = new Uint8ClampedArray(data);
+                    const spatialSigma = radius;
+                    const rangeSigma = amount * 5;
+                    
+                    for (let y = radius; y < height - radius; y++) {
+                        for (let x = radius; x < width - radius; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                const centerIdx = (y * width + x) * 4 + c;
+                                const centerValue = tempData[centerIdx];
+                                
+                                let totalWeight = 0;
+                                let sum = 0;
+                                
+                                for (let dy = -radius; dy <= radius; dy++) {
+                                    for (let dx = -radius; dx <= radius; dx++) {
+                                        const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                                        const value = tempData[idx];
+                                        
+                                        // Spatial weight (Gaussian distribution)
+                                        const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                                        const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                                        
+                                        // Value weight (Gaussian distribution)
+                                        const valueDist = Math.abs(centerValue - value);
+                                        const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                                        
+                                        const weight = spatialWeight * rangeWeight;
+                                        sum += value * weight;
+                                        totalWeight += weight;
+                                    }
+                                }
+                                
+                                data[centerIdx] = sum / totalWeight;
+                            }
+                        }
+                    }
+                }
+                
+                function applyAdvancedSharpening(data, width, height, amount) {
+                    // Improved sharpening algorithm using unsharp mask
+                    const radius = 1;
+                    const strength = amount / 10;
+                    
+                    // Create a blurred copy
+                    const blurred = new Uint8ClampedArray(data);
+                    applyGaussianBlur(blurred, width, height, radius);
+                    
+                    // Apply unsharp masking
+                    for (let i = 0; i < data.length; i++) {
+                        // Skip alpha channel
+                        if ((i + 1) % 4 === 0) continue;
+                        
+                        const sharpened = data[i] + (data[i] - blurred[i]) * strength;
+                        data[i] = Math.max(0, Math.min(255, sharpened));
+                    }
+                }
+                
+                function applyDetailEnhancement(data, width, height, detailStrength, clarity) {
+                    // Enhanced detail extraction algorithm for fine details like hair
+                    const strength = detailStrength / 10;
+                    const clarityAmount = clarity / 20;
+                    
+                    // Create a copy for processing
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    // Apply bilateral filter to preserve edges while smoothing
+                    applyBilateralFilter(tempData, width, height, 2, 20);
+                    
+                    // Extract details by subtracting smoothed version
+                    for (let i = 0; i < data.length; i += 4) {
+                        for (let c = 0; c < 3; c++) {
+                            const idx = i + c;
+                            const original = data[idx];
+                            const smoothed = tempData[idx];
+                            
+                            // Calculate detail
+                            const detail = original - smoothed;
+                            
+                            // Enhance details with adaptive strength
+                            const enhancedDetail = detail * strength * (1 + clarityAmount);
+                            
+                            // Apply enhanced details back to the image
+                            const result = original + enhancedDetail;
+                            data[idx] = Math.max(0, Math.min(255, result));
+                        }
+                    }
+                    
+                    // Apply local contrast enhancement for clarity
+                    if (clarity > 0) {
+                        applyLocalContrastEnhancement(data, width, height, clarityAmount);
+                    }
+                }
+                
+                function applyBilateralFilter(data, width, height, spatialSigma, rangeSigma) {
+                    const radius = Math.floor(spatialSigma * 1.5);
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    for (let y = radius; y < height - radius; y++) {
+                        for (let x = radius; x < width - radius; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                const centerIdx = (y * width + x) * 4 + c;
+                                const centerValue = tempData[centerIdx];
+                                
+                                let totalWeight = 0;
+                                let sum = 0;
+                                
+                                for (let dy = -radius; dy <= radius; dy++) {
+                                    for (let dx = -radius; dx <= radius; dx++) {
+                                        const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                                        const value = tempData[idx];
+                                        
+                                        // Spatial weight
+                                        const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                                        const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                                        
+                                        // Range weight
+                                        const valueDist = Math.abs(centerValue - value);
+                                        const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                                        
+                                        const weight = spatialWeight * rangeWeight;
+                                        sum += value * weight;
+                                        totalWeight += weight;
+                                    }
+                                }
+                                
+                                data[centerIdx] = sum / totalWeight;
+                            }
+                        }
+                    }
+                }
+                
+                function applyLocalContrastEnhancement(data, width, height, amount) {
+                    // Apply local contrast enhancement using unsharp mask with larger radius
+                    const radius = 20;
+                    const tempData = new Uint8ClampedArray(data);
+                    applyGaussianBlur(tempData, width, height, radius);
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        for (let c = 0; c < 3; c++) {
+                            const idx = i + c;
+                            const original = data[idx];
+                            const blurred = tempData[idx];
+                            
+                            // Enhance mid-tone contrast
+                            const enhanced = original + (original - blurred) * amount;
+                            data[idx] = Math.max(0, Math.min(255, enhanced));
+                        }
+                    }
+                }
+                
+                function applyGaussianBlur(data, width, height, radius) {
+                    // Gaussian blur implementation
+                    const weights = getGaussianWeights(radius);
+                    const tempData = new Uint8ClampedArray(data);
+                    
+                    // Horizontal pass
+                    for (let y = 0; y < height; y++) {
+                        for (let x = radius; x < width - radius; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                let sum = 0;
+                                let totalWeight = 0;
+                                
+                                for (let dx = -radius; dx <= radius; dx++) {
+                                    const idx = (y * width + (x + dx)) * 4 + c;
+                                    const value = tempData[idx];
+                                    const weight = weights[dx + radius];
+                                    sum += value * weight;
+                                    totalWeight += weight;
+                                }
+                                
+                                const idx = (y * width + x) * 4 + c;
+                                data[idx] = sum / totalWeight;
+                            }
+                        }
+                    }
+                    
+                    // Vertical pass
+                    const tempData2 = new Uint8ClampedArray(data);
+                    for (let y = radius; y < height - radius; y++) {
+                        for (let x = 0; x < width; x++) {
+                            for (let c = 0; c < 3; c++) {
+                                let sum = 0;
+                                let totalWeight = 0;
+                                
+                                for (let dy = -radius; dy <= radius; dy++) {
+                                    const idx = ((y + dy) * width + x) * 4 + c;
+                                    const value = tempData2[idx];
+                                    const weight = weights[dy + radius];
+                                    sum += value * weight;
+                                    totalWeight += weight;
+                                }
+                                
+                                const idx = (y * width + x) * 4 + c;
+                                data[idx] = sum / totalWeight;
+                            }
+                        }
+                    }
+                }
+                
+                function getGaussianWeights(radius) {
+                    const sigma = radius / 2;
+                    const weights = [];
+                    let total = 0;
+                    
+                    for (let i = -radius; i <= radius; i++) {
+                        const weight = Math.exp(-0.5 * (i * i) / (sigma * sigma));
+                        weights.push(weight);
+                        total += weight;
+                    }
+                    
+                    // Normalize weights
+                    return weights.map(w => w / total);
+                }
+            `], { type: 'application/javascript' })));
+            
+            processingWorker.onmessage = function(e) {
+                // Only process if this is the latest task
+                if (e.data.taskId === currentTaskId) {
+                    if (e.data.type === 'processed') {
+                        const imageData = new Uint8ClampedArray(e.data.imageData);
+                        const imageObj = images[currentIndex];
+                        imageObj.ctx.putImageData(new ImageData(imageData, imageObj.canvas.width, imageObj.canvas.height), 0, 0);
+                        enhancedImage.src = imageObj.canvas.toDataURL();
+                        
+                        // Update filter previews
+                        updateFilterPreviews();
+                    }
+                }
+            };
+        } catch (e) {
+            console.warn('Web Workers not supported, falling back to main thread processing');
+        }
+    });
+
+    // Set initial comparison mask (50/50)
+    function setInitialClip() {
+        comparisonSlider.style.left = "50%";
+        originalImage.style.clipPath = "inset(0 50% 0 0)";
+        enhancedImage.style.clipPath = "inset(0 0 0 50%)";
+    }
+
+    function toggleProcessingOption(mode) {
+        processingMode = mode;
+        document.getElementById('optionQuality').classList.toggle('active', mode === 'quality');
+        document.getElementById('optionPerformance').classList.toggle('active', mode === 'performance');
+        updateImage();
+    }
+
+    function handleFileSelect(event) {
+        const files = Array.from(event.target.files);
+        if (!files.length) return;
+
+        const validFiles = files.filter(file =>
+            file.type.match('image/jpeg|image/png|image/gif|image/webp|image/bmp')
+        );
+
+        if (validFiles.length === 0) {
+            alert('Only JPG, PNG, GIF, WebP, BMP are supported');
+            return;
+        }
+
+        // Check for very large images
+        const largeFiles = validFiles.filter(file => file.size > 10 * 1024 * 1024); // >10MB
+        if (largeFiles.length > 0) {
+            if (!confirm(`Some images are very large (${largeFiles.length} files over 10MB). Processing may take a long time. Continue?`)) {
+                return;
+            }
+        }
+
+        images = [];
+        let processed = 0;
+        const total = validFiles.length;
+
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progress.style.width = '0%';
+
+        validFiles.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Size limitation for very large images
+                    let width = img.naturalWidth;
+                    let height = img.naturalHeight;
+                    
+                    if (width * height > 5000000) { // >5MP
+                        const ratio = Math.sqrt(5000000 / (width * height));
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
+                    }
+                    
+                    const imageObj = {
+                        file,
+                        settings: { 
+                            brightness: 0, 
+                            contrast: 100, 
+                            saturation: 100, 
+                            sharpness: 0,
+                            noiseReduction: 0,
+                            detailStrength: 0,
+                            clarity: 0
+                        },
+                        originalImage: img,
+                        originalImageData: null,
+                        canvas: null,
+                        ctx: null,
+                        quality: 'good'
+                    };
+                    prepareImageCanvas(imageObj, width, height);
+                    images.push(imageObj);
+                    processed++;
+                    progress.style.width = `${(processed/total)*100}%`;
+                    
+                    if (processed === total) {
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            currentIndex = 0;
+                            showImage(currentIndex);
+                            mainContent.style.display = 'grid';
+                            updateNavigation();
+                            
+                            // Update filter previews
+                            updateFilterPreviews();
+                        }, 500);
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function prepareImageCanvas(imageObj, width, height) {
+        const img = imageObj.originalImage;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw image with new dimensions
+        ctx.drawImage(img, 0, 0, width, height);
+        imageObj.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        imageObj.canvas = canvas;
+        imageObj.ctx = ctx;
+        
+        // Analyze image quality
+        analyzeImageQuality(imageObj);
+    }
+
+    function analyzeImageQuality(imageObj) {
+        const imageData = imageObj.originalImageData;
+        const data = imageData.data;
+        let totalLuminance = 0;
+        let minLuminance = 255;
+        let maxLuminance = 0;
+        
+        // Analyze brightness and contrast
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i+1];
+            const b = data[i+2];
+            const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            totalLuminance += luminance;
+            minLuminance = Math.min(minLuminance, luminance);
+            maxLuminance = Math.max(maxLuminance, luminance);
+        }
+        
+        const avgLuminance = totalLuminance / (data.length / 4);
+        const contrast = maxLuminance - minLuminance;
+        
+        // Determine image quality
+        if (contrast < 100 || avgLuminance < 50 || avgLuminance > 200) {
+            imageObj.quality = 'low';
+        } else if (contrast < 150 || avgLuminance < 80 || avgLuminance > 180) {
+            imageObj.quality = 'medium';
+        } else {
+            imageObj.quality = 'good';
+        }
+        
+        updateQualityIndicator(imageObj.quality);
+    }
+
+    function updateQualityIndicator(quality) {
+        qualityDot.className = 'quality-dot ' + quality;
+        qualityText.textContent = quality.charAt(0).toUpperCase() + quality.slice(1);
+    }
+
+    function showImage(index) {
+        if (index < 0 || index >= images.length) return;
+        currentIndex = index;
+        const imageObj = images[index];
+
+        brightnessSlider.value = imageObj.settings.brightness;
+        contrastSlider.value = imageObj.settings.contrast;
+        saturationSlider.value = imageObj.settings.saturation;
+        sharpnessSlider.value = imageObj.settings.sharpness;
+        noiseReductionSlider.value = imageObj.settings.noiseReduction;
+        detailStrengthSlider.value = imageObj.settings.detailStrength;
+        claritySlider.value = imageObj.settings.clarity;
+
+        updateValueDisplay();
+        originalImage.src = imageObj.originalImage.src;
+        applySettingsToImage(imageObj);
+        updateHistogram();
+        updateQualityIndicator(imageObj.quality);
+
+        imageCounter.textContent = `${index + 1} / ${images.length}`;
+        fileName.textContent = imageObj.file.name;
+        fileDimensions.textContent = `${imageObj.canvas.width} × ${imageObj.canvas.height}`;
+        fileSizeInfo.textContent = formatFileSize(imageObj.file.size);
+        fileType.textContent = imageObj.file.type.split('/')[1].toUpperCase();
+
+        updateNavigation();
+        setInitialClip();
+        
+        // Update filter previews
+        updateFilterPreviews();
+    }
+
+    function applySettingsToImage(imageObj) {
+        // Increment task ID to cancel previous tasks
+        currentTaskId++;
+        const thisTaskId = currentTaskId;
+        
+        // If Web Worker is available, use it for processing
+        if (processingWorker && processingMode === 'performance') {
+            const imageData = imageObj.originalImageData;
+            processingWorker.postMessage({
+                type: 'process',
+                imageData: {
+                    data: Array.from(imageData.data),
+                    width: imageData.width,
+                    height: imageData.height
+                },
+                settings: imageObj.settings,
+                filter: currentFilter,
+                taskId: thisTaskId
+            });
+        } else {
+            // Processing in the main thread with requestAnimationFrame to prevent blocking
+            setTimeout(() => {
+                if (thisTaskId !== currentTaskId) return; // Skip if outdated task
+                
+                const { brightness, contrast, saturation, sharpness, noiseReduction, detailStrength, clarity } = imageObj.settings;
+                const ctx = imageObj.ctx;
+                ctx.putImageData(imageObj.originalImageData, 0, 0); // always start from original
+
+                let imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
+                let data = imageData.data;
+
+                // Apply improved noise reduction
+                if (noiseReduction > 0) {
+                    applyAdvancedNoiseReduction(data, imageObj.canvas.width, imageObj.canvas.height, noiseReduction);
+                    ctx.putImageData(imageData, 0, 0);
+                    imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
+                    data = imageData.data;
+                }
+
+                // Apply basic adjustments
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i], g = data[i+1], b = data[i+2];
+
+                    // Apply brightness
+                    r += brightness; g += brightness; b += brightness;
+                    
+                    // Apply contrast
+                    const cf = (contrast - 100) / 100;
+                    r = 128 + (r - 128) * (1 + cf);
+                    g = 128 + (g - 128) * (1 + cf);
+                    b = 128 + (b - 128) * (1 + cf);
+
+                    // Apply saturation
+                    const gray = 0.299*r + 0.587*g + 0.114*b;
+                    const sf = (saturation - 100) / 100;
+                    r = gray + (r - gray) * (1 + sf);
+                    g = gray + (g - gray) * (1 + sf);
+                    b = gray + (b - gray) * (1 + sf);
+
+                    // Clamp values
+                    data[i]   = Math.max(0, Math.min(255, r));
+                    data[i+1] = Math.max(0, Math.min(255, g));
+                    data[i+2] = Math.max(0, Math.min(255, b));
+                }
+                ctx.putImageData(imageData, 0, 0);
+
+                // Apply sharpening if needed
+                if (sharpness > 0) {
+                    applyAdvancedSharpening(imageObj, sharpness);
+                }
+
+                // Apply detail enhancement if needed
+                if (detailStrength > 0 || clarity > 0) {
+                    applyDetailEnhancement(imageObj, detailStrength, clarity);
+                }
+                
+                // Apply AI filter if needed
+                if (currentFilter && currentFilter !== 'ai_enhance') {
+                    applyAIFilter(imageObj, currentFilter);
+                }
+
+                if (thisTaskId === currentTaskId) {
+                    enhancedImage.src = imageObj.canvas.toDataURL();
+                    
+                    // Update filter previews
+                    updateFilterPreviews();
+                }
+            }, 0);
+        }
+    }
+    
+    function applyAIFilter(imageObj, filter) {
+        const ctx = imageObj.ctx;
+        const { width, height } = imageObj.canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        
+        switch(filter) {
+            case 'ai_portrait':
+                applyAIPortraitFilter(data, width, height);
+                break;
+            case 'ai_landscape':
+                applyAILandscapeFilter(data, width, height);
+                break;
+            case 'ai_clear':
+                applyAIClearFilter(data, width, height);
+                break;
+            case 'ai_hdr':
+                applyAIHDRFilter(data, width, height);
+                break;
+            case 'ai_cinematic':
+                applyAICinematicFilter(data, width, height);
+                break;
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    }
+    
+    function applyAIPortraitFilter(data, width, height) {
+        // AI Portrait filter - enhances skin tones, softens skin, and emphasizes eyes
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            
+            // Skin tone detection and softening
+            if (isSkinTone(r, g, b)) {
+                // Soften skin (mild blur effect)
+                if (i > width * 4 && i < data.length - width * 4) {
+                    data[i] = (data[i] + data[i-4] + data[i+4] + data[i-width*4] + data[i+width*4]) / 5;
+                    data[i+1] = (data[i+1] + data[i-3] + data[i+5] + data[i-width*4+1] + data[i+width*4+1]) / 5;
+                    data[i+2] = (data[i+2] + data[i-2] + data[i+6] + data[i-width*4+2] + data[i+width*4+2]) / 5;
+                }
+                
+                // Warm up skin tones
+                data[i] = Math.min(255, data[i] * 1.05);
+                data[i+1] = Math.min(255, data[i+1] * 1.03);
+            }
+            
+            // Enhance eyes (areas with high contrast)
+            const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+            const nextLuminance = i+4 < data.length ? 0.299 * data[i+4] + 0.587 * data[i+5] + 0.114 * data[i+6] : luminance;
+            
+            if (Math.abs(luminance - nextLuminance) > 50) {
+                // This might be an eye area, increase contrast
+                data[i] = Math.max(0, Math.min(255, (data[i] - 128) * 1.2 + 128));
+                data[i+1] = Math.max(0, Math.min(255, (data[i+1] - 128) * 1.2 + 128));
+                data[i+2] = Math.max(0, Math.min(255, (data[i+2] - 128) * 1.2 + 128));
+            }
+        }
+    }
+    
+    function isSkinTone(r, g, b) {
+        // Simple skin tone detection
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        
+        // Check if color is in skin tone range
+        return r > 95 && g > 40 && b > 20 && 
+               (max - min) > 15 && 
+               Math.abs(r - g) > 15 && 
+               r > g && r > b;
+    }
+    
+    function applyAILandscapeFilter(data, width, height) {
+        // AI Landscape filter - enhances skies, foliage, and increases overall vibrancy
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            
+            // Sky detection (blue areas)
+            if (b > r * 1.2 && b > g * 1.2) {
+                // Enhance blue channels for sky
+                data[i+2] = Math.min(255, b * 1.15);
+                // Add slight cyan tint to sky
+                data[i+1] = Math.min(255, g * 1.05);
+            }
+            
+            // Foliage detection (green areas)
+            if (g > r * 1.1 && g > b * 1.1) {
+                // Enhance green channels for foliage
+                data[i+1] = Math.min(255, g * 1.2);
+                // Adjust red and blue for more vibrant greens
+                data[i] = Math.max(0, r * 0.9);
+                data[i+2] = Math.max(0, b * 0.9);
+            }
+            
+            // Increase overall vibrancy
+            const avg = (r + g + b) / 3;
+            data[i] = Math.max(0, Math.min(255, avg + (r - avg) * 1.3));
+            data[i+1] = Math.max(0, Math.min(255, avg + (g - avg) * 1.3));
+            data[i+2] = Math.max(0, Math.min(255, avg + (b - avg) * 1.3));
+        }
+    }
+    
+    function applyAIClearFilter(data, width, height) {
+        // AI Clear filter - enhances details and clarity without oversharpening
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Apply mild unsharp mask
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = (y * width + x) * 4;
+                
+                for (let c = 0; c < 3; c++) {
+                    // Simple sharpening kernel
+                    const val = tempData[idx + c] * 5 -
+                              tempData[idx - 4 + c] -
+                              tempData[idx + 4 + c] -
+                              tempData[idx - width*4 + c] -
+                              tempData[idx + width*4 + c];
+                    
+                    data[idx + c] = Math.max(0, Math.min(255, val));
+                }
+            }
+        }
+        
+        // Enhance local contrast
+        for (let i = 0; i < data.length; i += 4) {
+            const luminance = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+            
+            if (luminance < 100) {
+                // Boost shadows slightly
+                data[i] = Math.min(255, data[i] * 1.1);
+                data[i+1] = Math.min(255, data[i+1] * 1.1);
+                data[i+2] = Math.min(255, data[i+2] * 1.1);
+            } else if (luminance > 180) {
+                // Reduce highlights slightly
+                data[i] = data[i] * 0.95;
+                data[i+1] = data[i+1] * 0.95;
+                data[i+2] = data[i+2] * 0.95;
+            }
+        }
+    }
+    
+    function applyAIHDRFilter(data, width, height) {
+        // AI HDR filter - enhances dynamic range and brings out details
+        const luminance = new Float32Array(width * height);
+        
+        // First pass: calculate luminance
+        for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+            luminance[j] = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+        }
+        
+        // Second pass: tone mapping
+        for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+            const lum = luminance[j];
+            
+            // Simple tone mapping curve
+            const newLum = Math.pow(lum / 255, 0.7) * 255;
+            const scale = newLum / (lum || 1);
+            
+            data[i] = Math.max(0, Math.min(255, data[i] * scale));
+            data[i+1] = Math.max(0, Math.min(255, data[i+1] * scale));
+            data[i+2] = Math.max(0, Math.min(255, data[i+2] * scale));
+            
+            // Increase local contrast
+            if (j > 0 && j < luminance.length - 1) {
+                const edge = Math.abs(lum - luminance[j-1]) + Math.abs(lum - luminance[j+1]);
+                if (edge > 30) {
+                    data[i] = Math.max(0, Math.min(255, (data[i] - 128) * 1.2 + 128));
+                    data[i+1] = Math.max(0, Math.min(255, (data[i+1] - 128) * 1.2 + 128));
+                    data[i+2] = Math.max(0, Math.min(255, (data[i+2] - 128) * 1.2 + 128));
+                }
+            }
+        }
+    }
+    
+    function applyAICinematicFilter(data, width, height) {
+        // AI Cinematic filter - creates a movie-like look with enhanced colors and contrast
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            
+            // Calculate luminance
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            // Apply S-curve for contrast
+            const newLum = lum < 128 ? 
+                110 * (1 - Math.cos(Math.PI * lum / 255)) : 
+                145 + 110 * Math.sin(Math.PI * (lum - 128) / 255);
+            
+            const scale = newLum / (lum || 1);
+            
+            // Apply cinematic color grading (teal and orange)
+            const newR = Math.min(255, r * scale * 1.1);
+            const newG = Math.min(255, g * scale * 0.95);
+            const newB = Math.min(255, b * scale * 0.9);
+            
+            data[i] = newR;
+            data[i+1] = newG;
+            data[i+2] = newB;
+            
+            // Add film grain for cinematic effect
+            const grain = (Math.random() - 0.5) * 5;
+            data[i] = Math.max(0, Math.min(255, data[i] + grain));
+            data[i+1] = Math.max(0, Math.min(255, data[i+1] + grain));
+            data[i+2] = Math.max(0, Math.min(255, data[i+2] + grain));
+        }
+    }
+
+    function applyAdvancedNoiseReduction(data, width, height, amount) {
+        // Improved noise reduction algorithm based on bilateral filter
+        const radius = Math.min(3, Math.floor(amount / 3));
+        if (radius <= 0) return;
+        
+        const tempData = new Uint8ClampedArray(data);
+        const spatialSigma = radius;
+        const rangeSigma = amount * 5;
+        
+        // Process every second pixel for better performance
+        for (let y = radius; y < height - radius; y += 2) {
+            for (let x = radius; x < width - radius; x += 2) {
+                for (let c = 0; c < 3; c++) {
+                    const centerIdx = (y * width + x) * 4 + c;
+                    const centerValue = tempData[centerIdx];
+                    
+                    let totalWeight = 0;
+                    let sum = 0;
+                    
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        for (let dx = -radius; dx <= radius; dx++) {
+                            const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                            const value = tempData[idx];
+                            
+                            // Spatial weight (Gaussian distribution)
+                            const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                            const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                            
+                            // Value weight (Gaussian distribution)
+                            const valueDist = Math.abs(centerValue - value);
+                            const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                            
+                            const weight = spatialWeight * rangeWeight;
+                            sum += value * weight;
+                            totalWeight += weight;
+                        }
+                    }
+                    
+                    data[centerIdx] = sum / totalWeight;
+                    
+                    // Interpolate missed pixels
+                    if (x + 1 < width - radius) {
+                        data[centerIdx + 4] = sum / totalWeight;
+                    }
+                    if (y + 1 < height - radius) {
+                        data[centerIdx + width * 4] = sum / totalWeight;
+                    }
+                    if (x + 1 < width - radius && y + 1 < height - radius) {
+                        data[centerIdx + width * 4 + 4] = sum / totalWeight;
+                    }
+                }
+            }
+        }
+    }
+
+    function applyAdvancedSharpening(imageObj, amount) {
+        const ctx = imageObj.ctx;
+        const { width, height } = imageObj.canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        
+        // Create a blurred copy using Gaussian blur
+        const blurredData = new Uint8ClampedArray(data);
+        applyGaussianBlur(blurredData, width, height, 1);
+        
+        // Apply unsharp masking
+        const strength = amount / 10;
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const idx = i + c;
+                const original = data[idx];
+                const blurred = blurredData[idx];
+                // Unsharp mask formula: original + (original - blurred) * amount
+                const sharpened = original + (original - blurred) * strength;
+                data[idx] = Math.max(0, Math.min(255, sharpened));
+            }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function applyDetailEnhancement(imageObj, detailStrength, clarity) {
+        const ctx = imageObj.ctx;
+        const { width, height } = imageObj.canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        
+        // Create a copy for processing
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Apply bilateral filter to preserve edges while smoothing
+        applyBilateralFilter(tempData, width, height, 2, 20);
+        
+        // Extract details by subtracting smoothed version
+        const strength = detailStrength / 10;
+        const clarityAmount = clarity / 20;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const idx = i + c;
+                const original = data[idx];
+                const smoothed = tempData[idx];
+                
+                // Calculate detail
+                const detail = original - smoothed;
+                
+                // Enhance details with adaptive strength
+                const enhancedDetail = detail * strength * (1 + clarityAmount);
+                
+                // Apply enhanced details back to the image
+                const result = original + enhancedDetail;
+                data[idx] = Math.max(0, Math.min(255, result));
+            }
+        }
+        
+        // Apply local contrast enhancement for clarity
+        if (clarity > 0) {
+            applyLocalContrastEnhancement(data, width, height, clarityAmount);
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function applyBilateralFilter(data, width, height, spatialSigma, rangeSigma) {
+        const radius = Math.floor(spatialSigma * 1.5);
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Process every second pixel for performance
+        for (let y = radius; y < height - radius; y += 2) {
+            for (let x = radius; x < width - radius; x += 2) {
+                for (let c = 0; c < 3; c++) {
+                    const centerIdx = (y * width + x) * 4 + c;
+                    const centerValue = tempData[centerIdx];
+                    
+                    let totalWeight = 0;
+                    let sum = 0;
+                    
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        for (let dx = -radius; dx <= radius; dx++) {
+                            const idx = ((y + dy) * width + (x + dx)) * 4 + c;
+                            const value = tempData[idx];
+                            
+                            // Spatial weight
+                            const spatialDist = Math.sqrt(dx*dx + dy*dy);
+                            const spatialWeight = Math.exp(-0.5 * (spatialDist * spatialDist) / (spatialSigma * spatialSigma));
+                            
+                            // Range weight
+                            const valueDist = Math.abs(centerValue - value);
+                            const rangeWeight = Math.exp(-0.5 * (valueDist * valueDist) / (rangeSigma * rangeSigma));
+                            
+                            const weight = spatialWeight * rangeWeight;
+                            sum += value * weight;
+                            totalWeight += weight;
+                        }
+                    }
+                    
+                    data[centerIdx] = sum / totalWeight;
+                    
+                    // Interpolate missed pixels
+                    if (x + 1 < width - radius) {
+                        data[centerIdx + 4] = sum / totalWeight;
+                    }
+                    if (y + 1 < height - radius) {
+                        data[centerIdx + width * 4] = sum / totalWeight;
+                    }
+                    if (x + 1 < width - radius && y + 1 < height - radius) {
+                        data[centerIdx + width * 4 + 4] = sum / totalWeight;
+                    }
+                }
+            }
+        }
+    }
+
+    function applyLocalContrastEnhancement(data, width, height, amount) {
+        // Apply local contrast enhancement using unsharp mask with larger radius
+        const radius = 20;
+        const tempData = new Uint8ClampedArray(data);
+        applyGaussianBlur(tempData, width, height, radius);
+        
+        for (let i = 0; i < data.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                const idx = i + c;
+                const original = data[idx];
+                const blurred = tempData[idx];
+                
+                // Enhance mid-tone contrast
+                const enhanced = original + (original - blurred) * amount;
+                data[idx] = Math.max(0, Math.min(255, enhanced));
+            }
+        }
+    }
+
+    function applyGaussianBlur(data, width, height, radius) {
+        // Gaussian blur
+        const weights = getGaussianWeights(radius);
+        const tempData = new Uint8ClampedArray(data);
+        
+        // Horizontal pass
+        for (let y = 0; y < height; y++) {
+            for (let x = radius; x < width - radius; x++) {
+                for (let c = 0; c < 3; c++) {
+                    let sum = 0;
+                    let totalWeight = 0;
+                    
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const idx = (y * width + (x + dx)) * 4 + c;
+                        const weight = weights[dx + radius];
+                        sum += tempData[idx] * weight;
+                        totalWeight += weight;
+                    }
+                    
+                    const idx = (y * width + x) * 4 + c;
+                    data[idx] = sum / totalWeight;
+                }
+            }
+        }
+        
+        // Vertical pass
+        const tempData2 = new Uint8ClampedArray(data);
+        for (let y = radius; y < height - radius; y++) {
+            for (let x = 0; x < width; x++) {
+                for (let c = 0; c < 3; c++) {
+                    let sum = 0;
+                    let totalWeight = 0;
+                    
+                    for (let dy = -radius; dy <= radius; dy++) {
+                        const idx = ((y + dy) * width + x) * 4 + c;
+                        const weight = weights[dy + radius];
+                        sum += tempData2[idx] * weight;
+                        totalWeight += weight;
+                    }
+                    
+                    const idx = (y * width + x) * 4 + c;
+                    data[idx] = sum / totalWeight;
+                }
+            }
+        }
+    }
+
+    function getGaussianWeights(radius) {
+        const sigma = radius / 2;
+        const weights = [];
+        let total = 0;
+        
+        for (let i = -radius; i <= radius; i++) {
+            const weight = Math.exp(-0.5 * (i * i) / (sigma * sigma));
+            weights.push(weight);
+            total += weight;
+        }
+        
+        // Normalize weights
+        return weights.map(w => w / total);
+    }
+
+    function updateImage() {
+        if (!images.length) return;
+        applySettingsToImage(images[currentIndex]);
+        updateSliderTrack();
+        updateHistogram();
+    }
+
+    function updateValueDisplay() {
+        brightnessValue.textContent = brightnessSlider.value;
+        contrastValue.textContent = contrastSlider.value;
+        saturationValue.textContent = saturationSlider.value;
+        sharpnessValue.textContent = sharpnessSlider.value;
+        noiseReductionValue.textContent = noiseReductionSlider.value;
+        detailStrengthValue.textContent = detailStrengthSlider.value;
+        clarityValue.textContent = claritySlider.value;
+        updateSliderTrack();
+    }
+
+    function updateSliderTrack() {
+        document.getElementById('brightnessTrack').style.width = `${(parseInt(brightnessSlider.value)+50)/100*100}%`;
+        document.getElementById('contrastTrack').style.width = `${(parseInt(contrastSlider.value)-50)/150*100}%`;
+        document.getElementById('saturationTrack').style.width = `${parseInt(saturationSlider.value)/200*100}%`;
+        document.getElementById('sharpnessTrack').style.width = `${parseFloat(sharpnessSlider.value)/10*100}%`;
+        document.getElementById('noiseReductionTrack').style.width = `${parseFloat(noiseReductionSlider.value)/10*100}%`;
+        document.getElementById('detailStrengthTrack').style.width = `${parseFloat(detailStrengthSlider.value)/10*100}%`;
+        document.getElementById('clarityTrack').style.width = `${parseFloat(claritySlider.value)/10*100}%`;
+    }
+
+    function startDrag() { isDragging = true; document.body.style.cursor = 'ew-resize'; }
+    function drag(e) {
+        if (!isDragging) return;
+        const rect = document.querySelector('.comparison-container').getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pos = Math.max(0, Math.min(100, (x/rect.width)*100));
+        comparisonSlider.style.left = `${pos}%`;
+        originalImage.style.clipPath = `inset(0 ${100-pos}% 0 0)`;
+        enhancedImage.style.clipPath = `inset(0 0 0 ${pos}%)`;
+    }
+    function stopDrag() { isDragging = false; document.body.style.cursor = ''; }
+
+    function toggleFullscreen() {
+        const container = document.querySelector('.comparison-container');
+        if (!document.fullscreenElement) container.requestFullscreen();
+        else document.exitFullscreen();
+    }
+
+    function updateNavigation() {
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === images.length-1;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        else if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+        else return (bytes/1048576).toFixed(1) + ' MB';
+    }
+
+    function downloadImage() {
+        if (!images.length) return;
+        const imageObj = images[currentIndex];
+        const link = document.createElement('a');
+        link.download = `enhanced_${imageObj.file.name}`;
+        link.href = enhancedImage.src;
+        link.click();
+    }
+
+    async function downloadAll() {
+        if (!images.length) return;
+        
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progress.style.width = '0%';
+        
+        const zip = new JSZip();
+        const promises = [];
+        
+        images.forEach((img, index) => {
+            const promise = new Promise((resolve) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = img.canvas.toDataURL('image/jpeg', 0.9);
+                    link.download = `enhanced_${index + 1}.jpg`;
+                    
+                    fetch(link.href)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            zip.file(link.download, blob);
+                            progress.style.width = `${((index + 1) / images.length) * 100}%`;
+                            resolve();
+                        });
+                }, index * 100); // Stagger processing to prevent UI freeze
+            });
+            promises.push(promise);
+        });
+        
+        await Promise.all(promises);
+        
+        zip.generateAsync({ type: 'blob' })
+            .then(content => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'enhanced_images.zip';
+                link.click();
+                progressBar.style.display = 'none';
+            });
+    }
+
+    function shareImage() {
+        if (!images.length) return;
+        if (navigator.share) {
+            const imageObj = images[currentIndex];
+            const blob = dataURLToBlob(enhancedImage.src);
+            const file = new File([blob], `enhanced_${imageObj.file.name}`, { type: blob.type });
+            
+            navigator.share({
+                title: 'Enhanced Image',
+                files: [file]
+            }).catch(error => {
+                console.error('Sharing failed', error);
+            });
+        } else {
+            alert("Sharing is not supported in your browser");
+        }
+    }
+
+    function dataURLToBlob(dataURL) {
+        const parts = dataURL.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const uInt8Array = new Uint8Array(raw.length);
+        
+        for (let i = 0; i < raw.length; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+        
+        return new Blob([uInt8Array], { type: contentType });
+    }
+
+    function applyPreset(presetName) {
+        if (!images.length) return;
+        
+        const imageObj = images[currentIndex];
+        let settings = { 
+            brightness: 0, 
+            contrast: 100, 
+            saturation: 100, 
+            sharpness: 0, 
+            noiseReduction: 0,
+            detailStrength: 0,
+            clarity: 0
+        };
+
+        switch(presetName) {
+            case 'auto':
+                settings = analyzeAndGetOptimalSettings(imageObj);
+                break;
+            case 'details':
+                settings = { brightness: 5, contrast: 110, saturation: 105, sharpness: 2, noiseReduction: 1, detailStrength: 7, clarity: 5 };
+                break;
+            case 'portrait':
+                settings = { brightness: 5, contrast: 105, saturation: 90, sharpness: 1, noiseReduction: 2, detailStrength: 3, clarity: 2 };
+                break;
+            case 'landscape':
+                settings = { brightness: 15, contrast: 120, saturation: 130, sharpness: 3, noiseReduction: 1, detailStrength: 4, clarity: 4 };
+                break;
+            case 'vintage':
+                settings = { brightness: -10, contrast: 90, saturation: 85, sharpness: 0, noiseReduction: 3, detailStrength: 2, clarity: 1 };
+                break;
+            case 'bw':
+                settings = { brightness: 0, contrast: 110, saturation: 0, sharpness: 1, noiseReduction: 1, detailStrength: 4, clarity: 3 };
+                break;
+            case 'clear':
+                settings = { brightness: 5, contrast: 115, saturation: 105, sharpness: 4, noiseReduction: 2, detailStrength: 5, clarity: 4 };
+                break;
+            case 'hdr':
+                settings = { brightness: 10, contrast: 130, saturation: 120, sharpness: 3, noiseReduction: 2, detailStrength: 6, clarity: 5 };
+                break;
+        }
+
+        brightnessSlider.value = settings.brightness;
+        contrastSlider.value = settings.contrast;
+        saturationSlider.value = settings.saturation;
+        sharpnessSlider.value = settings.sharpness;
+        noiseReductionSlider.value = settings.noiseReduction;
+        detailStrengthSlider.value = settings.detailStrength;
+        claritySlider.value = settings.clarity;
+        imageObj.settings = settings;
+        updateValueDisplay();
+        updateImage();
+    }
+
+    function analyzeAndGetOptimalSettings(imageObj) {
+        const imageData = imageObj.originalImageData;
+        const data = imageData.data;
+        let totalLuminance = 0;
+        let minLuminance = 255;
+        let maxLuminance = 0;
+        let rSum = 0, gSum = 0, bSum = 0;
+        
+        // Analyze the image
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i+1];
+            const b = data[i+2];
+            const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            totalLuminance += luminance;
+            minLuminance = Math.min(minLuminance, luminance);
+            maxLuminance = Math.max(maxLuminance, luminance);
+            rSum += r;
+            gSum += g;
+            bSum += b;
+        }
+        
+        const avgLuminance = totalLuminance / (data.length / 4);
+        const contrast = maxLuminance - minLuminance;
+        const avgR = rSum / (data.length / 4);
+        const avgG = gSum / (data.length / 4);
+        const avgB = bSum / (data.length / 4);
+        
+        // Determine optimal settings based on analysis
+        let brightness = 0;
+        let contrastValue = 100;
+        let saturation = 100;
+        let sharpness = 0;
+        let noiseReduction = 0;
+        let detailStrength = 0;
+        let clarity = 0;
+        
+        // Adjust brightness
+        if (avgLuminance < 80) brightness = 10;
+        else if (avgLuminance > 180) brightness = -10;
+        
+        // Adjust contrast
+        if (contrast < 100) contrastValue = 120;
+        else if (contrast > 150) contrastValue = 90;
+        
+        // Adjust saturation
+        const colorBalance = Math.max(avgR, avgG, avgB) - Math.min(avgR, avgG, avgB);
+        if (colorBalance < 30) saturation = 120;
+        
+        // Add some sharpness
+        sharpness = 1.5;
+        
+        // Add noise reduction for dark images
+        if (avgLuminance < 100) noiseReduction = 1;
+        
+        // Add detail enhancement for images with potential fine details
+        if (contrast > 100) {
+            detailStrength = 3;
+            clarity = 2;
+        }
+        
+        return { brightness, contrast: contrastValue, saturation, sharpness, noiseReduction, detailStrength, clarity };
+    }
+
+    function analyzeAndAutoEnhance() {
+        if (!images.length) return;
+        const imageObj = images[currentIndex];
+        const settings = analyzeAndGetOptimalSettings(imageObj);
+        
+        brightnessSlider.value = settings.brightness;
+        contrastSlider.value = settings.contrast;
+        saturationSlider.value = settings.saturation;
+        sharpnessSlider.value = settings.sharpness;
+        noiseReductionSlider.value = settings.noiseReduction;
+        detailStrengthSlider.value = settings.detailStrength;
+        claritySlider.value = settings.clarity;
+        imageObj.settings = settings;
+        updateValueDisplay();
+        updateImage();
+    }
+
+    function resetSettings() {
+        if (!images.length) return;
+        
+        const imageObj = images[currentIndex];
+        brightnessSlider.value = 0;
+        contrastSlider.value = 100;
+        saturationSlider.value = 100;
+        sharpnessSlider.value = 0;
+        noiseReductionSlider.value = 0;
+        detailStrengthSlider.value = 0;
+        claritySlider.value = 0;
+        imageObj.settings = { 
+            brightness: 0, 
+            contrast: 100, 
+            saturation: 100, 
+            sharpness: 0, 
+            noiseReduction: 0,
+            detailStrength: 0,
+            clarity: 0
+        };
+        updateValueDisplay();
+        updateImage();
+    }
+
+    function updateHistogram() {
+        if (!images.length) return;
+        
+        const histogramEl = document.getElementById('brightnessHistogram');
+        histogramEl.innerHTML = '';
+        
+        const imageObj = images[currentIndex];
+        const ctx = imageObj.ctx;
+        const imageData = ctx.getImageData(0, 0, imageObj.canvas.width, imageObj.canvas.height);
+        const data = imageData.data;
+        
+        const histogram = new Array(256).fill(0);
+        
+        // For performance, analyze only every 4th pixel
+        for (let i = 0; i < data.length; i += 16) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const brightness = Math.floor(0.299 * r + 0.587 * g + 0.114 * b);
+            histogram[brightness]++;
+        }
+        
+        const max = Math.max(...histogram);
+        
+        for (let i = 0; i < 256; i++) {
+            if (histogram[i] > 0) {
+                const bar = document.createElement('div');
+                bar.className = 'histogram-bar';
+                bar.style.left = `${(i / 256) * 100}%`;
+                bar.style.height = `${(histogram[i] / max) * 100}%`;
+                histogramEl.appendChild(bar);
+            }
+        }
+    }
+    
+    function updateFilterPreviews() {
+        if (!images.length) return;
+        
+        const imageObj = images[currentIndex];
+        const originalCanvas = document.createElement('canvas');
+        originalCanvas.width = 100;
+        originalCanvas.height = 100;
+        const originalCtx = originalCanvas.getContext('2d');
+        
+        // Draw original image scaled down for preview
+        originalCtx.drawImage(imageObj.originalImage, 0, 0, 100, 100);
+        
+        // Update original preview
+        document.getElementById('preview-original').src = originalCanvas.toDataURL();
+        
+        // Create previews for each filter
+        const filters = ['ai_portrait', 'ai_landscape', 'ai_clear', 'ai_hdr', 'ai_cinematic'];
+        
+        filters.forEach(filter => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw original image
+            ctx.drawImage(imageObj.originalImage, 0, 0, 100, 100);
+            
+            // Get image data
+            const imageData = ctx.getImageData(0, 0, 100, 100);
+            const data = imageData.data;
+            
+            // Apply filter
+            switch(filter) {
+                case 'ai_portrait':
+                    applyAIPortraitFilter(data, 100, 100);
+                    break;
+                case 'ai_landscape':
+                    applyAILandscapeFilter(data, 100, 100);
+                    break;
+                case 'ai_clear':
+                    applyAIClearFilter(data, 100, 100);
+                    break;
+                case 'ai_hdr':
+                    applyAIHDRFilter(data, 100, 100);
+                    break;
+                case 'ai_cinematic':
+                    applyAICinematicFilter(data, 100, 100);
+                    break;
+            }
+            
+            // Put processed data back
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Update preview
+            document.getElementById(`preview-${filter.split('_')[1]}`).src = canvas.toDataURL();
+        });
+    }
+    
+    function applyAIFilter(element) {
+        if (!images.length) return;
+        
+        // Update UI
+        document.querySelectorAll('.filter-preview-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+        
+        // Get selected filter
+        const selectedFilter = element.getAttribute('data-filter');
+        currentFilter = selectedFilter;
+        
+        // Apply the filter
+        updateImage();
+    }

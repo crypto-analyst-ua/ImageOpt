@@ -3,2049 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Quality Enhancer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4caf50;
-            --primary-light: #80e27e;
-            --primary-dark: #087f23;
-            --secondary: #2e7d32;
-            --dark-bg: #1e1e1e;
-            --dark-card: #2d2d2d;
-            --dark-hover: #3d3d3d;
-            --light-bg: #f5f5f5;
-            --light-card: #ffffff;
-            --light-hover: #eeeeee;
-            --text-dark: #212121;
-            --text-light: #f5f5f5;
-            --border-radius: 12px;
-            --shadow: 0 5px 15px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            transition: var(--transition);
-            padding: 0;
-            margin: 0;
-            font-family: 'Roboto', sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        body.light-mode {
-            background-color: var(--light-bg);
-            color: var(--text-dark);
-        }
-
-        body.dark-mode {
-            background-color: var(--dark-bg);
-            color: var(--text-light);
-        }
-
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .card {
-            transition: var(--transition);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .light-mode .card {
-            background-color: var(--light-card);
-        }
-
-        .dark-mode .card {
-            background-color: var(--dark-card);
-        }
-
-        .card .card-content {
-            padding: 20px;
-        }
-
-        .nav-wrapper {
-            padding: 0 20px;
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
-            background-color: var(--primary);
-        }
-
-        .brand-logo {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            font-size: 1.4rem;
-        }
-
-        .brand-logo i {
-            margin-right: 10px;
-        }
-
-        .image-preview-container {
-            position: relative;
-            margin: 20px 0;
-            min-height: 400px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            background: repeating-conic-gradient(#f0f0f0 0% 25%, transparent 0% 50%) 50% / 20px 20px;
-        }
-
-        .dark-mode .image-preview-container {
-            border-color: #444;
-            background: repeating-conic-gradient(#2a2a2a 0% 25%, transparent 0% 50%) 50% / 20px 20px;
-        }
-
-        canvas {
-            max-width: 100%;
-            max-height: 60vh;
-            border-radius: 4px;
-            display: block;
-        }
-
-        .drop-zone {
-            border: 2px dashed #4caf50;
-            padding: 30px 20px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-            margin-bottom: 20px;
-        }
-
-        .drop-zone:hover {
-            background-color: rgba(76, 175, 80, 0.1);
-            transform: translateY(-3px);
-        }
-
-        .drop-zone i {
-            font-size: 48px;
-            color: #4caf50;
-            margin-bottom: 15px;
-        }
-
-        .controls-container {
-            margin-top: 20px;
-        }
-
-        .range-field {
-            margin-top: 15px;
-            position: relative;
-        }
-
-        .range-value {
-            position: absolute;
-            right: 0;
-            top: -5px;
-            background: var(--primary);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 12px;
-        }
-
-        .slider-container {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .dark-mode .slider-container {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .slider-container:last-child {
-            border-bottom: none;
-        }
-
-        .preset-filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .preset-filters .btn {
-            height: auto;
-            padding: 8px 5px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .preset-filters .btn i {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-        }
-
-        .tabs {
-            margin-top: 20px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-
-        .tab-content {
-            padding: 20px 0;
-        }
-
-        .theme-switch {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 997;
-        }
-
-        .ai-processing {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            background: rgba(76, 175, 80, 0.1);
-            margin: 15px 0;
-        }
-
-        .progress {
-            margin: 10px 0;
-        }
-
-        .comparison-slider {
-            position: relative;
-            overflow: hidden;
-            margin: 20px 0;
-            border-radius: var(--border-radius);
-            display: none;
-        }
-
-        .comparison-before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .comparison-handle {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--primary);
-            transform: translateX(-50%);
-            cursor: ew-resize;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .comparison-handle::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary);
-            border: 3px solid white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-
-        .placeholder-text {
-            text-align: center;
-            color: #9e9e9e;
-        }
-
-        .dark-mode .placeholder-text {
-            color: #bdbdbd;
-        }
-
-        .placeholder-text i {
-            font-size: 64px;
-            margin-bottom: 15px;
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-
-        .custom-toast {
-            padding: 12px 20px;
-            background: #323232;
-            color: white;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-width: 250px;
-        }
-
-        .custom-toast .toast-action {
-            color: #eeff41;
-            margin-left: 20px;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-weight: 500;
-        }
-
-        .slider-with-icon {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .slider-with-icon i {
-            color: var(--primary);
-            font-size: 24px;
-        }
-
-        .slider-with-icon .range-field {
-            flex: 1;
-        }
-
-        .reset-slider {
-            margin-left: 10px;
-            cursor: pointer;
-            color: #9e9e9e;
-            transition: var(--transition);
-        }
-
-        .reset-slider:hover {
-            color: var(--primary);
-        }
-
-        .ai-filter-card {
-            cursor: pointer;
-            transition: var(--transition);
-            margin-bottom: 15px;
-        }
-
-        .ai-filter-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .ai-filter-card .card-content {
-            padding: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .ai-filter-card i {
-            margin-right: 15px;
-            font-size: 24px;
-            color: var(--primary);
-        }
-
-        .ai-filter-content {
-            flex: 1;
-        }
-
-        .ai-filter-content h6 {
-            margin: 0;
-            font-weight: 500;
-        }
-
-        .ai-filter-content p {
-            margin: 5px 0 0 0;
-            font-size: 12px;
-            color: #9e9e9e;
-        }
-
-        .dark-mode .ai-filter-content p {
-            color: #bdbdbd;
-        }
-
-        .image-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #9e9e9e;
-        }
-
-        .dark-mode .image-info {
-            color: #bdbdbd;
-        }
-
-        .image-stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(0,0,0,0.05);
-            border-radius: var(--border-radius);
-        }
-
-        .dark-mode .image-stats {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            font-size: 16px;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #9e9e9e;
-        }
-
-        .dark-mode .stat-label {
-            color: #bdbdbd;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-buttons .btn {
-            flex: 1;
-        }
-
-        /* NEW STYLES FOR IMPROVED UI */
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 20px 0 15px 0;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-        }
-
-        .dark-mode .section-title {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .section-title i {
-            margin-right: 10px;
-            font-size: 20px;
-        }
-
-        .control-group {
-            background: rgba(0,0,0,0.02);
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-        }
-
-        .dark-mode .control-group {
-            background: rgba(255,255,255,0.03);
-        }
-
-        .control-group-title {
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 12px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-        }
-
-        .control-group-title i {
-            font-size: 18px;
-            margin-right: 8px;
-        }
-
-        .hint-text {
-            font-size: 0.8rem;
-            color: #9e9e9e;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-
-        .dark-mode .hint-text {
-            color: #bdbdbd;
-        }
-
-        .upload-info-panel {
-            background: rgba(76, 175, 80, 0.1);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-        }
-
-        .step-indicator {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            font-size: 0.9rem;
-        }
-
-        .step-number {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            font-size: 0.8rem;
-        }
-
-        .step-text {
-            flex: 1;
-        }
-
-        .ai-feature-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, var(--primary-light), var(--primary));
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-
-        .preset-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .preset-info {
-            font-size: 0.8rem;
-            color: #9e9e9e;
-        }
-
-        .dark-mode .preset-info {
-            color: #bdbdbd;
-        }
-
-        .import-export {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .import-export .btn {
-            flex: 1;
-            font-size: 0.8rem;
-        }
-
-        .enhanced-btn {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .enhanced-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(rgba(255,255,255,0.2), transparent);
-            transform: rotate(45deg);
-            transition: all 0.3s;
-            opacity: 0;
-        }
-
-        .enhanced-btn:hover::after {
-            opacity: 1;
-        }
-
-        @media (max-width: 992px) {
-            .app-container {
-                padding: 10px;
-            }
-            
-            .image-preview-container {
-                min-height: 300px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .brand-logo {
-                font-size: 1.1rem;
-            }
-            
-            .preset-filters {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .preset-filters .btn {
-                padding: 6px 3px;
-                font-size: 11px;
-            }
-            
-            .card .card-content {
-                padding: 15px;
-            }
-            
-            .drop-zone {
-                padding: 20px 10px;
-            }
-            
-            .drop-zone i {
-                font-size: 36px;
-            }
-
-            .section-title {
-                font-size: 1rem;
-            }
-
-            .control-group {
-                padding: 8px 10px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-        }
-        
-        .auto-enhance-section {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(33, 150, 243, 0.1);
-            border-radius: var(--border-radius);
-        }
-        
-        .dark-mode .auto-enhance-section {
-            background: rgba(33, 150, 243, 0.15);
-        }
-    </style>
+    <title>Pro Image Enhancer - Premium AI Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="Improved image quality.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
-<body class="light-mode">
-    <nav class="green">
-        <div class="nav-wrapper">
-            <a href="#" class="brand-logo"><i class="material-icons">photo_camera</i>AI Image Enhancer</a>
-            <ul class="right">
-                <li><a href="#" onclick="toggleTheme()" class="tooltipped" data-position="bottom" data-tooltip="Switch theme"><i class="material-icons">brightness_4</i></a></li>
-            </ul>
+<body>
+    <!-- Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> About Pro Image Enhancer</h2>
+            </div>
+            <p>Pro Image Enhancer is a powerful tool for improving image quality right in your browser. The application uses advanced image processing algorithms for color correction, brightness, contrast, and other parameters.</p>
+            
+            <div class="performance-warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Important Performance Information</h4>
+                <p>When processing large images (more than 5 MP), the application may run slower. For better performance:</p>
+                <ul>
+                    <li>Use "Performance" mode for large images</li>
+                    <li>Reduce resolution of very large photos before processing</li>
+                    <li>Close other browser tabs to free up resources</li>
+                </ul>
+            </div>
+            
+            <h3>Main Features:</h3>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h4><i class="fas fa-sliders-h"></i> Parameter Adjustment</h4>
+                    <p>Adjust brightness, contrast, saturation, sharpness, and noise reduction level with intuitive sliders.</p>
+                </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-bolt"></i> Quick Presets</h4>
+                    <p>Use ready-made presets for instant enhancement of portraits, landscapes, and other image types.</p>
+                </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-exchange-alt"></i> Result Comparison</h4>
+                    <p>Interactive slider allows you to compare original and enhanced images.</p>
+                </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-download"></i> Batch Processing</h4>
+                    <p>Process multiple images simultaneously and download them as a ZIP archive.</p>
+                </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-search-plus"></i> Detail Enhancement</h4>
+                    <p>New algorithms specifically designed to enhance fine details like hair and textures.</p>
+                </div>
+                <div class="feature-item">
+                    <h4><i class="fas fa-robot"></i> AI Filters</h4>
+                    <p>Advanced AI-powered filters for professional-grade image enhancement.</p>
+                </div>
+            </div>
+            
+            <h3>Technical Information:</h3>
+            <p>The application works entirely in your browser, without sending images to the server. All processing is performed locally using Canvas API and Web Workers to ensure maximum performance.</p>
+            
+            <div class="info-panel">
+                <h4><i class="fas fa-lightbulb"></i> Usage Tips</h4>
+                <p>• Start with the "Auto Enhance" preset for automatic correction<br>
+                • Increase sharpness for detail, but avoid values above 5<br>
+                • Use noise reduction for high ISO photos<br>
+                • Use the new "Detail Enhancement" preset for fine details like hair<br>
+                • Compare results with the original for precise tuning</p>
+            </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="app-container">
-        <div class="row">
-            <!-- Left panel with tools -->
-            <div class="col s12 m4">
-                <!-- Upload and main actions panel -->
-                <div class="card">
-                    <div class="card-content">
-                        <h5>Upload Image</h5>
-                        
-                        <div class="step-indicator">
-                            <div class="step-number">1</div>
-                            <div class="step-text">Upload your image to begin editing</div>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Pro Image Enhancer</h1>
+                    <p>Transform your images with advanced AI enhancement tools</p>
+                </div>
+            </div>
+            <button class="about-btn" id="aboutBtn">
+                <i class="fas fa-info-circle"></i> About App
+            </button>
+        </header>
+        
+        <div class="upload-section" id="uploadSection">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop your images or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-folder-open"></i> Select Images
+            </button>
+            <p class="format-info">Supported formats: JPG, PNG, GIF, WebP, BMP</p>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your images...</p>
+        </div>
+
+        <div class="main-content" id="mainContent" style="display: none;">
+            <div class="image-viewer">
+                <div class="image-navigation">
+                    <div class="nav-buttons">
+                        <button class="nav-btn" id="prevBtn" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="nav-btn" id="nextBtn">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="image-counter" id="imageCounter">1 / 1</div>
+                </div>
+                
+                <div class="comparison-container">
+                    <img id="originalImage" class="image-display" alt="Original Image">
+                    <img id="enhancedImage" class="image-display" alt="Enhanced Image">
+                    <div class="comparison-slider" id="comparisonSlider"></div>
+                    <button class="fullscreen-btn" id="fullscreenBtn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <div class="original-tag">Original</div>
+                    <div class="enhanced-tag">Enhanced</div>
+                </div>
+                
+                <div class="image-info">
+                    <div id="resolutionInfo">Resolution: 1920x1080</div>
+                    <div id="fileSize">Size: 4.2 MB</div>
+                    <div class="quality-indicator">
+                        <span>Quality:</span>
+                        <div class="quality-dot" id="qualityDot"></div>
+                        <span id="qualityText">Good</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="tabs">
+                    <div class="tab active" data-tab="presets">Presets</div>
+                    <div class="tab" data-tab="adjustments">Adjustments</div>
+                    <div class="tab" data-tab="filters">AI Filters</div>
+                </div>
+
+                <div class="tab-content active" id="presets-tab">
+                    <div class="presets-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-bolt"></i> Quick Presets</h3>
+                            <button class="nav-btn" onclick="analyzeAndAutoEnhance()">
+                                <i class="fas fa-robot"></i> AI Enhance
+                            </button>
+                        </div>
+                        <div class="preset-grid">
+                            <button class="preset-btn" onclick="applyPreset('auto')">
+                                <i class="fas fa-magic"></i> Auto Enhance
+                            </button>
+                            <button class="preset-btn detail-preset" onclick="applyPreset('details')">
+                                <i class="fas fa-search-plus"></i> Detail Enhance
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('portrait')">
+                                <i class="fas fa-user"></i> Portrait
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('landscape')">
+                                <i class="fas fa-mountain"></i> Landscape
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('vintage')">
+                                <i class="fas fa-camera-retro"></i> Vintage
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('bw')">
+                                <i class="fas fa-moon"></i> B&W
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('clear')">
+                                <i class="fas fa-snowflake"></i> Crisp
+                            </button>
+                            <button class="preset-btn" onclick="applyPreset('hdr')">
+                                <i class="fas fa-sun"></i> HDR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="adjustments-tab">
+                    <div class="controls-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-sliders-h"></i> Adjustment Tools</h3>
                         </div>
                         
-                        <div class="drop-zone" id="dropZone">
-                            <i class="material-icons">cloud_upload</i>
-                            <p>Drag & drop your image here or click to browse</p>
-                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="brightness"><i class="fas fa-sun"></i> Brightness</label>
+                                <span class="value-display" id="brightnessValue">0</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="brightnessTrack"></div>
+                                <input type="range" id="brightness" min="-50" max="50" value="0">
+                            </div>
+                            <div class="histogram" id="brightnessHistogram"></div>
                         </div>
-                        
-                        <div class="upload-info-panel">
-                            <div class="image-info" id="imageInfo">
-                                <span>No file selected</span>
-                                <span>0 x 0 px</span>
+
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="contrast"><i class="fas fa-adjust"></i> Contrast</label>
+                                <span class="value-display" id="contrastValue">100</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="contrastTrack"></div>
+                                <input type="range" id="contrast" min="50" max="200" value="100">
                             </div>
                         </div>
 
-                        <div class="step-indicator">
-                            <div class="step-number">2</div>
-                            <div class="step-text">Adjust your image using the tools below</div>
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="saturation"><i class="fas fa-palette"></i> Saturation</label>
+                                <span class="value-display" id="saturationValue">100</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="saturationTrack"></div>
+                                <input type="range" id="saturation" min="0" max="200" value="100">
+                            </div>
                         </div>
 
-                        <div class="auto-enhance-section">
-                            <div class="section-title">
-                                <i class="material-icons">auto_awesome</i> Auto Enhance
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="sharpness"><i class="fas fa-cut"></i> Sharpness</label>
+                                <span class="value-display" id="sharpnessValue">0</span>
                             </div>
-                            <p class="hint-text">One-click automatic image enhancement with AI</p>
+                            <div class="slider-container">
+                                <div class="slider-track" id="sharpnessTrack"></div>
+                                <input type="range" id="sharpness" min="0" max="10" value="0" step="0.1">
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="noiseReduction"><i class="fas fa-volume-mute"></i> Noise Reduction</label>
+                                <span class="value-display" id="noiseReductionValue">0</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="noiseReductionTrack"></div>
+                                <input type="range" id="noiseReduction" min="0" max="10" value="0" step="0.5">
+                            </div>
+                        </div>
+                        
+                        <!-- Detail Enhancement Controls -->
+                        <div class="detail-controls">
+                            <h4><i class="fas fa-search-plus"></i> Detail Enhancement</h4>
+                            <div class="control-header">
+                                <label for="detailStrength"><i class="fas fa-sliders-h"></i> Detail Strength</label>
+                                <span class="value-display" id="detailStrengthValue">0</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="detailStrengthTrack"></div>
+                                <input type="range" id="detailStrength" min="0" max="10" value="0" step="0.5">
+                            </div>
                             
-                            <div class="action-buttons">
-                                <button class="btn waves-effect waves-light blue enhanced-btn" onclick="autoEnhance('soft')">
-                                    <i class="material-icons left">auto_awesome</i>Soft Enhance
-                                </button>
-                                <button class="btn waves-effect waves-light indigo enhanced-btn" onclick="autoEnhance('balanced')">
-                                    <i class="material-icons left">auto_awesome</i>Balanced Enhance
-                                </button>
+                            <div class="control-header">
+                                <label for="clarity"><i class="fas fa-eye"></i> Clarity</label>
+                                <span class="value-display" id="clarityValue">0</span>
+                            </div>
+                            <div class="slider-container">
+                                <div class="slider-track" id="clarityTrack"></div>
+                                <input type="range" id="clarity" min="0" max="10" value="0" step="0.5">
+                            </div>
+                        </div>
+                        
+                        <div class="processing-options">
+                            <div class="processing-option active" id="optionQuality" onclick="toggleProcessingOption('quality')">
+                                <i class="fas fa-star"></i> Quality
+                            </div>
+                            <div class="processing-option" id="optionPerformance" onclick="toggleProcessingOption('performance')">
+                                <i class="fas fa-bolt"></i> Performance
                             </div>
                         </div>
 
                         <div class="action-buttons">
-                            <button class="btn waves-effect waves-light green enhanced-btn" onclick="saveToHistory()">
-                                <i class="material-icons left">save</i>Save
+                            <button class="action-btn danger" onclick="resetSettings()">
+                                <i class="fas fa-redo"></i> Reset All
                             </button>
-                            <button class="btn waves-effect waves-light grey" onclick="resetImage()">
-                                <i class="material-icons left">refresh</i>Reset
+                            <button class="action-btn primary" onclick="downloadImage()">
+                                <i class="fas fa-download"></i> Download
                             </button>
-                            <button class="btn waves-effect waves-light enhanced-btn" onclick="downloadImage()">
-                                <i class="material-icons left">file_download</i>Download
+                            <button class="action-btn success" onclick="downloadAll()">
+                                <i class="fas fa-folder-download"></i> Download All
                             </button>
-                        </div>
-
-                        <div class="import-export">
-                            <button class="btn waves-effect waves-light" onclick="exportSettings()">
-                                <i class="material-icons left">settings_backup_restore</i>Export
-                            </button>
-                            <button class="btn waves-effect waves-light" onclick="importSettings()">
-                                <i class="material-icons left">input</i>Import
+                            <button class="action-btn" onclick="shareImage()">
+                                <i class="fas fa-share-alt"></i> Share
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Basic adjustments panel -->
-                <div class="card">
-                    <div class="card-content">
-                        <ul class="tabs">
-                            <li class="tab col s6"><a class="active" href="#basic-tab">Adjustments</a></li>
-                            <li class="tab col s6"><a href="#ai-tab">AI Filters</a></li>
-                        </ul>
-
-                        <div id="basic-tab" class="tab-content">
-                            <div class="section-title">
-                                <i class="material-icons">tune</i> Basic Adjustments
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-group-title">
-                                    <i class="material-icons">color_lens</i> Color Adjustments
-                                </div>
-                                
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">brightness_5</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="brightnessValue">100%</span>
-                                            <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateSliderValue('brightness', 'brightnessValue', '%'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('brightness', 100, 'brightnessValue', '%')">replay</i>
-                                    </div>
-                                    <label>Brightness</label>
-                                    <div class="hint-text">Adjust the overall lightness of the image</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">contrast</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="contrastValue">100%</span>
-                                            <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateSliderValue('contrast', 'contrastValue', '%'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('contrast', 100, 'contrastValue', '%')">replay</i>
-                                    </div>
-                                    <label>Contrast</label>
-                                    <div class="hint-text">Adjust the difference between light and dark areas</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">invert_colors</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="saturateValue">100%</span>
-                                            <input type="range" id="saturate" min="0" max="200" value="100" oninput="updateSliderValue('saturate', 'saturateValue', '%'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('saturate', 100, 'saturateValue', '%')">replay</i>
-                                    </div>
-                                    <label>Saturation</label>
-                                    <div class="hint-text">Adjust the intensity of colors</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">wb_sunny</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="warmthValue">0</span>
-                                            <input type="range" id="warmth" min="-100" max="100" value="0" oninput="updateSliderValue('warmth', 'warmthValue', ''); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('warmth', 0, 'warmthValue', '')">replay</i>
-                                    </div>
-                                    <label>Warmth</label>
-                                    <div class="hint-text">Adjust the color temperature (warm or cool)</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">gradient</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="hueValue">0°</span>
-                                            <input type="range" id="hue" min="0" max="360" value="0" oninput="updateSliderValue('hue', 'hueValue', '°'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('hue', 0, 'hueValue', '°')">replay</i>
-                                    </div>
-                                    <label>Hue</label>
-                                    <div class="hint-text">Adjust the overall color tone</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">exposure</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="exposureValue">0</span>
-                                            <input type="range" id="exposure" min="-100" max="100" value="0" oninput="updateSliderValue('exposure', 'exposureValue', ''); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('exposure', 0, 'exposureValue', '')">replay</i>
-                                    </div>
-                                    <label>Exposure</label>
-                                    <div class="hint-text">Adjust the overall light exposure</div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-group-title">
-                                    <i class="material-icons">blur_on</i> Effects
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">details</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="sharpenValue">0%</span>
-                                            <input type="range" id="sharpen" min="0" max="100" value="0" oninput="updateSliderValue('sharpen', 'sharpenValue', '%'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('sharpen', 0, 'sharpenValue', '%')">replay</i>
-                                    </div>
-                                    <label>Sharpness</label>
-                                    <div class="hint-text">Enhance edge details</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">blur_on</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="blurValue">0px</span>
-                                            <input type="range" id="blur" min="0" max="20" value="0" oninput="updateSliderValue('blur', 'blurValue', 'px'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('blur', 0, 'blurValue', 'px')">replay</i>
-                                    </div>
-                                    <label>Blur</label>
-                                    <div class="hint-text">Add soft blur effect</div>
-                                </div>
-
-                                <div class="slider-container">
-                                    <div class="slider-with-icon">
-                                        <i class="material-icons">filter_vintage</i>
-                                        <div class="range-field">
-                                            <span class="range-value" id="vignetteValue">0%</span>
-                                            <input type="range" id="vignette" min="0" max="100" value="0" oninput="updateSliderValue('vignette', 'vignetteValue', '%'); applyFilters()">
-                                        </div>
-                                        <i class="material-icons reset-slider" onclick="resetSlider('vignette', 0, 'vignetteValue', '%')">replay</i>
-                                    </div>
-                                    <label>Vignette</label>
-                                    <div class="hint-text">Darken edges to focus attention</div>
-                                </div>
-                            </div>
-
-                            <div class="section-title">
-                                <i class="material-icons">style</i> Quick Presets
-                            </div>
-                            
-                            <div class="preset-header">
-                                <span>One-click effects:</span>
-                                <span class="preset-info">Click to apply</span>
-                            </div>
-                            
-                            <div class="preset-filters">
-                                <button class="btn waves-effect waves-light green tooltipped" onclick="applyPreset('bright')" data-position="bottom" data-tooltip="Bright and vivid colors">
-                                    <i class="material-icons">wb_sunny</i>
-                                    <span>Bright</span>
-                                </button>
-                                <button class="btn waves-effect waves-light grey tooltipped" onclick="applyPreset('bw')" data-position="bottom" data-tooltip="Classic black and white">
-                                    <i class="material-icons">filter_b_and_w</i>
-                                    <span>B/W</span>
-                                </button>
-                                <button class="btn waves-effect waves-light brown tooltipped" onclick="applyPreset('vintage')" data-position="bottom" data-tooltip="Vintage film effect">
-                                    <i class="material-icons">camera</i>
-                                    <span>Vintage</span>
-                                </button>
-                                <button class="btn waves-effect waves-light blue tooltipped" onclick="applyPreset('cool')" data-position="bottom" data-tooltip="Cool blue tones">
-                                    <i class="material-icons">ac_unit</i>
-                                    <span>Cool</span>
-                                </button>
-                                <button class="btn waves-effect waves-light red tooltipped" onclick="applyPreset('dramatic')" data-position="bottom" data-tooltip="High contrast dramatic effect">
-                                    <i class="material-icons">theaters</i>
-                                    <span>Drama</span>
-                                </button>
-                            </div>
+                <div class="tab-content" id="filters-tab">
+                    <div class="ai-filters-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-robot"></i> AI Filters</h3>
                         </div>
-
-                        <div id="ai-tab" class="tab-content">
-                            <div class="section-title">
-                                <i class="material-icons">smart_toy</i> AI Enhancements
-                            </div>
-                            
-                            <div class="hint-text" style="margin-bottom: 15px;">
-                                Advanced AI-powered tools to enhance your images (processing may take a few seconds)
-                            </div>
-
-                            <div class="ai-processing" id="aiProcessing">
-                                <div class="preloader-wrapper small active">
-                                    <div class="spinner-layer spinner-green-only">
-                                        <div class="circle-clipper left">
-                                            <div class="circle"></div>
-                                        </div><div class="gap-patch">
-                                            <div class="circle"></div>
-                                        </div><div class="circle-clipper right">
-                                            <div class="circle"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p>AI Processing... This may take a few seconds</p>
-                                <div class="progress">
-                                    <div class="indeterminate"></div>
-                                </div>
-                            </div>
-
-                            <div class="ai-filter-card" onclick="applyAIFilter('upscale')">
-                                <div class="card-content">
-                                    <i class="material-icons">zoom_in</i>
-                                    <div class="ai-filter-content">
-                                        <h6>Enhance Resolution <span class="ai-feature-badge">AI</span></h6>
-                                        <p>Improves image detail and quality through AI upscaling</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="ai-filter-card" onclick="applyAIFilter('denoise')">
-                                <div class="card-content">
-                                    <i class="material-icons">filter_none</i>
-                                    <div class="ai-filter-content">
-                                        <h6>Remove Noise <span class="ai-feature-badge">AI</span></h6>
-                                        <p>Reduces digital noise and artifacts while preserving details</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="ai-filter-card" onclick="applyAIFilter('face_enhance')">
-                                <div class="card-content">
-                                    <i class="material-icons">face</i>
-                                    <div class="ai-filter-content">
-                                        <h6>Face Enhancement <span class="ai-feature-badge">AI</span></h6>
-                                        <p>Enhances facial details and retouching for portraits</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="ai-filter-card" onclick="applyAIAutoEnhance()">
-                                <div class="card-content">
-                                    <i class="material-icons">auto_awesome</i>
-                                    <div class="ai-filter-content">
-                                        <h6>AI Auto Enhance <span class="ai-feature-badge">AI</span></h6>
-                                        <p>Automatically enhances image quality with AI analysis</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="section-title" style="margin-top: 25px;">
-                                <i class="material-icons">palette</i> Artistic Styles
-                            </div>
-                            
-                            <div class="input-field">
-                                <select id="styleSelect">
-                                    <option value="" disabled selected>Choose an artistic style</option>
-                                    <option value="van_gogh">Van Gogh (Impressionist)</option>
-                                    <option value="picasso">Picasso (Cubist)</option>
-                                    <option value="monet">Monet (Watercolor)</option>
-                                    <option value="pixel">Pixel Art</option>
-                                    <option value="sketch">Pencil Sketch</option>
-                                    <option value="oil_painting">Oil Painting</option>
-                                    <option value="watercolor">Watercolor</option>
-                                </select>
-                                <label>AI Style Transfer</label>
-                            </div>
-                            <button class="btn waves-effect waves-light full-width enhanced-btn" onclick="applyAIFilter('style')">
-                                <i class="material-icons left">palette</i>Apply Artistic Style
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Central area with image -->
-            <div class="col s12 m8">
-                <div class="card">
-                    <div class="card-content">
-                        <h5>Image Preview</h5>
+                        <p>Apply AI-powered filters for professional-grade enhancement</p>
                         
-                        <div class="image-preview-container" id="imagePreviewContainer">
-                            <div class="comparison-slider" id="comparisonSlider">
-                                <canvas id="afterCanvas"></canvas>
-                                <div class="comparison-before">
-                                    <canvas id="beforeCanvas"></canvas>
-                                </div>
-                                <div class="comparison-handle"></div>
+                        <div class="filter-preview-grid">
+                            <div class="filter-preview-item active" data-filter="ai_enhance">
+                                <img id="preview-original" src="" alt="Original">
+                                <div class="filter-preview-name">Original</div>
                             </div>
-                            
-                            <canvas id="canvas"></canvas>
-                            
-                            <div class="placeholder-text" id="placeholderText">
-                                <i class="material-icons">photo</i>
-                                <p>Upload an image to start enhancing</p>
-                                <p class="hint-text">Supported formats: JPG, PNG, WebP (Max 20MB)</p>
+                            <div class="filter-preview-item" data-filter="ai_portrait">
+                                <img id="preview-portrait" src="" alt="AI Portrait">
+                                <div class="filter-preview-name">AI Portrait</div>
                             </div>
-                        </div>
-
-                        <div class="image-stats">
-                            <div class="stat-item">
-                                <div class="stat-value" id="imageWidth">0</div>
-                                <div class="stat-label">Width</div>
+                            <div class="filter-preview-item" data-filter="ai_landscape">
+                                <img id="preview-landscape" src="" alt="AI Landscape">
+                                <div class="filter-preview-name">AI Landscape</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="imageHeight">0</div>
-                                <div class="stat-label">Height</div>
+                            <div class="filter-preview-item" data-filter="ai_clear">
+                                <img id="preview-clear" src="" alt="AI Clear">
+                                <div class="filter-preview-name">AI Clear</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="imageSize">0 KB</div>
-                                <div class="stat-label">Size</div>
+                            <div class="filter-preview-item" data-filter="ai_hdr">
+                                <img id="preview-hdr" src="" alt="AI HDR">
+                                <div class="filter-preview-name">AI HDR</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="imageFormat">-</div>
-                                <div class="stat-label">Format</div>
+                            <div class="filter-preview-item" data-filter="ai_cinematic">
+                                <img id="preview-cinematic" src="" alt="AI Cinematic">
+                                <div class="filter-preview-name">AI Cinematic</div>
                             </div>
                         </div>
-
-                        <div class="center-align">
-                            <button class="btn waves-effect waves-light enhanced-btn" onclick="toggleComparison()" id="compareBtn" disabled>
-                                <i class="material-icons left">compare</i>Compare Before/After
+                        
+                        <div class="action-buttons" style="margin-top: 20px;">
+                            <button class="action-btn primary" onclick="applyAIFilter()">
+                                <i class="fas fa-check"></i> Apply Selected Filter
                             </button>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h4><i class="fas fa-lightbulb"></i> Enhancement Tips</h4>
+                    <p>• Use Auto Enhance for quick improvements<br>
+                    • Increase contrast for faded photos<br>
+                    • Adjust brightness for underexposed images<br>
+                    • Use Detail Enhancement for fine details like hair<br>
+                    • Try AI filters for one-click professional results</p>
+                </div>
+                
+                <div class="file-info">
+                    <div class="file-info-item">
+                        <span class="file-info-label">Filename:</span>
+                        <span class="file-info-value" id="fileName">image.jpg</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">Dimensions:</span>
+                        <span class="file-info-value" id="fileDimensions">1920 × 1080</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">File size:</span>
+                        <span class="file-info-value" id="fileSizeInfo">4.2 MB</span>
+                    </div>
+                    <div class="file-info-item">
+                        <span class="file-info-label">Type:</span>
+                        <span class="file-info-value" id="fileType">JPEG</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="theme-switch">
-        <a class="btn-floating btn-large waves-effect waves-light green tooltipped" onclick="toggleTheme()" data-position="left" data-tooltip="Switch theme">
-            <i class="material-icons">brightness_4</i>
-        </a>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script>
-    // Global variables
-    let originalImage = null;
-    let currentImage = null;
-    let isComparisonActive = false;
-    let currentTheme = 'light-mode';
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Materialize components
-        M.Tabs.init(document.querySelectorAll('.tabs'), {});
-        M.FormSelect.init(document.querySelectorAll('select'), {});
-        M.Tooltip.init(document.querySelectorAll('.tooltipped'), {});
-
-        // Event handlers
-        document.getElementById('imageInput').addEventListener('change', handleFileSelect);
-        document.getElementById('dropZone').addEventListener('click', () => document.getElementById('imageInput').click());
-        document.getElementById('dropZone').addEventListener('dragover', handleDragOver);
-        document.getElementById('dropZone').addEventListener('drop', handleDrop);
-        
-        // Initialize sliders
-        updateSliderValues();
-        
-        // Initialize comparison
-        initComparisonSlider();
-        
-        // Initialize theme from localStorage
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            currentTheme = savedTheme;
-            document.body.classList.add(currentTheme);
-            
-            if (currentTheme === 'dark-mode') {
-                document.querySelector('.theme-switch i').textContent = 'brightness_5';
-            }
-        }
-    });
-
-    // Function to update slider values
-    function updateSliderValues() {
-        updateSliderValue('brightness', 'brightnessValue', '%');
-        updateSliderValue('contrast', 'contrastValue', '%');
-        updateSliderValue('saturate', 'saturateValue', '%');
-        updateSliderValue('sharpen', 'sharpenValue', '%');
-        updateSliderValue('warmth', 'warmthValue', '');
-        updateSliderValue('hue', 'hueValue', '°');
-        updateSliderValue('exposure', 'exposureValue', '');
-        updateSliderValue('blur', 'blurValue', 'px');
-        updateSliderValue('vignette', 'vignetteValue', '%');
-    }
-
-    // Update slider value
-    function updateSliderValue(sliderId, valueId, suffix) {
-        const slider = document.getElementById(sliderId);
-        const valueElement = document.getElementById(valueId);
-        if (slider && valueElement) {
-            valueElement.textContent = slider.value + suffix;
-        }
-    }
-
-    // Reset slider
-    function resetSlider(sliderId, defaultValue, valueId, suffix) {
-        const slider = document.getElementById(sliderId);
-        slider.value = defaultValue;
-        updateSliderValue(sliderId, valueId, suffix);
-        applyFilters();
-    }
-
-    // Handle file drag over
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.dataTransfer.dropEffect = 'copy';
-    }
-
-    // Handle file drop
-    function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = e.dataTransfer.files;
-        if (files.length) {
-            handleFile(files[0]);
-        }
-    }
-
-    // Handle file selection
-    function handleFileSelect(e) {
-        const files = e.target.files;
-        if (files.length) {
-            handleFile(files[0]);
-        }
-    }
-
-    // Main file handling function
-    function handleFile(file) {
-        if (!file || !file.type.startsWith('image/')) {
-            showToast('Error: Invalid file format.');
-            return;
-        }
-
-        // Check file size (max 20MB)
-        if (file.size > 20 * 1024 * 1024) {
-            showToast('Error: File is too large. Maximum size is 20MB.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                // Create canvas
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Set canvas dimensions
-                const maxWidth = 4000;
-                const maxHeight = 4000;
-                
-                if (img.width > maxWidth || img.height > maxHeight) {
-                    // Scale down very large images
-                    const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
-                    canvas.width = img.width * ratio;
-                    canvas.height = img.height * ratio;
-                } else {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                }
-                
-                // Draw image
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Save original image
-                originalImage = new Image();
-                originalImage.src = canvas.toDataURL();
-                currentImage = new Image();
-                currentImage.src = canvas.toDataURL();
-                
-                // Update image info
-                updateImageInfo(file, canvas.width, canvas.height);
-                
-                // Hide placeholder
-                document.getElementById('placeholderText').style.display = 'none';
-                
-                // Enable compare button
-                document.getElementById('compareBtn').disabled = false;
-                
-                // Save to history
-                saveToHistory();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Update image information
-    function updateImageInfo(file, width, height) {
-        const imageInfo = document.getElementById('imageInfo');
-        const imageWidth = document.getElementById('imageWidth');
-        const imageHeight = document.getElementById('imageHeight');
-        const imageSize = document.getElementById('imageSize');
-        const imageFormat = document.getElementById('imageFormat');
-        
-        const sizeKB = Math.round(file.size / 1024);
-        imageInfo.innerHTML = `<span>${file.name}</span><span>${width} x ${height} px</span>`;
-        imageWidth.textContent = width;
-        imageHeight.textContent = height;
-        imageSize.textContent = `${sizeKB} KB`;
-        imageFormat.textContent = file.type.split('/')[1].toUpperCase();
-    }
-
-    // Apply filters
-    function applyFilters() {
-        if (!currentImage) return;
-        
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw original image
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Get filter values
-        const brightness = document.getElementById('brightness').value;
-        const contrast = document.getElementById('contrast').value;
-        const saturate = document.getElementById('saturate').value;
-        const sharpen = document.getElementById('sharpen').value;
-        const warmth = document.getElementById('warmth').value;
-        const hue = document.getElementById('hue').value;
-        const exposure = document.getElementById('exposure').value;
-        const blur = document.getElementById('blur').value;
-        const vignette = document.getElementById('vignette').value;
-        
-        // Apply filters
-        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%) hue-rotate(${hue}deg) blur(${blur}px)`;
-        
-        // Redraw image
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Apply additional filters (sharpness, warmth, exposure, vignette)
-        applySharpness(ctx, sharpen);
-        applyWarmth(ctx, warmth);
-        applyExposure(ctx, exposure);
-        applyVignette(ctx, vignette);
-        
-        // Save current state
-        currentImage.src = canvas.toDataURL();
-    }
-
-    // Apply sharpness
-    function applySharpness(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        
-        // Create a copy for reading
-        const originalData = new Uint8ClampedArray(data);
-        
-        // Apply sharpening using a convolution kernel
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                for (let c = 0; c < 3; c++) {
-                    const idx = (y * width + x) * 4 + c;
-                    
-                    // Sharpening kernel
-                    data[idx] = Math.max(0, Math.min(255, 
-                        originalData[idx] * (1 + value/50) - 
-                        originalData[((y-1) * width + x) * 4 + c] * (value/200) -
-                        originalData[((y+1) * width + x) * 4 + c] * (value/200) -
-                        originalData[(y * width + (x-1)) * 4 + c] * (value/200) -
-                        originalData[(y * width + (x+1)) * 4 + c] * (value/200)
-                    ));
-                }
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply warmth
-    function applyWarmth(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Increase red and decrease blue for warm effect
-            data[i] = Math.min(255, Math.max(0, data[i] + value * 0.5));     // R
-            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] - value * 0.3)); // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply exposure
-    function applyExposure(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const factor = Math.pow(2, value / 50);
-        
-        for (let i = 0; i < data.length; i += 4) {
-            data[i] = Math.min(255, Math.max(0, data[i] * factor));         // R
-            data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor)); // G
-            data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor)); // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply vignette effect
-    function applyVignette(ctx, value) {
-        if (value == 0) return;
-        
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-        const amount = value / 100;
-        
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const idx = (y * width + x) * 4;
-                const dist = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-                const factor = 1 - (dist / maxDist) * amount;
-                
-                data[idx] = Math.min(255, Math.max(0, data[idx] * factor));         // R
-                data[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] * factor)); // G
-                data[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] * factor)); // B
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Apply preset
-    function applyPreset(presetName) {
-        // Reset all sliders
-        resetSlider('brightness', 100, 'brightnessValue', '%');
-        resetSlider('contrast', 100, 'contrastValue', '%');
-        resetSlider('saturate', 100, 'saturateValue', '%');
-        resetSlider('sharpen', 0, 'sharpenValue', '%');
-        resetSlider('warmth', 0, 'warmthValue', '');
-        resetSlider('hue', 0, 'hueValue', '°');
-        resetSlider('exposure', 0, 'exposureValue', '');
-        resetSlider('blur', 0, 'blurValue', 'px');
-        resetSlider('vignette', 0, 'vignetteValue', '%');
-        
-        // Apply preset settings
-        switch(presetName) {
-            case 'bright':
-                document.getElementById('brightness').value = 130;
-                document.getElementById('contrast').value = 120;
-                document.getElementById('saturate').value = 130;
-                break;
-            case 'bw':
-                document.getElementById('saturate').value = 0;
-                document.getElementById('contrast').value = 120;
-                break;
-            case 'vintage':
-                document.getElementById('warmth').value = 30;
-                document.getElementById('contrast').value = 90;
-                document.getElementById('brightness').value = 110;
-                document.getElementById('vignette').value = 40;
-                break;
-            case 'cool':
-                document.getElementById('warmth').value = -30;
-                document.getElementById('contrast').value = 110;
-                document.getElementById('hue').value = 200;
-                break;
-            case 'dramatic':
-                document.getElementById('contrast').value = 150;
-                document.getElementById('brightness').value = 90;
-                document.getElementById('saturate').value = 120;
-                document.getElementById('vignette').value = 60;
-                break;
-        }
-        
-        updateSliderValues();
-        applyFilters();
-        saveToHistory();
-    }
-
-    // Save to history
-    function saveToHistory() {
-        if (!currentImage) return;
-        
-        // Update current image
-        const canvas = document.getElementById('canvas');
-        currentImage.src = canvas.toDataURL();
-        
-        showToast('Changes saved.');
-    }
-
-    // Apply AI filter
-    function applyAIFilter(filterType) {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        // Show processing indicator
-        const aiProcessing = document.getElementById('aiProcessing');
-        aiProcessing.style.display = 'block';
-        
-        // Simulate AI processing (in a real app this would be an API call)
-        setTimeout(() => {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Apply different effects based on filter type
-            switch(filterType) {
-                case 'upscale':
-                    // Simulate resolution enhancement
-                    applyUpscaleEffect(ctx);
-                    break;
-                case 'denoise':
-                    // Simulate noise reduction
-                    applyDenoiseEffect(ctx);
-                    break;
-                case 'face_enhance':
-                    // Simulate face enhancement
-                    applyFaceEnhanceEffect(ctx);
-                    break;
-                case 'style':
-                    // Apply selected style
-                    const styleSelect = document.getElementById('styleSelect');
-                    applyStyleEffect(ctx, styleSelect.value);
-                    break;
-            }
-            
-            // Save modified image
-            currentImage.src = canvas.toDataURL();
-            
-            // Hide processing indicator
-            aiProcessing.style.display = 'none';
-            
-            // Save to history
-            saveToHistory();
-            
-            showToast('AI filter applied successfully!');
-        }, 2000);
-    }
-
-    // Upscale effect
-    function applyUpscaleEffect(ctx) {
-        const originalWidth = ctx.canvas.width;
-        const originalHeight = ctx.canvas.height;
-        
-        // Create a temporary canvas for the upscaled image
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        // Set new dimensions (1.5x)
-        tempCanvas.width = originalWidth * 1.5;
-        tempCanvas.height = originalHeight * 1.5;
-        
-        // Draw image with smooth scaling
-        tempCtx.imageSmoothingEnabled = true;
-        tempCtx.imageSmoothingQuality = 'high';
-        tempCtx.drawImage(currentImage, 0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Apply sharpening
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Simple sharpening
-            data[i] = Math.min(255, data[i] * 1.05);
-            data[i + 1] = Math.min(255, data[i + 1] * 1.05);
-            data[i + 2] = Math.min(255, data[i + 2] * 1.05);
-        }
-        
-        tempCtx.putImageData(imageData, 0, 0);
-        
-        // Resize main canvas and draw the upscaled image
-        ctx.canvas.width = tempCanvas.width;
-        ctx.canvas.height = tempCanvas.height;
-        ctx.drawImage(tempCanvas, 0, 0);
-        
-        // Update image info
-        document.getElementById('imageWidth').textContent = ctx.canvas.width;
-        document.getElementById('imageHeight').textContent = ctx.canvas.height;
-    }
-
-    // Denoise effect
-    function applyDenoiseEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        
-        // Create a copy for reading
-        const originalData = new Uint8ClampedArray(data);
-        
-        // Apply simple noise reduction
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                for (let c = 0; c < 3; c++) {
-                    const idx = (y * width + x) * 4 + c;
-                    
-                    // Get surrounding pixels
-                    const pixels = [
-                        originalData[((y-1) * width + (x-1)) * 4 + c],
-                        originalData[((y-1) * width + x) * 4 + c],
-                        originalData[((y-1) * width + (x+1)) * 4 + c],
-                        originalData[(y * width + (x-1)) * 4 + c],
-                        originalData[idx],
-                        originalData[(y * width + (x+1)) * 4 + c],
-                        originalData[((y+1) * width + (x-1)) * 4 + c],
-                        originalData[((y+1) * width + x) * 4 + c],
-                        originalData[((y+1) * width + (x+1)) * 4 + c]
-                    ];
-                    
-                    // Sort and get median
-                    pixels.sort((a, b) => a - b);
-                    data[idx] = pixels[4];
-                }
-            }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Face enhance effect
-    function applyFaceEnhanceEffect(ctx) {
-        // In a real app, this would involve face detection and enhancement
-        // For demo purposes, apply several enhancements to the whole image
-        
-        // Increase contrast and saturation
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Increase saturation
-            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            data[i] = avg + 1.2 * (data[i] - avg); // R
-            data[i + 1] = avg + 1.1 * (data[i + 1] - avg); // G
-            data[i + 2] = avg + 0.9 * (data[i + 2] - avg); // B
-            
-            // Increase contrast
-            data[i] = Math.min(255, Math.max(0, (data[i] - 127) * 1.1 + 127));
-            data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 127) * 1.1 + 127));
-            data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 127) * 1.1 + 127));
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Slight sharpening
-        applySharpness(ctx, 15);
-    }
-
-    // Apply style
-    function applyStyleEffect(ctx, style) {
-        // Save current filter values
-        const currentBrightness = document.getElementById('brightness').value;
-        const currentContrast = document.getElementById('contrast').value;
-        const currentSaturate = document.getElementById('saturate').value;
-        const currentHue = document.getElementById('hue').value;
-        const currentWarmth = document.getElementById('warmth').value;
-        
-        // Reset filters
-        ctx.filter = 'none';
-        ctx.drawImage(originalImage, 0, 0);
-        
-        // Apply style
-        switch(style) {
-            case 'van_gogh':
-                document.getElementById('contrast').value = 130;
-                document.getElementById('saturate').value = 140;
-                document.getElementById('hue').value = 30;
-                document.getElementById('warmth').value = 20;
-                break;
-            case 'picasso':
-                document.getElementById('contrast').value = 150;
-                document.getElementById('brightness').value = 90;
-                document.getElementById('saturate').value = 80;
-                document.getElementById('hue').value = 300;
-                break;
-            case 'monet':
-                document.getElementById('brightness').value = 110;
-                document.getElementById('contrast').value = 90;
-                document.getElementById('saturate').value = 120;
-                document.getElementById('hue').value = 350;
-                document.getElementById('warmth').value = 10;
-                break;
-            case 'pixel':
-                applyPixelEffect(ctx);
-                break;
-            case 'sketch':
-                applySketchEffect(ctx);
-                break;
-            case 'oil_painting':
-                applyOilPaintingEffect(ctx);
-                break;
-            case 'watercolor':
-                document.getElementById('saturate').value = 140;
-                document.getElementById('contrast').value = 120;
-                document.getElementById('brightness').value = 110;
-                applyBlurEffect(ctx, 2);
-                break;
-        }
-        
-        // Update slider values
-        updateSliderValues();
-        
-        // Apply filters
-        applyFilters();
-        
-        // Restore original values (for further adjustments)
-        document.getElementById('brightness').value = currentBrightness;
-        document.getElementById('contrast').value = currentContrast;
-        document.getElementById('saturate').value = currentSaturate;
-        document.getElementById('hue').value = currentHue;
-        document.getElementById('warmth').value = currentWarmth;
-    }
-
-    // Pixel effect
-    function applyPixelEffect(ctx) {
-        const size = 10; // Pixel size
-        const w = ctx.canvas.width;
-        const h = ctx.canvas.height;
-        
-        // Reduce image size
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = w / size;
-        tempCanvas.height = h / size;
-        tempCtx.drawImage(ctx.canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Scale back up with pixelation
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, w, h);
-        ctx.imageSmoothingEnabled = true;
-    }
-
-    // Sketch effect
-    function applySketchEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-            // Convert to grayscale
-            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            
-            // Invert and increase contrast
-            const sketchValue = 255 - Math.min(255, Math.max(0, avg * 1.5));
-            
-            data[i] = sketchValue;     // R
-            data[i + 1] = sketchValue; // G
-            data[i + 2] = sketchValue; // B
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Oil painting effect
-    function applyOilPaintingEffect(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const radius = 3;
-        
-        for (let y = radius; y < ctx.canvas.height - radius; y++) {
-            for (let x = radius; x < ctx.canvas.width - radius; x++) {
-                const i = (y * ctx.canvas.width + x) * 4;
-                
-                // Average values in area
-                let r = 0, g = 0, b = 0;
-                for (let dy = -radius; dy <= radius; dy++) {
-                    for (let dx = -radius; dx <= radius; dx++) {
-                        const di = ((y + dy) * ctx.canvas.width + (x + dx)) * 4;
-                        r += data[di];
-                        g += data[di + 1];
-                        b += data[di + 2];
-                    }
-                }
-                
-                const count = Math.pow(radius * 2 + 1, 2);
-                data[i] = r / count;
-                data[i + 1] = g / count;
-                data[i + 2] = b / count;
-                }
-            }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Increase saturation
-        const saturateValue = document.getElementById('saturate').value;
-        document.getElementById('saturate').value = Math.min(200, parseInt(saturateValue) + 40);
-        applyFilters();
-        document.getElementById('saturate').value = saturateValue;
-    }
-
-    // Blur effect
-    function applyBlurEffect(ctx, amount) {
-        ctx.filter = `blur(${amount}px)`;
-        ctx.drawImage(ctx.canvas, 0, 0);
-        ctx.filter = 'none';
-    }
-
-    // Initialize comparison slider
-    function initComparisonSlider() {
-        const slider = document.querySelector('.comparison-slider');
-        const handle = slider.querySelector('.comparison-handle');
-        const before = slider.querySelector('.comparison-before');
-        
-        let isMoving = false;
-        
-        // Mouse event handlers
-        handle.addEventListener('mousedown', () => isMoving = true);
-        document.addEventListener('mouseup', () => isMoving = false);
-        document.addEventListener('mousemove', (e) => {
-            if (!isMoving) return;
-            moveSlider(e.clientX);
-        });
-        
-        // Touch event handlers
-        handle.addEventListener('touchstart', () => isMoving = true);
-        document.addEventListener('touchend', () => isMoving = false);
-        document.addEventListener('touchmove', (e) => {
-            if (!isMoving) return;
-            moveSlider(e.touches[0].clientX);
-        });
-        
-        function moveSlider(x) {
-            const sliderRect = slider.getBoundingClientRect();
-            let position = (x - sliderRect.left) / sliderRect.width;
-            position = Math.max(0, Math.min(1, position)); // Limit between 0 and 1
-            
-            before.style.width = position * 100 + '%';
-            handle.style.left = position * 100 + '%';
-        }
-    }
-
-    // Toggle before/after comparison
-    function toggleComparison() {
-        if (!currentImage) return;
-        
-        const comparisonSlider = document.getElementById('comparisonSlider');
-        const mainCanvas = document.getElementById('canvas');
-        const beforeCanvas = document.getElementById('beforeCanvas');
-        const afterCanvas = document.getElementById('afterCanvas');
-        
-        isComparisonActive = !isComparisonActive;
-        
-        if (isComparisonActive) {
-            // Set up canvas for comparison
-            beforeCanvas.width = afterCanvas.width = originalImage.width;
-            beforeCanvas.height = afterCanvas.height = originalImage.height;
-            
-            // Draw original on beforeCanvas
-            const beforeCtx = beforeCanvas.getContext('2d');
-            beforeCtx.drawImage(originalImage, 0, 0);
-            
-            // Draw current image on afterCanvas
-            const afterCtx = afterCanvas.getContext('2d');
-            afterCtx.drawImage(currentImage, 0, 0);
-            
-            // Show comparison slider and hide main canvas
-            comparisonSlider.style.display = 'block';
-            mainCanvas.style.display = 'none';
-            
-            // Update button text
-            document.querySelector('#compareBtn i').textContent = 'visibility';
-            document.querySelector('#compareBtn span').textContent = 'Show Result';
-        } else {
-            // Hide comparison slider and show main canvas
-            comparisonSlider.style.display = 'none';
-            mainCanvas.style.display = 'block';
-            
-            // Update button text
-            document.querySelector('#compareBtn i').textContent = 'compare';
-            document.querySelector('#compareBtn span').textContent = 'Compare Before/After';
-        }
-    }
-
-    // Reset image
-    function resetImage() {
-        if (!originalImage) return;
-        
-        // Reset all sliders
-        resetSlider('brightness', 100, 'brightnessValue', '%');
-        resetSlider('contrast', 100, 'contrastValue', '%');
-        resetSlider('saturate', 100, 'saturateValue', '%');
-        resetSlider('sharpen', 0, 'sharpenValue', '%');
-        resetSlider('warmth', 0, 'warmthValue', '');
-        resetSlider('hue', 0, 'hueValue', '°');
-        resetSlider('exposure', 0, 'exposureValue', '');
-        resetSlider('blur', 0, 'blurValue', 'px');
-        resetSlider('vignette', 0, 'vignetteValue', '%');
-        
-        // Restore original image
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(originalImage, 0, 0);
-        
-        currentImage = new Image();
-        currentImage.src = originalImage.src;
-        
-        // Save to history
-        saveToHistory();
-        
-        showToast('Image reset to original.');
-    }
-
-    // Download image
-    function downloadImage() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        const name = 'enhanced_image';
-        
-        // Create temporary download link
-        const link = document.createElement('a');
-        link.download = `${name}.png`;
-        link.href = currentImage.src;
-        link.click();
-        
-        showToast('Image downloaded successfully!');
-    }
-
-    // Toggle theme
-    function toggleTheme() {
-        const body = document.body;
-        
-        if (currentTheme === 'light-mode') {
-            body.classList.remove('light-mode');
-            body.classList.add('dark-mode');
-            currentTheme = 'dark-mode';
-            document.querySelector('.theme-switch i').textContent = 'brightness_5';
-        } else {
-            body.classList.remove('dark-mode');
-            body.classList.add('light-mode');
-            currentTheme = 'light-mode';
-            document.querySelector('.theme-switch i').textContent = 'brightness_4';
-        }
-        
-        // Save theme preference
-        localStorage.setItem('theme', currentTheme);
-    }
-
-    // Show toast message
-    function showToast(message) {
-        // Remove any existing toasts
-        const existingToasts = document.querySelectorAll('.custom-toast');
-        existingToasts.forEach(toast => toast.remove());
-        
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.className = 'custom-toast';
-        toast.innerHTML = `
-            <span>${message}</span>
-            <button class="toast-action" onclick="this.parentElement.remove()">Dismiss</button>
-        `;
-        
-        // Add to container
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-        
-        container.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
-            }
-        }, 3000);
-    }
-
-    // Export settings (placeholder)
-    function exportSettings() {
-        showToast('Export feature will be available soon!');
-    }
-
-    // Import settings (placeholder)
-    function importSettings() {
-        showToast('Import feature will be available soon!');
-    }
-    
-    // NEW FUNCTIONS FOR AUTO ENHANCEMENT
-    
-    // Auto enhance function with different modes
-    function autoEnhance(mode = 'balanced') {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        // Show processing indicator
-        showToast(`Applying ${mode} auto enhancement...`);
-        
-        // Reset image first
-        resetImage();
-        
-        // Apply enhancement based on mode
-        setTimeout(() => {
-            if (mode === 'soft') {
-                // Soft enhancement settings
-                document.getElementById('brightness').value = 105;
-                document.getElementById('contrast').value = 105;
-                document.getElementById('saturate').value = 110;
-                document.getElementById('exposure').value = 5;
-                document.getElementById('warmth').value = 5;
-                document.getElementById('sharpen').value = 10;
-            } else {
-                // Balanced enhancement settings
-                document.getElementById('brightness').value = 110;
-                document.getElementById('contrast').value = 110;
-                document.getElementById('saturate').value = 115;
-                document.getElementById('exposure').value = 8;
-                document.getElementById('warmth').value = 10;
-                document.getElementById('sharpen').value = 15;
-            }
-            
-            // Update slider values
-            updateSliderValues();
-            
-            // Apply filters
-            applyFilters();
-            
-            // Save to history
-            saveToHistory();
-            
-            showToast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} auto enhancement applied!`);
-        }, 500);
-    }
-    
-    // AI Auto Enhance function
-    function applyAIAutoEnhance() {
-        if (!currentImage) {
-            showToast('Please upload an image first.');
-            return;
-        }
-        
-        // Show processing indicator
-        const aiProcessing = document.getElementById('aiProcessing');
-        aiProcessing.style.display = 'block';
-        
-        // Simulate AI processing
-        setTimeout(() => {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Apply AI-based enhancement
-            applyAIDetailEnhancement(ctx);
-            
-            // Save modified image
-            currentImage.src = canvas.toDataURL();
-            
-            // Hide processing indicator
-            aiProcessing.style.display = 'none';
-            
-            // Save to history
-            saveToHistory();
-            
-            showToast('AI auto enhancement applied successfully!');
-        }, 2500);
-    }
-    
-    // AI-based detail enhancement
-    function applyAIDetailEnhancement(ctx) {
-        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const data = imageData.data;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        
-        // Create a copy for reading
-        const originalData = new Uint8ClampedArray(data);
-        
-        // Adaptive contrast enhancement
-        for (let i = 0; i < data.length; i += 4) {
-            // Calculate luminance
-            const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            
-            // Adaptive contrast based on luminance
-            const contrastFactor = luminance > 128 ? 1.08 : 1.12;
-            
-            // Apply adaptive contrast
-            data[i] = Math.min(255, Math.max(0, (data[i] - 127) * contrastFactor + 127));
-            data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 127) * contrastFactor + 127));
-            data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 127) * contrastFactor + 127));
-        }
-        
-        // Adaptive sharpening with edge detection
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                for (let c = 0; c < 3; c++) {
-                    const idx = (y * width + x) * 4 + c;
-                    
-                    // Calculate edge strength using simple gradient
-                    const gradient = Math.abs(originalData[idx] - originalData[(y * width + (x + 1)) * 4 + c]) + 
-                                    Math.abs(originalData[idx] - originalData[((y + 1) * width + x) * 4 + c]);
-                    
-                    // Adaptive sharpening based on edge strength
-                    const sharpenAmount = Math.min(0.3, gradient / 200);
-                    
-                    // Apply adaptive sharpening
-                    data[idx] = Math.max(0, Math.min(255, 
-                        data[idx] * (1 + sharpenAmount) - 
-                        originalData[((y-1) * width + x) * 4 + c] * (sharpenAmount/4) -
-                        originalData[((y+1) * width + x) * 4 + c] * (sharpenAmount/4) -
-                        originalData[(y * width + (x-1)) * 4 + c] * (sharpenAmount/4) -
-                        originalData[(y * width + (x+1)) * 4 + c] * (sharpenAmount/4)
-                    ));
-                }
-            }
-        }
-        
-        // Adaptive color enhancement
-        for (let i = 0; i < data.length; i += 4) {
-            // Calculate colorfulness
-            const r = data[i], g = data[i + 1], b = data[i + 2];
-            const colorfulness = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
-            
-            // Adaptive saturation based on colorfulness
-            const saturationFactor = 1 + (0.15 * (1 - colorfulness));
-            
-            // Apply adaptive saturation
-            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            data[i] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i] - avg)));
-            data[i + 1] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i + 1] - avg)));
-            data[i + 2] = Math.min(255, Math.max(0, avg + saturationFactor * (data[i + 2] - avg)));
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-    }
-    </script>
+    <script src="Improved image quality.js"></script>
 </body>
 </html>
